@@ -9,19 +9,23 @@ console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}
 const Home = () => {
   const [files, setFiles] = useState()
 
-  useEffect(() => {
+  const loadFiles = () => {
     ipcRenderer.send('list-files')
     ipcRenderer.on('listed-files', (_, files) => {
       setFiles(files)
     })
+  }
+
+  useEffect(() => {
+    loadFiles()
   }, [])
 
   return (
     <div>
       <Button variant='contained' onClick={() => {
         ipcRenderer.send('select-file')
-        ipcRenderer.on('selected-file', (_, files) => {
-          console.log('files', files)
+        ipcRenderer.on('selected-file', () => {
+          loadFiles()
         })
       }}>
         hello
