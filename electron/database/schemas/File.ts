@@ -1,5 +1,5 @@
 const Sequelize = require("sequelize");
-import sequelize from "./initialize";
+import sequelize from "../initialize";
 
 import { Model, InferAttributes, InferCreationAttributes, DataTypes } from 'sequelize';
 
@@ -25,6 +25,4 @@ File.init({
   sequelize,
 });
 
-export {
-  File,
-}
+export default File;

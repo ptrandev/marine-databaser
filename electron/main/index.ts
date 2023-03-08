@@ -3,7 +3,7 @@ import { release } from "node:os";
 import { join } from "node:path";
 
 import sequelize from "../database/initialize";
-import { File } from "../database/schema";
+import { File } from "../database/schemas";
 
 // The built directory structure
 //
