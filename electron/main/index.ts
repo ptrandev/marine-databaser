@@ -3,7 +3,7 @@ import { release } from "node:os";
 import { join } from "node:path";
 
 import sequelize from "../database/initialize";
-import { File } from "../database/schemas";
+import { Directory, File } from "../database/schemas";
 
 // The built directory structure
 //
@@ -132,11 +132,28 @@ sequelize
   });
 
 import { dialog } from "electron"
+const fs = require('fs').promises
 
 ipcMain.on('select-directory', async (event, arg) => {
   const result = await dialog.showOpenDialog(win, {
     properties: ['openDirectory']
   })
+
+  // add directory to database
+  await Directory.create({
+    name: result.filePaths[0].split('/').pop(),
+    path: result.filePaths[0]
+  })
+
+  // look at all files in directory; add to database
+  const files = await fs.readdir(result.filePaths[0])
+  for (const file of files) {
+    await File.create({
+      name: file,
+      path: `${result.filePaths[0]}/${file}`
+    })
+  }
+
 
   event.reply('selected-directory', result.filePaths)
 })
@@ -147,13 +164,18 @@ ipcMain.on('select-file', async (event, arg) => {
   })
 
   const file : File = await File.create({
-    name: result.filePaths[0].split('\\').pop(),
+    name: result.filePaths[0].split('/').pop(),
     path: result.filePaths[0]
   })
+  
   event.reply('selected-file', file)
 })
 
 ipcMain.on('list-files', async (event, arg) => {
   const files : File[] = await File.findAll()
   event.reply('listed-files', files)
+})
+
+ipcMain.on('open-file', async (event, arg) => {
+  shell.openPath(arg)
 })

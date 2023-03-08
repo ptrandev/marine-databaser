@@ -4,6 +4,7 @@ import FileTag from "./FileTag";
 import Album from "./Album";
 import FileAlbum from "./FileAlbum";
 import FileNote from "./FileNote";
+import Directory from "./Directory";
 
 export {
   File,
@@ -12,4 +13,5 @@ export {
   Album,
   FileAlbum,
   FileNote,
+  Directory,
 }

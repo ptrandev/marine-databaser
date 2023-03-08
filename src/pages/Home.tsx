@@ -2,7 +2,7 @@ import { Button } from "@mui/material"
 import { useState, useEffect } from "react"
 const { ipcRenderer } = window.require('electron')
 
-import { FileList } from '../components/Home'
+import { FileList } from '@/components/Home'
 
 console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}!`)
 
@@ -28,7 +28,15 @@ const Home = () => {
           loadFiles()
         })
       }}>
-        hello
+        Add File
+      </Button>
+      <Button variant='contained' onClick={() => {
+        ipcRenderer.send('select-directory')
+        ipcRenderer.on('selected-directory', () => {
+          loadFiles()
+        })
+      }}>
+        Add Directory
       </Button>
       <FileList files={files} />
     </div>
