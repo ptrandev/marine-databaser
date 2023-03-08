@@ -16,7 +16,8 @@
     "build": "tsc && vite build && electron-builder",
     "preview": "vite preview",
     "pree2e": "vite build --mode=test",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "postinstall": "install-app-deps"
   },
   "devDependencies": {
     "@playwright/test": "^1.31.0",
@@ -36,5 +37,9 @@
   },
   "engines": {
     "node": "^14.18.0 || >=16.0.0"
+  },
+  "dependencies": {
+    "sequelize": "^6.29.1",
+    "sqlite3": "^5.1.4"
   }
 }

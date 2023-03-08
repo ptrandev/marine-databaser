@@ -1,6 +1,7 @@
 import nodeLogo from "./assets/node.svg"
 import { useState } from 'react'
 import './App.scss'
+const { ipcRenderer } = window.require('electron')
 
 console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}!`)
 
@@ -18,6 +19,14 @@ function App() {
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
+        </button>
+        <button onClick={() => {
+          ipcRenderer.send('select-file')
+          ipcRenderer.on('selected-file', (event, files) => {
+            console.log('files', files)
+          })
+        }}>
+          hello
         </button>
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
