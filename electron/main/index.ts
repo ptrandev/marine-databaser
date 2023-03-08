@@ -131,20 +131,12 @@ sequelize
     console.error("Unable to connect to the database:", err);
   });
 
-ipcMain.on("anything-asynchronous", (event, arg) => {
-  // gets triggered by the async button defined in the App component
-  console.log("async", arg); // prints "async ping"
-  event.reply("asynchronous-reply", "pong");
-});
-
 import { dialog } from "electron"
-import { Sequelize } from "sequelize";
 
 ipcMain.on('select-directory', async (event, arg) => {
   const result = await dialog.showOpenDialog(win, {
     properties: ['openDirectory']
   })
-
 
   event.reply('selected-directory', result.filePaths)
 })
@@ -154,14 +146,14 @@ ipcMain.on('select-file', async (event, arg) => {
     properties: ['openFile']
   })
 
-  await File.create({
+  const file : File = await File.create({
     name: result.filePaths[0].split('\\').pop(),
     path: result.filePaths[0]
   })
+  event.reply('selected-file', file)
+})
 
-  const files = await File.findAll()
-
-  console.log(files)
-
-  event.reply('selected-file', files)
+ipcMain.on('list-files', async (event, arg) => {
+  const files : File[] = await File.findAll()
+  event.reply('listed-files', files)
 })

@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './pages/App'
+import Home from './pages/Home'
 import './samples/node-api'
 
 import '@fontsource/roboto/300.css';
@@ -15,7 +15,7 @@ import { createHashRouter, RouterProvider } from 'react-router-dom'
 const router = createHashRouter([
   {
     path: '/',
-    element: <App/>,
+    element: <Home />,
   }
 ])
 
