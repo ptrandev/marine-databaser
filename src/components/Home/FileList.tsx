@@ -1,7 +1,14 @@
+import { FC } from "react"
 import { Typography, Button } from "@mui/material"
 const { ipcRenderer } = window.require('electron')
 
-const FileList = ({ files }: { files: any }) => {
+import { File } from "../../../electron/database/schemas"
+
+interface FileListProps {
+  files: File[]
+}
+
+const FileList : FC<FileListProps> = ({ files }) => {
   return (
     <div>
       <Typography variant='h3'>

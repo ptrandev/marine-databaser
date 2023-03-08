@@ -3,13 +3,16 @@ import Directories from './pages/Directories'
 import Navbar from './components/Navbar'
 
 import { createHashRouter, Outlet } from 'react-router-dom'
+import { Box } from '@mui/system'
 
 const NavbarWrapper = () => {
   return (
-    <div>
+    <Box>
       <Navbar />
-      <Outlet />
-    </div>
+      <Box pt={2} px={4}>
+        <Outlet />
+      </Box>
+    </Box>
   )
 }
 

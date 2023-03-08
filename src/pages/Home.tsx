@@ -4,10 +4,12 @@ const { ipcRenderer } = window.require('electron')
 
 import { FileList } from '@/components/Home'
 
+import { File } from "../../electron/database/schemas"
+
 console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}!`)
 
 const Home = () => {
-  const [files, setFiles] = useState()
+  const [files, setFiles] = useState<File[]>()
 
   const loadFiles = () => {
     ipcRenderer.send('list-files')
@@ -38,7 +40,9 @@ const Home = () => {
       }}>
         Add Directory
       </Button>
-      <FileList files={files} />
+      {
+        files && <FileList files={files} />
+      }
     </div>
   )
 }
