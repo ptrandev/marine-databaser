@@ -5,11 +5,15 @@ const { ipcRenderer } = window.require('electron')
 import { FileList } from '@/components/Home'
 
 import { File } from "../../electron/database/schemas"
+import FileSearch from "@/components/Home/FileSearch"
 
 console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}!`)
 
 const Home = () => {
   const [files, setFiles] = useState<File[]>()
+  const [searchFiles, setSearchFiles] = useState<File[]>()
+
+  const [searchTerm, setSearchTerm] = useState<string>('')
 
   const loadFiles = () => {
     ipcRenderer.send('list-files')
@@ -22,26 +26,20 @@ const Home = () => {
     loadFiles()
   }, [])
 
+  useEffect(() => {
+    if (searchTerm) {
+      const searchFiles = files?.filter(file => file.dataValues.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      setSearchFiles(searchFiles)
+    } else {
+      setSearchFiles(files)
+    }
+  }, [files, searchTerm])
+
   return (
     <div>
-      <Button variant='contained' onClick={() => {
-        ipcRenderer.send('select-file')
-        ipcRenderer.on('selected-file', () => {
-          loadFiles()
-        })
-      }}>
-        Add File
-      </Button>
-      <Button variant='contained' onClick={() => {
-        ipcRenderer.send('select-directory')
-        ipcRenderer.on('selected-directory', () => {
-          loadFiles()
-        })
-      }}>
-        Add Directory
-      </Button>
+      <FileSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       {
-        files && <FileList files={files} />
+        searchFiles && <FileList files={searchFiles} />
       }
     </div>
   )

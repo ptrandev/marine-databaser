@@ -28,6 +28,7 @@ const DirectoryList: FC<DirectoryListProps> = ({ directories, loadDirectories })
             <IconButton
               aria-label='delete'
               size='large'
+              color='error'
               onClick={(e) => {
                 e.stopPropagation()
                 ipcRenderer.send('delete-directory', directory.dataValues.id)
