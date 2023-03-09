@@ -3,6 +3,8 @@ import sequelize from "../initialize";
 
 import { Model, InferAttributes, InferCreationAttributes, DataTypes } from 'sequelize';
 
+import File from "./File";
+
 class Directory extends Model<InferAttributes<Directory>, InferCreationAttributes<Directory>> {
   id: number;
   name: string;
@@ -30,5 +32,7 @@ Directory.init({
 }, {
   sequelize,
 });
+
+Directory.hasMany(File);
 
 export default Directory;

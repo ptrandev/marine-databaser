@@ -188,3 +188,11 @@ ipcMain.on('list-directories', async (event, arg) => {
 ipcMain.on('open-directory', async (event, arg) => {
   shell.openPath(arg)
 })
+
+ipcMain.on('delete-directory', async (event, arg) => {
+  await Directory.destroy({
+    where: {
+      id: arg
+    }
+  })
+})
