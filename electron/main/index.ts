@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import sequelize from "../database/initialize";
 import { Directory, File } from "../database/schemas";
+import '../database/associations';
 
 // The built directory structure
 //
@@ -140,7 +141,7 @@ ipcMain.on('select-directory', async (event, arg) => {
   })
 
   // add directory to database
-  await Directory.create({
+  const directory = await Directory.create({
     name: result.filePaths[0].split('/').pop(),
     path: result.filePaths[0]
   })
@@ -150,7 +151,8 @@ ipcMain.on('select-directory', async (event, arg) => {
   for (const file of files) {
     await File.create({
       name: file,
-      path: `${result.filePaths[0]}/${file}`
+      path: `${result.filePaths[0]}/${file}`,
+      directory_id: directory.id
     })
   }
 
@@ -195,4 +197,13 @@ ipcMain.on('delete-directory', async (event, arg) => {
       id: arg
     }
   })
+
+  // remove all files associated with directory
+  await File.destroy({
+    where: {
+      directory_id: arg
+    }
+  })
+
+  event.reply('deleted-directory', arg)
 })

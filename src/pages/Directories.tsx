@@ -27,12 +27,20 @@ const Directories = () => {
         <Typography variant='h4' mr={2}>
           Directories
         </Typography>
-        <Button variant='contained' startIcon={<Add/>}>
+        <Button variant='contained' startIcon={<Add/>}
+          onClick={() => {
+            ipcRenderer.send('select-directory')
+            ipcRenderer.on('selected-directory', () => {
+              loadDirectories()
+            })
+          }}
+        >
           Add New Directory
         </Button>
       </Box>
       {
-        directories && <DirectoryList directories={directories} />
+        directories && 
+        <DirectoryList directories={directories} loadDirectories={loadDirectories} />
       }
     </Box>
   )

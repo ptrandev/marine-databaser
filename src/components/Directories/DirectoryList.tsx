@@ -7,9 +7,10 @@ import { Directory } from "../../../electron/database/schemas"
 
 interface DirectoryListProps {
   directories: Directory[]
+  loadDirectories: () => void
 }
 
-const DirectoryList: FC<DirectoryListProps> = ({ directories }) => {
+const DirectoryList: FC<DirectoryListProps> = ({ directories, loadDirectories }) => {
   return (
     <List>
       {
@@ -17,7 +18,7 @@ const DirectoryList: FC<DirectoryListProps> = ({ directories }) => {
           <ListItemButton
             key={directory.dataValues.id}
             onClick={() => {
-            ipcRenderer.send('open-directory', directory.dataValues.path)
+              ipcRenderer.send('open-directory', directory.dataValues.path)
             }}
           >
             <ListItemText
@@ -27,11 +28,15 @@ const DirectoryList: FC<DirectoryListProps> = ({ directories }) => {
             <IconButton
               aria-label='delete'
               size='large'
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation()
                 ipcRenderer.send('delete-directory', directory.dataValues.id)
+                ipcRenderer.on('deleted-directory', () => {
+                  loadDirectories()
+                })
               }}
             >
-              <Delete/>
+              <Delete />
             </IconButton>
           </ListItemButton>
         ))
