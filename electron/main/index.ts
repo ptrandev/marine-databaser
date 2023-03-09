@@ -6,6 +6,8 @@ import sequelize from "../database/initialize";
 import { Directory, File } from "../database/schemas";
 import '../database/associations';
 
+import path from "path";
+
 // The built directory structure
 //
 // ├─┬ dist-electron
@@ -135,6 +137,21 @@ sequelize
 import { dialog } from "electron"
 const fs = require('fs').promises
 
+const getFileList = async (directory) => {
+  let files = []
+  const items = await fs.readdir(directory, { withFileTypes: true })
+
+  for (const item of items) {
+    if (item.isDirectory()) {
+      files = files.concat(await getFileList(`${directory}/${item.name}`))
+    } else {
+      files.push(`${directory}/${item.name}`)
+    }
+  }
+
+  return files
+}
+
 ipcMain.on('select-directory', async (event, arg) => {
   const result = await dialog.showOpenDialog(win, {
     properties: ['openDirectory']
@@ -146,8 +163,9 @@ ipcMain.on('select-directory', async (event, arg) => {
     path: result.filePaths[0]
   })
 
-  // look at all files in directory; add to database
-  const files = await fs.readdir(result.filePaths[0])
+  // look at files in directory; make sure to crawl subdirectories
+  const files = await getFileList(result.filePaths[0])
+
   for (const file of files) {
     await File.create({
       name: file,
@@ -155,7 +173,6 @@ ipcMain.on('select-directory', async (event, arg) => {
       directory_id: directory.id
     })
   }
-
 
   event.reply('selected-directory', result.filePaths)
 })
