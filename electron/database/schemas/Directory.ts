@@ -4,6 +4,7 @@ import sequelize from "../initialize";
 import { Model, InferAttributes, InferCreationAttributes, DataTypes } from 'sequelize';
 
 class Directory extends Model<InferAttributes<Directory>, InferCreationAttributes<Directory>> {
+  id: number;
   name: string;
   path: string;
   createdAt: Date;
@@ -11,6 +12,11 @@ class Directory extends Model<InferAttributes<Directory>, InferCreationAttribute
 }
 
 Directory.init({
+  id: {
+    type: Sequelize.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
   name: {
     type: Sequelize.STRING,
     allowNull: false,

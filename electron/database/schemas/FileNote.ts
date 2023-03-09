@@ -6,6 +6,7 @@ import { Model, InferAttributes, InferCreationAttributes, DataTypes } from 'sequ
 import File from "./File";
 
 class FileNote extends Model<InferAttributes<FileNote>, InferCreationAttributes<FileNote>> {
+  id: number;
   file_id: number;
   note: string;
   createdAt: Date;
@@ -13,6 +14,11 @@ class FileNote extends Model<InferAttributes<FileNote>, InferCreationAttributes<
 }
 
 FileNote.init({
+  id: {
+    type: Sequelize.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
   file_id: {
     type: Sequelize.INTEGER,
     allowNull: false,

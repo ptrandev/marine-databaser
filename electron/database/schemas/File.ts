@@ -4,6 +4,7 @@ import sequelize from "../initialize";
 import { Model, InferAttributes, InferCreationAttributes, DataTypes } from 'sequelize';
 
 class File extends Model<InferAttributes<File>, InferCreationAttributes<File>> {
+  id: number;
   name: string;
   path: string;
   createdAt: Date;
@@ -11,6 +12,11 @@ class File extends Model<InferAttributes<File>, InferCreationAttributes<File>> {
 }
 
 File.init({
+  id: {
+    type: Sequelize.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
   name: {
     type: Sequelize.STRING,
     allowNull: false,

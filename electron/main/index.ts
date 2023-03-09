@@ -184,3 +184,7 @@ ipcMain.on('list-directories', async (event, arg) => {
   const directories : Directory[] = await Directory.findAll()
   event.reply('listed-directories', directories)
 })
+
+ipcMain.on('open-directory', async (event, arg) => {
+  shell.openPath(arg)
+})
