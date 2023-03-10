@@ -72,7 +72,7 @@ const Home = () => {
   return (
     <Box height='100%'>
       <FileSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-      <FileFilters selectedDirectories={selectedDirectories} setSelectedDirectories={setSelectedDirectories} />
+      <FileFilters setSelectedDirectories={setSelectedDirectories} />
       {
         !isLoading && searchFiles && (
           <>

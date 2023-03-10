@@ -5,11 +5,10 @@ import { FC, useEffect, useState } from 'react'
 import { ipcRenderer } from 'electron'
 
 interface FileFiltersProps {
-  selectedDirectories: Directory[]
   setSelectedDirectories: (directories: Directory[]) => void
 }
 
-const FileFilters : FC<FileFiltersProps> = ({ selectedDirectories, setSelectedDirectories }) => {
+const FileFilters : FC<FileFiltersProps> = ({ setSelectedDirectories }) => {
 
   const [directories, setDirectories] = useState<Directory[]>([])
 
