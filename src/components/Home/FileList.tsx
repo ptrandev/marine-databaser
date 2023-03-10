@@ -3,6 +3,7 @@ import { Typography, Button, List, ListItemButton, ListItemText } from "@mui/mat
 const { ipcRenderer } = window.require('electron')
 
 import { File } from "../../../electron/database/schemas"
+import { Virtuoso } from "react-virtuoso"
 
 interface FileListProps {
   files: File[]
@@ -11,8 +12,10 @@ interface FileListProps {
 const FileList: FC<FileListProps> = ({ files }) => {
   return (
     <List>
-      {
-        files?.map((file: any) => (
+      <Virtuoso
+        style={{ height: 400 }}
+        data={files}
+        itemContent={(_, file) => (
           <ListItemButton
             key={file.dataValues.id}
             onClick={() => {
@@ -28,8 +31,8 @@ const FileList: FC<FileListProps> = ({ files }) => {
               secondary={file.dataValues.path}
             />
           </ListItemButton>
-        ))
-      }
+        )}
+      />
     </List>
   )
 }

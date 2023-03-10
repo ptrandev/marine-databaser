@@ -1,4 +1,4 @@
-import { Button } from "@mui/material"
+import { Box, Button, CircularProgress, Typography } from "@mui/material"
 import { useState, useEffect } from "react"
 const { ipcRenderer } = window.require('electron')
 
@@ -6,6 +6,11 @@ import { FileList } from '@/components/Home'
 
 import { File } from "../../electron/database/schemas"
 import FileSearch from "@/components/Home/FileSearch"
+import FileFilters from "@/components/Home/FileFilters"
+
+import Fuse from 'fuse.js'
+
+import { useEffectDebounced } from '@/hooks/useEffectDebounced'
 
 console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}!`)
 
@@ -14,11 +19,15 @@ const Home = () => {
   const [searchFiles, setSearchFiles] = useState<File[]>()
 
   const [searchTerm, setSearchTerm] = useState<string>('')
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   const loadFiles = () => {
+    setIsLoading(true)
+
     ipcRenderer.send('list-files')
     ipcRenderer.on('listed-files', (_, files) => {
       setFiles(files)
+      setIsLoading(false)
     })
   }
 
@@ -26,22 +35,56 @@ const Home = () => {
     loadFiles()
   }, [])
 
-  useEffect(() => {
-    if (searchTerm) {
-      const searchFiles = files?.filter(file => file.dataValues.name.toLowerCase().includes(searchTerm.toLowerCase()))
-      setSearchFiles(searchFiles)
-    } else {
+  useEffectDebounced(() => {
+    if (!files) return
+
+    if (!searchTerm) {
       setSearchFiles(files)
+      return
     }
-  }, [files, searchTerm])
+
+    setIsLoading(true)
+
+    const options = {
+      ignoreLocation: true,
+      keys: ['dataValues.name', 'dataValues.path']
+    }
+
+    const fuse = new Fuse(files, options)
+
+    const results = fuse
+      .search(searchTerm)
+      .map(result => result.item)
+
+    setSearchFiles(results)
+    setIsLoading(false)
+  }, [files, searchTerm], 500)
 
   return (
-    <div>
+    <Box height='100%'>
       <FileSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      <FileFilters />
       {
-        searchFiles && <FileList files={searchFiles} />
+        !isLoading && searchFiles && (
+          <>
+            <Typography mt={2}>
+              <span style={{ fontWeight: 'bold' }}>{searchFiles.length}</span> files found
+            </Typography>
+            <FileList files={searchFiles} />
+          </>
+        )
       }
-    </div>
+      {
+        isLoading && (
+          <Box display='flex' flexDirection='column' mt={4} alignItems='center' justifyContent='center' width='100%' gap={2}>
+            <CircularProgress />
+            <Typography>
+              Loading files...
+            </Typography>
+          </Box>
+        )
+      }
+    </Box>
   )
 }
 
