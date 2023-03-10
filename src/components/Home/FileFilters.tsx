@@ -1,5 +1,5 @@
 import { Box, Autocomplete, TextField } from '@mui/material'
-import { Directory } from 'electron/database/schemas'
+import { Directory, Tag } from 'electron/database/schemas'
 import { FC, useEffect, useState } from 'react'
 
 import { ipcRenderer } from 'electron'
@@ -9,8 +9,8 @@ interface FileFiltersProps {
 }
 
 const FileFilters : FC<FileFiltersProps> = ({ setSelectedDirectories }) => {
-
   const [directories, setDirectories] = useState<Directory[]>([])
+  const [tags, setTags] = useState<Tag[]>([])
 
   const loadDirectories = () => {
     ipcRenderer.send('list-directories')
@@ -19,8 +19,16 @@ const FileFilters : FC<FileFiltersProps> = ({ setSelectedDirectories }) => {
     })
   }
 
+  const loadTags = () => {
+    ipcRenderer.send('list-tags')
+    ipcRenderer.on('listed-tags', (_, tags) => {
+      setTags(tags)
+    })
+  }
+
   useEffect(() => {
     loadDirectories()
+    loadTags()
   }, [])
 
   return (

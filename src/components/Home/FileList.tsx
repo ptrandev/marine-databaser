@@ -1,9 +1,10 @@
 import { FC } from "react"
-import { Typography, Button, List, ListItemButton, ListItemText } from "@mui/material"
-const { ipcRenderer } = window.require('electron')
+import { List, ListItemButton, ListItemText, IconButton } from "@mui/material"
+import { ipcRenderer } from "electron"
 
 import { File } from "../../../electron/database/schemas"
 import { Virtuoso } from "react-virtuoso"
+import { Tag } from "@mui/icons-material"
 
 interface FileListProps {
   files: File[]
@@ -30,6 +31,9 @@ const FileList: FC<FileListProps> = ({ files }) => {
               primary={file.dataValues.name}
               secondary={file.dataValues.path}
             />
+            <IconButton>
+              <Tag/>
+            </IconButton>
           </ListItemButton>
         )}
       />

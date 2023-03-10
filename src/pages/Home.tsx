@@ -5,7 +5,7 @@ const { ipcRenderer } = window.require('electron')
 
 import { FileList } from '@/components/Home'
 
-import { Directory, File } from "../../electron/database/schemas"
+import { Directory, File, Tag } from "../../electron/database/schemas"
 import FileSearch from "@/components/Home/FileSearch"
 import FileFilters from "@/components/Home/FileFilters"
 
@@ -23,13 +23,15 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   
   const [selectedDirectories, setSelectedDirectories] = useState<Directory[]>([])
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([])
 
   const loadFiles = () => {
     setIsLoading(true)
 
     const directories = selectedDirectories?.map(directory => directory.dataValues.id) ?? []
+    const tags = selectedTags?.map(tag => tag.dataValues.id) ?? []
 
-    ipcRenderer.send('list-files', { directories })
+    ipcRenderer.send('list-files', { directories, tags })
     ipcRenderer.on('listed-files', (_, files) => {
       setFiles(files)
       setIsLoading(false)

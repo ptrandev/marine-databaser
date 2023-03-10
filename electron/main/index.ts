@@ -3,7 +3,7 @@ import { release } from "node:os";
 import { join } from "node:path";
 
 import sequelize from "../database/initialize";
-import { Directory, File } from "../database/schemas";
+import { Directory, File, Tag } from "../database/schemas";
 import '../database/associations';
 
 import path from "path";
@@ -191,19 +191,27 @@ ipcMain.on('select-file', async (event, arg) => {
 })
 
 ipcMain.on('list-files', async (event, arg) => {
-  const { directories } = arg
+  const { directories, tags } = arg
 
-  if (directories.length === 0) {
-    const files : File[] = await File.findAll()
-    event.reply('listed-files', files)
-    return
+  const options = {
+    where: {},
+    include: []
   }
-  
-  const files : File[] = await File.findAll({
-    where: {
-      directory_id: directories
-    }
-  })
+
+  if (directories.length > 0) {
+    options.where['directory_id'] = directories
+  }
+
+  if (tags.length > 0) {
+    options.include = [{
+      model: Tag,
+      where: {
+        name: tags
+      }
+    }]
+  }
+
+  const files : File[] = await File.findAll(options)
 
   event.reply('listed-files', files)
 })
@@ -236,4 +244,29 @@ ipcMain.on('delete-directory', async (event, arg) => {
   })
 
   event.reply('deleted-directory', arg)
+})
+
+ipcMain.on('list-tags', async (event, arg) => {
+  const tags : Tag[] = await Tag.findAll()
+  event.reply('listed-tags', tags)
+})
+
+ipcMain.on('create-tag', async (event, arg) => {
+  const existingTag : Tag | null = await Tag.findOne({
+    where: {
+      name: arg
+    }
+  })
+
+  // tag already exists, so just return it
+  if (existingTag) {
+    event.reply('created-tag', existingTag)
+    return
+  }
+
+  const tag : Tag = await Tag.create({
+    name: arg
+  })
+
+  event.reply('created-tag', tag)
 })
