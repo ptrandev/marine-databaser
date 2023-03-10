@@ -1,43 +1,71 @@
-import { FC } from "react"
-import { List, ListItemButton, ListItemText, IconButton } from "@mui/material"
+import { FC, useState, useEffect } from "react"
+import { List, ListItemButton, ListItemText, IconButton, Box } from "@mui/material"
 import { ipcRenderer } from "electron"
 
 import { File } from "../../../electron/database/schemas"
 import { Virtuoso } from "react-virtuoso"
-import { Tag } from "@mui/icons-material"
+import { Sell } from "@mui/icons-material"
+import FileTagModal from "./FileTagModal"
 
 interface FileListProps {
   files: File[]
 }
 
 const FileList: FC<FileListProps> = ({ files }) => {
+  const [fileTagFile, setFileTagFile] = useState<File>()
+
+  const handleFileTagModalClose = () => {
+    setFileTagFile(undefined)
+  }
+
+  useEffect(() => {
+    console.log(files[0])
+  }, [])
+  
   return (
-    <List>
-      <Virtuoso
-        style={{ height: 400 }}
-        data={files}
-        itemContent={(_, file) => (
-          <ListItemButton
-            key={file.dataValues.id}
-            onClick={() => {
-              ipcRenderer.send('open-file', file.dataValues.path)
-            }}
-            sx={{
-              pointerEvents: 'pointer',
-              gap: 1,
-            }}
-          >
-            <ListItemText
-              primary={file.dataValues.name}
-              secondary={file.dataValues.path}
-            />
-            <IconButton>
-              <Tag/>
-            </IconButton>
-          </ListItemButton>
-        )}
-      />
-    </List>
+    <>
+      <List>
+        <Virtuoso
+          style={{ height: 400 }}
+          data={files}
+          itemContent={(_, file) => (
+            <ListItemButton
+              key={file.id}
+              onClick={() => {
+                ipcRenderer.send('open-file', file.path)
+              }}
+              sx={{
+                pointerEvents: 'pointer',
+                gap: 1,
+              }}
+            >
+              <Box>
+                <ListItemText
+                  primary={file.name}
+                  secondary={file.path}
+                />
+              </Box>
+              <IconButton
+                aria-label='tags'
+                size='large'
+                color='primary'
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setFileTagFile(file)
+                }}
+              >
+                <Sell />
+              </IconButton>
+            </ListItemButton>
+          )}
+        />
+      </List>
+      {
+        fileTagFile && (
+          <FileTagModal open={!!fileTagFile} handleClose={handleFileTagModalClose} file={fileTagFile} />
+        )
+      }
+    </>
   )
 }
 

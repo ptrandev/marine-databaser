@@ -9,7 +9,7 @@ class FileAlbum extends Model<InferAttributes<FileAlbum>, InferCreationAttribute
 
 FileAlbum.init({}, { sequelize })
 
-File.belongsToMany(Album, { through: FileAlbum });
-Album.belongsToMany(File, { through: FileAlbum });
+File.belongsToMany(Album, { through: FileAlbum, foreignKey: "file_id" });
+Album.belongsToMany(File, { through: FileAlbum, foreignKey: "album_id" });
 
 export default FileAlbum;

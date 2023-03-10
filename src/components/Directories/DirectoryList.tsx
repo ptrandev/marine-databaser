@@ -16,14 +16,14 @@ const DirectoryList: FC<DirectoryListProps> = ({ directories, loadDirectories })
       {
         directories?.map((directory: any) => (
           <ListItemButton
-            key={directory.dataValues.id}
+            key={directory.id}
             onClick={() => {
-              ipcRenderer.send('open-directory', directory.dataValues.path)
+              ipcRenderer.send('open-directory', directory.path)
             }}
           >
             <ListItemText
-              primary={directory.dataValues.name}
-              secondary={directory.dataValues.path}
+              primary={directory.name}
+              secondary={directory.path}
             />
             <IconButton
               aria-label='delete'
@@ -31,7 +31,7 @@ const DirectoryList: FC<DirectoryListProps> = ({ directories, loadDirectories })
               color='error'
               onClick={(e) => {
                 e.stopPropagation()
-                ipcRenderer.send('delete-directory', directory.dataValues.id)
+                ipcRenderer.send('delete-directory', directory.id)
                 ipcRenderer.on('deleted-directory', () => {
                   loadDirectories()
                 })

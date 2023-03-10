@@ -38,14 +38,14 @@ const FileFilters : FC<FileFiltersProps> = ({ setSelectedDirectories }) => {
         filterSelectedOptions
         options={directories ?? []}
         onChange={(_, value) => setSelectedDirectories(value)}
-        getOptionLabel={(option) => option.dataValues.name}
+        getOptionLabel={(option) => option.name}
         renderInput={(params) => (
           <TextField
             {...params}
             label="Directories"
           />
         )}
-        isOptionEqualToValue={(option, value) => option.dataValues.id === value.dataValues.id}
+        isOptionEqualToValue={(option, value) => option.id === value.id}
       />
     </Box>
   )
