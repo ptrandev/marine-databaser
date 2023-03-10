@@ -1,10 +1,11 @@
+
 import { Box, Button, CircularProgress, Typography } from "@mui/material"
 import { useState, useEffect } from "react"
 const { ipcRenderer } = window.require('electron')
 
 import { FileList } from '@/components/Home'
 
-import { File } from "../../electron/database/schemas"
+import { Directory, File } from "../../electron/database/schemas"
 import FileSearch from "@/components/Home/FileSearch"
 import FileFilters from "@/components/Home/FileFilters"
 
@@ -16,15 +17,19 @@ console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}
 
 const Home = () => {
   const [files, setFiles] = useState<File[]>()
-  const [searchFiles, setSearchFiles] = useState<File[]>()
+  const [searchFiles, setSearchFiles] = useState<File[]>([])
 
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(true)
+  
+  const [selectedDirectories, setSelectedDirectories] = useState<Directory[]>([])
 
   const loadFiles = () => {
     setIsLoading(true)
 
-    ipcRenderer.send('list-files')
+    const directories = selectedDirectories?.map(directory => directory.dataValues.id) ?? []
+
+    ipcRenderer.send('list-files', { directories })
     ipcRenderer.on('listed-files', (_, files) => {
       setFiles(files)
       setIsLoading(false)
@@ -60,10 +65,14 @@ const Home = () => {
     setIsLoading(false)
   }, [files, searchTerm], 500)
 
+  useEffect(() => {
+    loadFiles()
+  }, [selectedDirectories])
+
   return (
     <Box height='100%'>
       <FileSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-      <FileFilters />
+      <FileFilters selectedDirectories={selectedDirectories} setSelectedDirectories={setSelectedDirectories} />
       {
         !isLoading && searchFiles && (
           <>

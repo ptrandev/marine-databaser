@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react"
 import { DirectoryList } from "@/components/Directories"
 import { Add } from "@mui/icons-material"
-import { Typography, Button, Box } from "@mui/material"
+import { Typography, Button, Box, LinearProgress } from "@mui/material"
 
 import { Directory } from "../../electron/database/schemas"
 import { ipcRenderer } from 'electron'
 
 const Directories = () => {
   const [directories, setDirectories] = useState<Directory[]>()
+  const [initializingDirectory, setInitializingDirectory] = useState<boolean>(false)
 
   const loadDirectories = () => {
     ipcRenderer.send('list-directories')
@@ -27,11 +28,17 @@ const Directories = () => {
         <Typography variant='h4' mr={2}>
           Directories
         </Typography>
-        <Button variant='contained' startIcon={<Add/>}
+        <Button variant='contained' startIcon={<Add />}
           onClick={() => {
             ipcRenderer.send('select-directory')
+
             ipcRenderer.on('selected-directory', () => {
+              setInitializingDirectory(true)
+            })
+
+            ipcRenderer.on('initialized-directory', () => {
               loadDirectories()
+              setInitializingDirectory(false)
             })
           }}
         >
@@ -39,7 +46,17 @@ const Directories = () => {
         </Button>
       </Box>
       {
-        directories && 
+        initializingDirectory && (
+          <Box width='100%'>
+            <Typography mb={1}>
+              Initializing new directory...
+            </Typography>
+            <LinearProgress />
+          </Box>
+        )
+      }
+      {
+        directories &&
         <DirectoryList directories={directories} loadDirectories={loadDirectories} />
       }
     </Box>

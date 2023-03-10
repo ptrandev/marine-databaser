@@ -157,6 +157,8 @@ ipcMain.on('select-directory', async (event, arg) => {
     properties: ['openDirectory']
   })
 
+  event.reply('selected-directory', result.filePaths)
+
   // add directory to database
   const directory = await Directory.create({
     name: result.filePaths[0].split('/').pop(),
@@ -166,15 +168,13 @@ ipcMain.on('select-directory', async (event, arg) => {
   // look at files in directory; make sure to crawl subdirectories
   const files = await getFileList(result.filePaths[0])
 
-  for (const file of files) {
-    await File.create({
-      name: file,
-      path: `${result.filePaths[0]}/${file}`,
-      directory_id: directory.id
-    })
-  }
+  await File.bulkCreate(files.map(file => ({
+    name: file.split('/').pop(),
+    path: file,
+    directory_id: directory.id
+  })))
 
-  event.reply('selected-directory', result.filePaths)
+  event.reply('initialized-directory')
 })
 
 ipcMain.on('select-file', async (event, arg) => {
@@ -191,7 +191,20 @@ ipcMain.on('select-file', async (event, arg) => {
 })
 
 ipcMain.on('list-files', async (event, arg) => {
-  const files : File[] = await File.findAll()
+  const { directories } = arg
+
+  if (directories.length === 0) {
+    const files : File[] = await File.findAll()
+    event.reply('listed-files', files)
+    return
+  }
+  
+  const files : File[] = await File.findAll({
+    where: {
+      directory_id: directories
+    }
+  })
+
   event.reply('listed-files', files)
 })
 
