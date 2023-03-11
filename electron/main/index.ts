@@ -156,9 +156,14 @@ const getFileList = async (directory) => {
 ipcMain.on("select-directory", async (event) => {
   const result = await dialog.showOpenDialog(win, {
     properties: ["openDirectory"],
-  });
+  })
 
   event.reply("selected-directory", result.filePaths);
+
+  if (result.filePaths.length === 0) {
+    event.reply("no-directory-selected");
+    return;
+  }
 
   // add directory to database
   const directory = await Directory.create({

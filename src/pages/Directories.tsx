@@ -36,6 +36,10 @@ const Directories = () => {
               setInitializingDirectory(true)
             })
 
+            ipcRenderer.on('no-directory-selected', () => {
+              setInitializingDirectory(false)
+            })
+
             ipcRenderer.on('initialized-directory', () => {
               loadDirectories()
               setInitializingDirectory(false)
