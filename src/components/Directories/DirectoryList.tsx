@@ -18,7 +18,7 @@ const DirectoryList: FC<DirectoryListProps> = ({ directories, loadDirectories })
           <ListItemButton
             key={directory.id}
             onClick={() => {
-              ipcRenderer.send('open-directory', directory.path)
+              ipcRenderer.send('open-directory', { path: directory.path })
             }}
           >
             <ListItemText
@@ -31,7 +31,7 @@ const DirectoryList: FC<DirectoryListProps> = ({ directories, loadDirectories })
               color='error'
               onClick={(e) => {
                 e.stopPropagation()
-                ipcRenderer.send('delete-directory', directory.id)
+                ipcRenderer.send('delete-directory', { directory_id: directory.id })
                 ipcRenderer.on('deleted-directory', () => {
                   loadDirectories()
                 })

@@ -30,20 +30,15 @@ const Home = () => {
   const loadFiles = () => {
     setIsLoading(true)
 
-    const directories = selectedDirectories?.map(directory => directory.id) ?? []
-    const tags = selectedTags?.map(tag => tag.id) ?? []
+    const directories : number[] = selectedDirectories?.map(directory => directory.id) ?? []
+    const tags : number[] = selectedTags?.map(tag => tag.id) ?? []
 
     ipcRenderer.send('list-files', { directories, tags })
     ipcRenderer.on('listed-files', (_, files) => {
       setFiles(files)
       setIsLoading(false)
-      console.log(files)
     })
   }
-
-  useEffect(() => {
-    loadFiles()
-  }, [])
 
   useEffectDebounced(() => {
     if (!files) return

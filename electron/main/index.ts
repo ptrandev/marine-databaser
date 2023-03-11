@@ -153,7 +153,7 @@ const getFileList = async (directory) => {
   return files;
 };
 
-ipcMain.on("select-directory", async (event, arg) => {
+ipcMain.on("select-directory", async (event) => {
   const result = await dialog.showOpenDialog(win, {
     properties: ["openDirectory"],
   });
@@ -180,7 +180,7 @@ ipcMain.on("select-directory", async (event, arg) => {
   event.reply("initialized-directory");
 });
 
-ipcMain.on("select-file", async (event, arg) => {
+ipcMain.on("select-file", async (event) => {
   const result = await dialog.showOpenDialog(win, {
     properties: ["openFile"],
   });
@@ -227,37 +227,40 @@ ipcMain.on("list-files", async (event, arg) => {
   event.reply("listed-files", files);
 });
 
-ipcMain.on("open-file", async (event, arg) => {
+ipcMain.on("open-file", async (_, arg) => {
   shell.openPath(arg);
 });
 
-ipcMain.on("list-directories", async (event, arg) => {
+ipcMain.on("list-directories", async (event) => {
   const directories: Directory[] = await Directory.findAll().then(dictionaries => dictionaries.map(dictionary => dictionary.toJSON()));
   event.reply("listed-directories", directories);
 });
 
-ipcMain.on("open-directory", async (event, arg) => {
-  shell.openPath(arg);
+ipcMain.on("open-directory", async (_, arg) => {
+  const { path } : { path : string } = arg
+  shell.openPath(path);
 });
 
 ipcMain.on("delete-directory", async (event, arg) => {
+  const { directory_id } : { directory_id : number } = arg;
+
   await Directory.destroy({
     where: {
-      id: arg,
+      id: directory_id,
     },
   });
 
   // remove all files associated with directory
   await File.destroy({
     where: {
-      directory_id: arg,
+      directory_id: directory_id,
     },
   });
 
   event.reply("deleted-directory", arg);
 });
 
-ipcMain.on("list-tags", async (event, arg) => {
+ipcMain.on("list-tags", async (event) => {
   const tags: Tag[] = await Tag.findAll().then(tags => tags.map(tag => tag.toJSON()));
   event.reply("listed-tags", tags);
 });
