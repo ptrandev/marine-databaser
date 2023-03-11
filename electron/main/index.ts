@@ -217,8 +217,7 @@ ipcMain.on("list-files", async (event, arg) => {
 
   const files: File[] = await File.findAll({
     include: Tag,
-    raw: true,
-  });
+  }).then(files => files.map(file => file.toJSON()));
 
   console.log(files)
 
@@ -230,7 +229,7 @@ ipcMain.on("open-file", async (event, arg) => {
 });
 
 ipcMain.on("list-directories", async (event, arg) => {
-  const directories: Directory[] = await Directory.findAll({ raw: true });
+  const directories: Directory[] = await Directory.findAll().then(dictionaries => dictionaries.map(dictionary => dictionary.toJSON()));
   event.reply("listed-directories", directories);
 });
 
@@ -256,7 +255,7 @@ ipcMain.on("delete-directory", async (event, arg) => {
 });
 
 ipcMain.on("list-tags", async (event, arg) => {
-  const tags: Tag[] = await Tag.findAll({ raw: true });
+  const tags: Tag[] = await Tag.findAll().then(tags => tags.map(tag => tag.toJSON()));
   event.reply("listed-tags", tags);
 });
 
@@ -268,9 +267,7 @@ const createTag = async (name) => {
   });
 
   // tag already exists, so just return it
-  if (existingTag) {
-    return existingTag;
-  }
+  if (existingTag) return existingTag;
 
   const tag: Tag = await Tag.create({
     name,

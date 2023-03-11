@@ -28,13 +28,14 @@ const Home = () => {
   const loadFiles = () => {
     setIsLoading(true)
 
-    const directories = selectedDirectories?.map(directory => directory.dataValues.id) ?? []
-    const tags = selectedTags?.map(tag => tag.dataValues.id) ?? []
+    const directories = selectedDirectories?.map(directory => directory.id) ?? []
+    const tags = selectedTags?.map(tag => tag.id) ?? []
 
     ipcRenderer.send('list-files', { directories, tags })
     ipcRenderer.on('listed-files', (_, files) => {
       setFiles(files)
       setIsLoading(false)
+      console.log(files)
     })
   }
 
