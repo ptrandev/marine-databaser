@@ -19,10 +19,6 @@ const FileList: FC<FileListProps> = ({ files }) => {
   const handleFileTagModalClose = () => {
     setFileTagFile(undefined)
   }
-
-  useEffect(() => {
-    console.log(files[0])
-  }, [])
   
   return (
     <>

@@ -135,6 +135,7 @@ sequelize
   });
 
 import { dialog } from "electron";
+import { FindOptions } from "sequelize";
 const fs = require("fs").promises;
 
 const getFileList = async (directory) => {
@@ -193,11 +194,16 @@ ipcMain.on("select-file", async (event, arg) => {
 });
 
 ipcMain.on("list-files", async (event, arg) => {
-  const { directories, tags } = arg;
+  const { directories, tags } : {
+    directories: number[],
+    tags: number[],
+  } = arg;
 
-  const options = {
+  const options : FindOptions = {
     where: {},
-    include: Tag,
+    include: {
+      model: Tag,
+    },
   };
 
   if (directories.length > 0) {
@@ -209,15 +215,14 @@ ipcMain.on("list-files", async (event, arg) => {
       {
         model: Tag,
         where: {
-          name: tags,
+          id: tags,
         },
       },
-    ] as any;
+    ];
   }
 
-  const files: File[] = await File.findAll({
-    include: Tag,
-  }).then(files => files.map(file => file.toJSON()));
+  const files: File[] = await File.findAll(options)
+  .then(files => files.map(file => file.toJSON()));
 
   event.reply("listed-files", files);
 });
@@ -275,9 +280,12 @@ const createTag = async (name) => {
 };
 
 ipcMain.on("tag-file", async (event, arg) => {
-  const { file, tag } = arg;
+  const { file, tag } : {
+    file: File,
+    tag: string,
+  } = arg;
 
-  const _tag = await createTag(tag);
+  const _tag : Tag = await createTag(tag);
 
   // check if file already has tag
   const _file: File | null = await File.findOne({
@@ -294,12 +302,10 @@ ipcMain.on("tag-file", async (event, arg) => {
     ]
   });
 
-  if (_file) {
-    return;
-  }
+  if (_file) return
 
   // else add tag to file
-  const fileTag = await FileTag.create({
+  const fileTag : FileTag = await FileTag.create({
     file_id: file.id,
     tag_id: _tag.id,
   });

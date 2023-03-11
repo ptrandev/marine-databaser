@@ -6,9 +6,10 @@ import { ipcRenderer } from 'electron'
 
 interface FileFiltersProps {
   setSelectedDirectories: (directories: Directory[]) => void
+  setSelectedTags: (tags: Tag[]) => void
 }
 
-const FileFilters : FC<FileFiltersProps> = ({ setSelectedDirectories }) => {
+const FileFilters : FC<FileFiltersProps> = ({ setSelectedDirectories, setSelectedTags }) => {
   const [directories, setDirectories] = useState<Directory[]>([])
   const [tags, setTags] = useState<Tag[]>([])
 
@@ -32,7 +33,7 @@ const FileFilters : FC<FileFiltersProps> = ({ setSelectedDirectories }) => {
   }, [])
 
   return (
-    <Box mt={2}>
+    <Box mt={2} display='flex' gap={2}>
       <Autocomplete
         multiple
         filterSelectedOptions
@@ -46,6 +47,22 @@ const FileFilters : FC<FileFiltersProps> = ({ setSelectedDirectories }) => {
           />
         )}
         isOptionEqualToValue={(option, value) => option.id === value.id}
+        fullWidth
+      />
+      <Autocomplete
+        multiple
+        filterSelectedOptions
+        options={tags ?? []}
+        onChange={(_, value) => setSelectedTags(value)}
+        getOptionLabel={(option) => option.name}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Tags"
+          />
+        )}
+        isOptionEqualToValue={(option, value) => option.id === value.id}
+        fullWidth
       />
     </Box>
   )

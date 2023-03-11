@@ -19,7 +19,7 @@ import { FileWithTags } from "@/types/FileWithTags"
 
 const Home = () => {
   const [files, setFiles] = useState<FileWithTags[]>()
-  const [searchFiles, setSearchFiles] = useState<File[]>([])
+  const [searchFiles, setSearchFiles] = useState<FileWithTags[]>([])
 
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -72,12 +72,12 @@ const Home = () => {
 
   useEffect(() => {
     loadFiles()
-  }, [selectedDirectories])
+  }, [selectedDirectories, selectedTags])
 
   return (
     <Box height='100%'>
       <FileSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-      <FileFilters setSelectedDirectories={setSelectedDirectories} />
+      <FileFilters setSelectedDirectories={setSelectedDirectories} setSelectedTags={setSelectedTags} />
       {
         !isLoading && searchFiles && (
           <>
