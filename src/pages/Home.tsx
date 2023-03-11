@@ -52,7 +52,7 @@ const Home = () => {
 
     const options = {
       ignoreLocation: true,
-      keys: ['dataValues.name', 'dataValues.path']
+      keys: ['name', 'path']
     }
 
     const fuse = new Fuse(files, options)
