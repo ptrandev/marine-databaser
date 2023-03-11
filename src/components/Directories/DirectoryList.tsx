@@ -11,39 +11,45 @@ interface DirectoryListProps {
 }
 
 const DirectoryList: FC<DirectoryListProps> = ({ directories, loadDirectories }) => {
-  return (
-    <List>
-      {
-        directories?.map((directory: any) => (
-          <ListItemButton
-            key={directory.id}
-            onClick={() => {
-              ipcRenderer.send('open-directory', { path: directory.path })
-            }}
-          >
-            <ListItemText
-              primary={directory.name}
-              secondary={directory.path}
-            />
-            <IconButton
-              aria-label='delete'
-              size='large'
-              color='error'
-              onClick={(e) => {
-                e.stopPropagation()
-                ipcRenderer.send('delete-directory', { directory_id: directory.id })
-                ipcRenderer.on('deleted-directory', () => {
-                  loadDirectories()
-                })
-              }}
-            >
-              <Delete />
-            </IconButton>
-          </ListItemButton>
-        ))
-      }
-    </List>
-  )
-}
+  const handleOpenDirectory = (path: string) => {
+    ipcRenderer.send('open-directory', { path })
+  }
 
-export default DirectoryList
+  const handleDeleteDirectory = (directory_id: number) => {
+    ipcRenderer.send('delete-directory', { directory_id })
+    ipcRenderer.on('deleted-directory', () => {
+      loadDirectories()
+    })
+  }
+
+    return (
+      <List>
+        {
+          directories?.map((directory: any) => (
+            <ListItemButton
+              key={directory.id}
+              onClick={() => handleOpenDirectory(directory.path)}
+            >
+              <ListItemText
+                primary={directory.name}
+                secondary={directory.path}
+              />
+              <IconButton
+                aria-label='delete'
+                size='large'
+                color='error'
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDeleteDirectory(directory.id)
+                }}
+              >
+                <Delete />
+              </IconButton>
+            </ListItemButton>
+          ))
+        }
+      </List>
+    )
+  }
+
+  export default DirectoryList

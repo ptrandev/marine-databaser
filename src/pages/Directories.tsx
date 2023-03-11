@@ -18,6 +18,19 @@ const Directories = () => {
     })
   }
 
+  const handleSelectDirectory = () => {
+    ipcRenderer.send('select-directory')
+
+    ipcRenderer.on('selected-directory', () => {
+      setInitializingDirectory(true)
+    })
+
+    ipcRenderer.on('initialized-directory', () => {
+      loadDirectories()
+      setInitializingDirectory(false)
+    })
+  }
+
   useEffect(() => {
     loadDirectories()
   }, [])
@@ -29,22 +42,7 @@ const Directories = () => {
           Directories
         </Typography>
         <Button variant='contained' startIcon={<Add />}
-          onClick={() => {
-            ipcRenderer.send('select-directory')
-
-            ipcRenderer.on('selected-directory', () => {
-              setInitializingDirectory(true)
-            })
-
-            ipcRenderer.on('no-directory-selected', () => {
-              setInitializingDirectory(false)
-            })
-
-            ipcRenderer.on('initialized-directory', () => {
-              loadDirectories()
-              setInitializingDirectory(false)
-            })
-          }}
+          onClick={handleSelectDirectory}
         >
           Add New Directory
         </Button>

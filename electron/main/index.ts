@@ -158,12 +158,9 @@ ipcMain.on("select-directory", async (event) => {
     properties: ["openDirectory"],
   })
 
-  event.reply("selected-directory", result.filePaths);
+  if (result.filePaths.length === 0) return;
 
-  if (result.filePaths.length === 0) {
-    event.reply("no-directory-selected");
-    return;
-  }
+  event.reply("selected-directory", result.filePaths);
 
   // add directory to database
   const directory = await Directory.create({
