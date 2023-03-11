@@ -219,8 +219,6 @@ ipcMain.on("list-files", async (event, arg) => {
     include: Tag,
   }).then(files => files.map(file => file.toJSON()));
 
-  console.log(files)
-
   event.reply("listed-files", files);
 });
 
@@ -283,6 +281,9 @@ ipcMain.on("tag-file", async (event, arg) => {
 
   // check if file already has tag
   const _file: File | null = await File.findOne({
+    where: {
+      id: file.id,
+    },
     include: [
       {
         model: Tag,

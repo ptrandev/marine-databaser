@@ -15,8 +15,10 @@ import { useEffectDebounced } from '@/hooks/useEffectDebounced'
 
 console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}!`)
 
+import { FileWithTags } from "@/types/FileWithTags"
+
 const Home = () => {
-  const [files, setFiles] = useState<File[]>()
+  const [files, setFiles] = useState<FileWithTags[]>()
   const [searchFiles, setSearchFiles] = useState<File[]>([])
 
   const [searchTerm, setSearchTerm] = useState<string>('')

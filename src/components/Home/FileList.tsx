@@ -1,5 +1,5 @@
 import { FC, useState, useEffect } from "react"
-import { List, ListItemButton, ListItemText, IconButton, Box } from "@mui/material"
+import { List, ListItemButton, ListItemText, IconButton, Box, Chip, Typography } from "@mui/material"
 import { ipcRenderer } from "electron"
 
 import { File } from "../../../electron/database/schemas"
@@ -7,8 +7,10 @@ import { Virtuoso } from "react-virtuoso"
 import { Sell } from "@mui/icons-material"
 import FileTagModal from "./FileTagModal"
 
+import { FileWithTags } from "@/types/FileWithTags"
+
 interface FileListProps {
-  files: File[]
+  files: FileWithTags[]
 }
 
 const FileList: FC<FileListProps> = ({ files }) => {
@@ -39,11 +41,25 @@ const FileList: FC<FileListProps> = ({ files }) => {
                 gap: 1,
               }}
             >
-              <Box>
+              <Box width='100%'>
                 <ListItemText
                   primary={file.name}
                   secondary={file.path}
                 />
+                {
+                  file?.Tags?.length > 0 && (
+                    <Box display='flex' gap={1} alignItems='center'>
+                      <Typography variant='caption'>
+                        Tags:
+                      </Typography>
+                      {
+                        file?.Tags.map(tag => (
+                          <Chip key={tag.id} label={tag.name} />
+                        ))
+                      }
+                    </Box>
+                  )
+                }
               </Box>
               <IconButton
                 aria-label='tags'
