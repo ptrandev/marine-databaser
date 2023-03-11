@@ -1,5 +1,5 @@
 import { FC, useState, useEffect } from "react"
-import { List, ListItemButton, ListItemText, IconButton, Box, Chip, Typography } from "@mui/material"
+import { List, ListItemButton, ListItemText, IconButton, Box, Chip, Typography, Stack } from "@mui/material"
 import { ipcRenderer } from "electron"
 
 import { File } from "../../../electron/database/schemas"
@@ -44,7 +44,7 @@ const FileList: FC<FileListProps> = ({ files }) => {
                 />
                 {
                   file?.Tags?.length > 0 && (
-                    <Box display='flex' gap={1} alignItems='center'>
+                    <Stack direction='row' gap={1} alignItems='center'>
                       <Typography variant='caption'>
                         Tags:
                       </Typography>
@@ -53,7 +53,7 @@ const FileList: FC<FileListProps> = ({ files }) => {
                           <Chip key={tag.id} label={tag.name} />
                         ))
                       }
-                    </Box>
+                    </Stack>
                   )
                 }
               </Box>

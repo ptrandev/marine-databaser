@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { DirectoryList } from "@/components/Directories"
 import { Add } from "@mui/icons-material"
-import { Typography, Button, Box, LinearProgress } from "@mui/material"
+import { Typography, Button, Box, LinearProgress, Stack } from "@mui/material"
 
 import { Directory } from "../../electron/database/schemas"
 import { ipcRenderer } from 'electron'
@@ -24,7 +24,7 @@ const Directories = () => {
 
   return (
     <Box>
-      <Box display='flex' flexWrap='wrap' flexDirection='row' justifyContent='space-between' width='100%' mb={2}>
+      <Stack flexWrap='wrap' direction='row' justifyContent='space-between' width='100%' mb={2}>
         <Typography variant='h4' mr={2}>
           Directories
         </Typography>
@@ -44,7 +44,7 @@ const Directories = () => {
         >
           Add New Directory
         </Button>
-      </Box>
+      </Stack>
       {
         initializingDirectory && (
           <Box width='100%'>
