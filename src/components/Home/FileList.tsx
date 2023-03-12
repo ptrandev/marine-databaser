@@ -44,7 +44,7 @@ const FileList: FC<FileListProps> = ({ files }) => {
                 />
                 {
                   file?.Tags?.length > 0 && (
-                    <Stack direction='row' gap={1} alignItems='center'>
+                    <Stack direction='row' spacing={1} alignItems='center'>
                       <Typography variant='caption'>
                         Tags:
                       </Typography>

@@ -38,7 +38,7 @@ const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file }) => {
           <IconButton onClick={handleClose} sx={{ position: 'absolute', top: 8, right: 8 }}>
             <Close />
           </IconButton>
-          <Stack gap={2}>
+          <Stack spacing={2}>
             <Typography>
               {file.name}
             </Typography>
