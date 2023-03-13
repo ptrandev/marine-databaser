@@ -79,7 +79,7 @@ const Home = () => {
             <Typography mt={2}>
               <span style={{ fontWeight: 'bold' }}>{searchFiles.length}</span> files found
             </Typography>
-            <FileList files={searchFiles} />
+            <FileList files={searchFiles} loadFiles={loadFiles} />
           </>
         )
       }

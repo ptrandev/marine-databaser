@@ -1,28 +1,43 @@
+import { FileWithTags } from "@/types/FileWithTags"
 import { Close } from "@mui/icons-material"
-import { Card, Modal, Typography, Box, Input, Button, IconButton, TextField } from "@mui/material"
+import { Card, Modal, Typography, Box, Chip, Button, IconButton, TextField } from "@mui/material"
 import { Stack } from "@mui/system"
 import { ipcRenderer } from "electron"
 import { FC, useState } from "react"
 
-import { File } from "../../../electron/database/schemas"
-
 interface FileTagModalProps {
   open: boolean
   handleClose: () => void
-  file: File
+  file: FileWithTags
+  setFile: (file: FileWithTags) => void
 }
 
-const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file }) => {
+const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile }) => {
   const [tag, setTag] = useState<string>('')
 
-  const addTag = () => {
+  const onAddTag = () => {
     if (!tag) return
 
     ipcRenderer.send('tag-file', { file, tag })
     setTag('')
 
-    ipcRenderer.on('tagged-file', () => {
-      handleClose()
+    ipcRenderer.on('tagged-file', (_, fileTag) => {
+      const newFile = { ...file } as FileWithTags
+      newFile.Tags = [...newFile.Tags, { id: fileTag.tag_id, name: tag }] as any
+      setFile(newFile)
+    })
+  }
+
+  const handleDeleteTag = (tag_id: number) => {
+    if (!tag_id) return
+    const file_id : number = file.id
+
+    ipcRenderer.send('untag-file', { file_id, tag_id })
+
+    ipcRenderer.on('untagged-file', () => {
+      const newFile = { ...file } as FileWithTags
+      newFile.Tags = newFile.Tags.filter(tag => tag.id !== tag_id)
+      setFile(newFile)
     })
   }
 
@@ -44,7 +59,7 @@ const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file }) => {
             </Typography>
             <Box display='flex' component='form' onSubmit={(e) => {
               e.preventDefault()
-              addTag()
+              onAddTag()
             }} gap={2}>
               <TextField
                 size='small'
@@ -64,6 +79,20 @@ const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file }) => {
                 </Button>
               </Box>
             </Box>
+            {
+              file?.Tags?.length > 0 && (
+                <Stack direction='row' spacing={1} alignItems='center'>
+                  <Typography variant='caption'>
+                    Tags:
+                  </Typography>
+                  {
+                    file?.Tags.map(tag => (
+                      <Chip key={tag.id} label={tag.name} onDelete={() => handleDeleteTag(tag.id)} />
+                    ))
+                  }
+                </Stack>
+              )
+            }
           </Stack>
         </Card>
       </Box>

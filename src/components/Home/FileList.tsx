@@ -11,13 +11,19 @@ import { FileWithTags } from "@/types/FileWithTags"
 
 interface FileListProps {
   files: FileWithTags[]
+  loadFiles: () => void
 }
 
-const FileList: FC<FileListProps> = ({ files }) => {
-  const [fileTagFile, setFileTagFile] = useState<File>()
+const FileList: FC<FileListProps> = ({ files, loadFiles }) => {
+  const [fileTagFile, setFileTagFile] = useState<FileWithTags>()
 
   const handleFileTagModalClose = () => {
     setFileTagFile(undefined)
+    loadFiles()
+  }
+
+  const handleSetFileTagFile = (file: FileWithTags) => {
+    setFileTagFile(file)
   }
   
   return (
@@ -74,7 +80,12 @@ const FileList: FC<FileListProps> = ({ files }) => {
       </List>
       {
         fileTagFile && (
-          <FileTagModal open={!!fileTagFile} handleClose={handleFileTagModalClose} file={fileTagFile} />
+          <FileTagModal
+            open={!!fileTagFile}
+            handleClose={handleFileTagModalClose}
+            file={fileTagFile}
+            setFile={handleSetFileTagFile}
+          />
         )
       }
     </>

@@ -156,7 +156,7 @@ const getFileList = async (directory) => {
 ipcMain.on("select-directory", async (event) => {
   const result = await dialog.showOpenDialog(win, {
     properties: ["openDirectory"],
-  })
+  });
 
   if (result.filePaths.length === 0) return;
 
@@ -187,21 +187,27 @@ ipcMain.on("select-file", async (event) => {
     properties: ["openFile"],
   });
 
-  const file: File = await File.create({
-    name: result.filePaths[0].split("/").pop(),
-    path: result.filePaths[0],
-  }, { raw: true });
+  const file: File = await File.create(
+    {
+      name: result.filePaths[0].split("/").pop(),
+      path: result.filePaths[0],
+    },
+    { raw: true }
+  );
 
   event.reply("selected-file", file);
 });
 
 ipcMain.on("list-files", async (event, arg) => {
-  const { directories, tags } : {
-    directories: number[],
-    tags: number[],
+  const {
+    directories,
+    tags,
+  }: {
+    directories: number[];
+    tags: number[];
   } = arg;
 
-  const options : FindOptions = {
+  const options: FindOptions = {
     where: {},
     include: {
       model: Tag,
@@ -223,8 +229,9 @@ ipcMain.on("list-files", async (event, arg) => {
     ];
   }
 
-  const files: File[] = await File.findAll(options)
-  .then(files => files.map(file => file.toJSON()));
+  const files: File[] = await File.findAll(options).then((files) =>
+    files.map((file) => file.toJSON())
+  );
 
   event.reply("listed-files", files);
 });
@@ -234,17 +241,19 @@ ipcMain.on("open-file", async (_, arg) => {
 });
 
 ipcMain.on("list-directories", async (event) => {
-  const directories: Directory[] = await Directory.findAll().then(dictionaries => dictionaries.map(dictionary => dictionary.toJSON()));
+  const directories: Directory[] = await Directory.findAll().then(
+    (dictionaries) => dictionaries.map((dictionary) => dictionary.toJSON())
+  );
   event.reply("listed-directories", directories);
 });
 
 ipcMain.on("open-directory", async (_, arg) => {
-  const { path } : { path : string } = arg
+  const { path }: { path: string } = arg;
   shell.openPath(path);
 });
 
 ipcMain.on("delete-directory", async (event, arg) => {
-  const { directory_id } : { directory_id : number } = arg;
+  const { directory_id }: { directory_id: number } = arg;
 
   await Directory.destroy({
     where: {
@@ -263,7 +272,9 @@ ipcMain.on("delete-directory", async (event, arg) => {
 });
 
 ipcMain.on("list-tags", async (event) => {
-  const tags: Tag[] = await Tag.findAll().then(tags => tags.map(tag => tag.toJSON()));
+  const tags: Tag[] = await Tag.findAll().then((tags) =>
+    tags.map((tag) => tag.toJSON())
+  );
   event.reply("listed-tags", tags);
 });
 
@@ -285,12 +296,15 @@ const createTag = async (name) => {
 };
 
 ipcMain.on("tag-file", async (event, arg) => {
-  const { file, tag } : {
-    file: File,
-    tag: string,
+  const {
+    file,
+    tag,
+  }: {
+    file: File;
+    tag: string;
   } = arg;
 
-  const _tag : Tag = await createTag(tag);
+  const _tag: Tag = await createTag(tag);
 
   // check if file already has tag
   const _file: File | null = await File.findOne({
@@ -304,16 +318,35 @@ ipcMain.on("tag-file", async (event, arg) => {
           name: tag,
         },
       },
-    ]
+    ],
   });
 
-  if (_file) return
+  if (_file) return;
 
   // else add tag to file
-  const fileTag : FileTag = await FileTag.create({
+  const fileTag: FileTag = await FileTag.create({
     file_id: file.id,
     tag_id: _tag.id,
   });
 
   event.reply("tagged-file", fileTag);
+});
+
+ipcMain.on("untag-file", async (event, arg) => {
+  const {
+    file_id,
+    tag_id,
+  }: {
+    file_id: number;
+    tag_id: number;
+  } = arg;
+
+  await FileTag.destroy({
+    where: {
+      file_id,
+      tag_id,
+    },
+  });
+
+  event.reply("untagged-file", arg);
 });
