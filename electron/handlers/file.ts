@@ -1,6 +1,7 @@
-import { BrowserWindow, IpcMainEvent, dialog, shell } from "electron";
+import { BrowserWindow, IpcMainEvent, dialog } from "electron";
 import { Tag, File } from "../database/schemas";
 import { FindOptions } from "sequelize";
+import mime from "mime-types";
 
 export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent) => {
   const result = await dialog.showOpenDialog(win, {

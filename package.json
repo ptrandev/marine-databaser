@@ -45,6 +45,7 @@
     "@mui/icons-material": "^5.11.11",
     "@mui/material": "^5.11.12",
     "fuse.js": "^6.6.2",
+    "mime-types": "^2.1.35",
     "react-router-dom": "^6.8.2",
     "react-virtuoso": "^4.1.0",
     "sequelize": "^6.29.1",

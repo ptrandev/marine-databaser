@@ -1,6 +1,5 @@
-import { BrowserWindow, IpcMainEvent, dialog, shell } from "electron";
+import { IpcMainEvent } from "electron";
 import { FileTag, File, Tag } from "../database/schemas";
-const fs = require("fs").promises;
 
 const createTag = async (name) => {
   const existingTag: Tag | null = await Tag.findOne({

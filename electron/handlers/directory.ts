@@ -1,6 +1,7 @@
 import { BrowserWindow, IpcMainEvent, dialog, shell } from "electron";
 import { Directory, File } from "../database/schemas";
 const fs = require("fs").promises;
+import mime from "mime-types";
 
 const getFileList = async (directory) => {
   let files = [];
@@ -30,6 +31,7 @@ export const handleSelectDirectory = async (win : BrowserWindow, event : IpcMain
   const directory = await Directory.create({
     name: result.filePaths[0].split("/").pop(),
     path: result.filePaths[0],
+    mimeType: mime.lookup(result.filePaths[0]),
   });
 
   // look at files in directory; make sure to crawl subdirectories
