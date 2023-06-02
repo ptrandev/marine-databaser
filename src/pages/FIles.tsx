@@ -1,13 +1,11 @@
-
-import { Box, Button, CircularProgress, Typography } from "@mui/material"
+import { Box, CircularProgress, Typography } from "@mui/material"
 import { useState, useEffect } from "react"
 const { ipcRenderer } = window.require('electron')
 
-import { FileList } from '@/components/Home'
+import { FileList } from '@/components/Files'
 
-import { Directory, File, Tag } from "../../electron/database/schemas"
-import FileSearch from "@/components/Home/FileSearch"
-import FileFilters from "@/components/Home/FileFilters"
+import FileSearch from "@/components/Files/FileSearch"
+import FileFilters from "@/components/Files/FileFilters"
 
 import Fuse from 'fuse.js'
 
@@ -16,17 +14,14 @@ import { useEffectDebounced } from '@/hooks/useEffectDebounced'
 console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}!`)
 
 import { FileWithTags } from "@/types/FileWithTags"
+import useFiles from "@/hooks/useFiles"
 
 const Files = () => {
+  const { searchTerm, selectedDirectories, selectedTags } = useFiles()
+
   const [files, setFiles] = useState<FileWithTags[]>()
   const [searchFiles, setSearchFiles] = useState<FileWithTags[]>([])
-
-  const [searchTerm, setSearchTerm] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(true)
-  
-  const [selectedDirectories, setSelectedDirectories] = useState<Directory[]>([])
-  const [selectedTags, setSelectedTags] = useState<Tag[]>([])
-  const [selectedFileType, setSelectedFileType] = useState<string>('all')
 
   const loadFiles = () => {
     setIsLoading(true)
@@ -72,8 +67,8 @@ const Files = () => {
 
   return (
     <Box height='100%'>
-      <FileSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-      <FileFilters setSelectedDirectories={setSelectedDirectories} setSelectedTags={setSelectedTags} setSelectedFileType={setSelectedFileType} />
+      <FileSearch />
+      <FileFilters />
       {
         !isLoading && searchFiles && (
           <>

@@ -1,13 +1,11 @@
 import { Search } from "@mui/icons-material";
 import { InputAdornment, TextField } from "@mui/material";
 import { FC } from "react";
+import useFiles from "@/hooks/useFiles";
 
-interface FileSearchProps {
-  searchTerm: string;
-  setSearchTerm: (searchTerm: string) => void;
-}
+const FileSearch: FC= () => {
+  const { searchTerm, updateSearchTerm } = useFiles()
 
-const FileSearch: FC<FileSearchProps> = ({ searchTerm, setSearchTerm }) => {
   return (
     <div>
       <TextField
@@ -21,7 +19,7 @@ const FileSearch: FC<FileSearchProps> = ({ searchTerm, setSearchTerm }) => {
         }}
         fullWidth
         value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
+        onChange={e => updateSearchTerm(e.target.value)}
       />
     </div>
   );

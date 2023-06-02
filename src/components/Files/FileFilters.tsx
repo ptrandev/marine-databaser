@@ -3,13 +3,12 @@ import { Directory, Tag } from 'electron/database/schemas'
 import { FC, useEffect, useState } from 'react'
 
 import { ipcRenderer } from 'electron'
+import useFiles from '@/hooks/useFiles'
 
-interface FileFiltersProps {
-  setSelectedDirectories: (directories: Directory[]) => void
-  setSelectedTags: (tags: Tag[]) => void
-}
 
-const FileFilters : FC<FileFiltersProps> = ({ setSelectedDirectories, setSelectedTags }) => {
+const FileFilters : FC = () => {
+  const { updateSelectedDirectories, updateSelectedTags } = useFiles()
+
   const [directories, setDirectories] = useState<Directory[]>([])
   const [tags, setTags] = useState<Tag[]>([])
 
@@ -38,7 +37,7 @@ const FileFilters : FC<FileFiltersProps> = ({ setSelectedDirectories, setSelecte
         multiple
         filterSelectedOptions
         options={directories ?? []}
-        onChange={(_, value) => setSelectedDirectories(value)}
+        onChange={(_, value) => updateSelectedDirectories(value)}
         getOptionLabel={(option) => option.name}
         renderInput={(params) => (
           <TextField
@@ -53,7 +52,7 @@ const FileFilters : FC<FileFiltersProps> = ({ setSelectedDirectories, setSelecte
         multiple
         filterSelectedOptions
         options={tags ?? []}
-        onChange={(_, value) => setSelectedTags(value)}
+        onChange={(_, value) => updateSelectedTags(value)}
         getOptionLabel={(option) => option.name}
         renderInput={(params) => (
           <TextField

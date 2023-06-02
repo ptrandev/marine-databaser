@@ -1,9 +1,11 @@
-import Files from './pages/Files'
-import Directories from './pages/Directories'
-import Navbar from './components/Navbar'
+import Files from "./pages/Files";
+import Directories from "./pages/Directories";
+import Navbar from "./components/Navbar";
 
-import { createHashRouter, Outlet } from 'react-router-dom'
-import { Box } from '@mui/system'
+
+import { createHashRouter, Outlet } from "react-router-dom";
+import { Box } from "@mui/system";
+import { FilesProvider } from "./contexts/FilesContext";
 
 const NavbarWrapper = () => {
   return (
@@ -13,24 +15,28 @@ const NavbarWrapper = () => {
         <Outlet />
       </Box>
     </Box>
-  )
-}
+  );
+};
 
 const router = createHashRouter([
   {
-    path: '/',
+    path: "/",
     element: <NavbarWrapper />,
     children: [
       {
-        path: '/',
-        element: <Files />,
+        path: "/",
+        element: (
+          <FilesProvider>
+            <Files />
+          </FilesProvider>
+        ),
       },
       {
-        path: '/directories',
+        path: "/directories",
         element: <Directories />,
       },
     ],
   },
-])
+]);
 
-export default router
+export default router;
