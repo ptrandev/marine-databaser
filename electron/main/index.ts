@@ -3,7 +3,6 @@ import { release } from "node:os";
 import { join } from "node:path";
 
 import sequelize from "../database/initialize";
-import { Directory, File, Tag, FileTag } from "../database/schemas";
 import "../database/associations";
 
 import path from "path";
@@ -134,219 +133,59 @@ sequelize
     console.error("Unable to connect to the database:", err);
   });
 
-import { dialog } from "electron";
-import { FindOptions } from "sequelize";
-const fs = require("fs").promises;
+import { handleDeleteDirectory, handleListDirectories, handleOpenDirectory, handleSelectDirectory } from "../handlers/directory";
+import { handleListFiles, handleSelectFile } from "../handlers/file";
+import { handleListTags, handleTagFile, handleUntagFile } from "../handlers/tag";
 
-const getFileList = async (directory) => {
-  let files = [];
-  const items = await fs.readdir(directory, { withFileTypes: true });
-
-  for (const item of items) {
-    if (item.isDirectory()) {
-      files = files.concat(await getFileList(`${directory}/${item.name}`));
-    } else {
-      files.push(`${directory}/${item.name}`);
-    }
-  }
-
-  return files;
-};
+//
+// DIRECTORY
+//
 
 ipcMain.on("select-directory", async (event) => {
-  const result = await dialog.showOpenDialog(win, {
-    properties: ["openDirectory"],
-  });
-
-  if (result.filePaths.length === 0) return;
-
-  event.reply("selected-directory", result.filePaths);
-
-  // add directory to database
-  const directory = await Directory.create({
-    name: result.filePaths[0].split("/").pop(),
-    path: result.filePaths[0],
-  });
-
-  // look at files in directory; make sure to crawl subdirectories
-  const files = await getFileList(result.filePaths[0]);
-
-  await File.bulkCreate(
-    files.map((file) => ({
-      name: file.split("/").pop(),
-      path: file,
-      directory_id: directory.id,
-    }))
-  );
-
-  event.reply("initialized-directory");
+  handleSelectDirectory(win, event);
 });
 
+ipcMain.on("list-directories", async (event) => {
+  handleListDirectories(event);
+});
+
+ipcMain.on("open-directory", async (_, arg) => {
+  handleOpenDirectory(arg);
+});
+
+ipcMain.on("delete-directory", async (event, arg) => {
+  handleDeleteDirectory(event, arg);
+});
+
+//
+// FILE
+//
+
 ipcMain.on("select-file", async (event) => {
-  const result = await dialog.showOpenDialog(win, {
-    properties: ["openFile"],
-  });
-
-  const file: File = await File.create(
-    {
-      name: result.filePaths[0].split("/").pop(),
-      path: result.filePaths[0],
-    },
-    { raw: true }
-  );
-
-  event.reply("selected-file", file);
+  handleSelectFile(win, event);
 });
 
 ipcMain.on("list-files", async (event, arg) => {
-  const {
-    directories,
-    tags,
-  }: {
-    directories: number[];
-    tags: number[];
-  } = arg;
-
-  const options: FindOptions = {
-    where: {},
-    include: {
-      model: Tag,
-    },
-  };
-
-  if (directories.length > 0) {
-    options.where["directory_id"] = directories;
-  }
-
-  if (tags.length > 0) {
-    options.include = [
-      {
-        model: Tag,
-        where: {
-          id: tags,
-        },
-      },
-    ];
-  }
-
-  const files: File[] = await File.findAll(options).then((files) =>
-    files.map((file) => file.toJSON())
-  );
-
-  event.reply("listed-files", files);
+  handleListFiles(event, arg);
 });
 
 ipcMain.on("open-file", async (_, arg) => {
   shell.openPath(arg);
 });
 
-ipcMain.on("list-directories", async (event) => {
-  const directories: Directory[] = await Directory.findAll().then(
-    (dictionaries) => dictionaries.map((dictionary) => dictionary.toJSON())
-  );
-  event.reply("listed-directories", directories);
-});
+//
+// TAG
+//
 
-ipcMain.on("open-directory", async (_, arg) => {
-  const { path }: { path: string } = arg;
-  shell.openPath(path);
-});
-
-ipcMain.on("delete-directory", async (event, arg) => {
-  const { directory_id }: { directory_id: number } = arg;
-
-  await Directory.destroy({
-    where: {
-      id: directory_id,
-    },
-  });
-
-  // remove all files associated with directory
-  await File.destroy({
-    where: {
-      directory_id: directory_id,
-    },
-  });
-
-  event.reply("deleted-directory", arg);
+ipcMain.on("tag-file", async (event, arg) => {
+  handleTagFile(event, arg);
 });
 
 ipcMain.on("list-tags", async (event) => {
-  const tags: Tag[] = await Tag.findAll().then((tags) =>
-    tags.map((tag) => tag.toJSON())
-  );
-  event.reply("listed-tags", tags);
+  handleListTags(event);
 });
 
-const createTag = async (name) => {
-  const existingTag: Tag | null = await Tag.findOne({
-    where: {
-      name,
-    },
-  });
-
-  // tag already exists, so just return it
-  if (existingTag) return existingTag;
-
-  const tag: Tag = await Tag.create({
-    name,
-  });
-
-  return tag;
-};
-
-ipcMain.on("tag-file", async (event, arg) => {
-  const {
-    file,
-    tag,
-  }: {
-    file: File;
-    tag: string;
-  } = arg;
-
-  const _tag: Tag = await createTag(tag);
-
-  // check if file already has tag
-  const _file: File | null = await File.findOne({
-    where: {
-      id: file.id,
-    },
-    include: [
-      {
-        model: Tag,
-        where: {
-          name: tag,
-        },
-      },
-    ],
-  });
-
-  if (_file) return;
-
-  // else add tag to file
-  const fileTag: FileTag = await FileTag.create({
-    file_id: file.id,
-    tag_id: _tag.id,
-  });
-
-  event.reply("tagged-file", fileTag);
-});
 
 ipcMain.on("untag-file", async (event, arg) => {
-  const {
-    file_id,
-    tag_id,
-  }: {
-    file_id: number;
-    tag_id: number;
-  } = arg;
-
-  await FileTag.destroy({
-    where: {
-      file_id,
-      tag_id,
-    },
-  });
-
-  event.reply("untagged-file", arg);
+  handleUntagFile(event, arg);
 });
