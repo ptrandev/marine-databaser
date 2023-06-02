@@ -1,4 +1,4 @@
-import Home from './pages/Home'
+import Files from './pages/Files'
 import Directories from './pages/Directories'
 import Navbar from './components/Navbar'
 
@@ -23,7 +23,7 @@ const router = createHashRouter([
     children: [
       {
         path: '/',
-        element: <Home />,
+        element: <Files />,
       },
       {
         path: '/directories',

@@ -17,7 +17,7 @@ console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}
 
 import { FileWithTags } from "@/types/FileWithTags"
 
-const Home = () => {
+const Files = () => {
   const [files, setFiles] = useState<FileWithTags[]>()
   const [searchFiles, setSearchFiles] = useState<FileWithTags[]>([])
 
@@ -26,6 +26,7 @@ const Home = () => {
   
   const [selectedDirectories, setSelectedDirectories] = useState<Directory[]>([])
   const [selectedTags, setSelectedTags] = useState<Tag[]>([])
+  const [selectedFileType, setSelectedFileType] = useState<string>('all')
 
   const loadFiles = () => {
     setIsLoading(true)
@@ -72,7 +73,7 @@ const Home = () => {
   return (
     <Box height='100%'>
       <FileSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-      <FileFilters setSelectedDirectories={setSelectedDirectories} setSelectedTags={setSelectedTags} />
+      <FileFilters setSelectedDirectories={setSelectedDirectories} setSelectedTags={setSelectedTags} setSelectedFileType={setSelectedFileType} />
       {
         !isLoading && searchFiles && (
           <>
@@ -97,4 +98,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default Files
