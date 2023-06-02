@@ -1,7 +1,6 @@
 import { BrowserWindow, IpcMainEvent, dialog } from "electron";
 import { Tag, File } from "../database/schemas";
 import { FindOptions } from "sequelize";
-import mime from "mime-types";
 import { FileTypes } from "../../shared/types"
 
 export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent) => {
@@ -53,14 +52,6 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
     files
       .filter((file) => {
         if (fileTypes.length === 0) return true;
-
-        // matches file type
-        // video -> mimeType.startsWith("video")
-        // audio -> mimeType.startsWith("audio")
-        // image -> mimeType.startsWith("image")
-        // document -> mimeType.startsWith("text")
-
-        console.log(file.mimeType.startsWith("image"))
 
         for (const fileType of fileTypes) {
           if (fileType === "video" && file.mimeType.startsWith("video")) return true;
