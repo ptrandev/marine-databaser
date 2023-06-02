@@ -1,5 +1,6 @@
 import { FC, createContext, useMemo, useState, useEffect } from 'react'
 import { Directory, Tag } from '../../electron/database/schemas'
+import { FileTypes } from '../../shared/types'
 
 export interface FilesContextValue {
   searchTerm: string
@@ -8,8 +9,8 @@ export interface FilesContextValue {
   updateSelectedDirectories: (directories: Directory[]) => void
   selectedTags: Tag[]
   updateSelectedTags: (tags: Tag[]) => void
-  selectedFileType: string
-  updateSelectedFileType: (fileType: string) => void
+  selectedFileTypes: FileTypes[]
+  updateSelectedFileTypes: (fileTypes: FileTypes[]) => void
 }
 
 const FilesContext = createContext<FilesContextValue>(undefined as any)
@@ -22,7 +23,7 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [selectedDirectories, setSelectedDirectories] = useState<Directory[]>([])
   const [selectedTags, setSelectedTags] = useState<Tag[]>([])
-  const [selectedFileType, setSelectedFileType] = useState<string>('all')
+  const [selectedFileTypes, setSelectedFileTypes] = useState<FileTypes[]>([])
 
   useEffect(() => {
     console.log('searchTerm', searchTerm)
@@ -36,10 +37,10 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
       updateSelectedDirectories: (directories: Directory[]) => setSelectedDirectories(directories),
       selectedTags,
       updateSelectedTags: (tags: Tag[]) => setSelectedTags(tags),
-      selectedFileType,
-      updateSelectedFileType: (fileType: string) => setSelectedFileType(fileType)
+      selectedFileTypes,
+      updateSelectedFileTypes: (fileTypes: FileTypes[]) => setSelectedFileTypes(fileTypes)
     }
-  }, [searchTerm, selectedDirectories, selectedTags, selectedFileType])
+  }, [searchTerm, selectedDirectories, selectedTags, selectedFileTypes])
 
   return (
     <FilesContext.Provider value={contextValue}>

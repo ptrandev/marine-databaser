@@ -8,7 +8,6 @@ class Directory extends Model<InferAttributes<Directory>, InferCreationAttribute
   id: number;
   name: string;
   path: string;
-  mimeType: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,10 +23,6 @@ Directory.init({
     allowNull: false,
   },
   path: {
-    type: Sequelize.STRING,
-    allowNull: false,
-  },
-  mimeType: {
     type: Sequelize.STRING,
     allowNull: false,
   },

@@ -2,6 +2,7 @@ import { BrowserWindow, IpcMainEvent, dialog } from "electron";
 import { Tag, File } from "../database/schemas";
 import { FindOptions } from "sequelize";
 import mime from "mime-types";
+import { FileTypes } from "../../shared/types"
 
 export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent) => {
   const result = await dialog.showOpenDialog(win, {
@@ -22,14 +23,9 @@ export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent) 
 export const handleListFiles = async (event: IpcMainEvent, arg: {
   directories: number[],
   tags: number[],
+  fileTypes: FileTypes[],
 }) => {
-  const {
-    directories,
-    tags,
-  }: {
-    directories: number[];
-    tags: number[];
-  } = arg;
+  const { directories, tags, fileTypes } = arg;
 
   const options: FindOptions = {
     where: {},
@@ -54,7 +50,28 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
   }
 
   const files: File[] = await File.findAll(options).then((files) =>
-    files.map((file) => file.toJSON())
+    files
+      .filter((file) => {
+        if (fileTypes.length === 0) return true;
+
+        // matches file type
+        // video -> mimeType.startsWith("video")
+        // audio -> mimeType.startsWith("audio")
+        // image -> mimeType.startsWith("image")
+        // document -> mimeType.startsWith("text")
+
+        console.log(file.mimeType.startsWith("image"))
+
+        for (const fileType of fileTypes) {
+          if (fileType === "video" && file.mimeType.startsWith("video")) return true;
+          if (fileType === "audio" && file.mimeType.startsWith("audio")) return true;
+          if (fileType === "image" && file.mimeType.startsWith("image")) return true;
+          if (fileType === "document" && file.mimeType.startsWith("text")) return true;
+        }
+
+        return false;
+      })
+      .map((file) => file.toJSON())
   );
 
   event.reply("listed-files", files);

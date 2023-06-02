@@ -13,11 +13,11 @@ import { useEffectDebounced } from '@/hooks/useEffectDebounced'
 
 console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}!`)
 
-import { FileWithTags } from "@/types/FileWithTags"
+import { FileWithTags } from '../../shared/types'
 import useFiles from "@/hooks/useFiles"
 
 const Files = () => {
-  const { searchTerm, selectedDirectories, selectedTags } = useFiles()
+  const { searchTerm, selectedDirectories, selectedTags, selectedFileTypes } = useFiles()
 
   const [files, setFiles] = useState<FileWithTags[]>()
   const [searchFiles, setSearchFiles] = useState<FileWithTags[]>([])
@@ -28,8 +28,9 @@ const Files = () => {
 
     const directories : number[] = selectedDirectories?.map(directory => directory.id) ?? []
     const tags : number[] = selectedTags?.map(tag => tag.id) ?? []
+    const fileTypes : string[] = selectedFileTypes ?? []
 
-    ipcRenderer.send('list-files', { directories, tags })
+    ipcRenderer.send('list-files', { directories, tags, fileTypes })
     ipcRenderer.on('listed-files', (_, files) => {
       setFiles(files)
       setIsLoading(false)
@@ -63,7 +64,7 @@ const Files = () => {
 
   useEffect(() => {
     loadFiles()
-  }, [selectedDirectories, selectedTags])
+  }, [selectedDirectories, selectedTags, selectedFileTypes])
 
   return (
     <Box height='100%'>

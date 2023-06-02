@@ -31,7 +31,6 @@ export const handleSelectDirectory = async (win : BrowserWindow, event : IpcMain
   const directory = await Directory.create({
     name: result.filePaths[0].split("/").pop(),
     path: result.filePaths[0],
-    mimeType: mime.lookup(result.filePaths[0]),
   });
 
   // look at files in directory; make sure to crawl subdirectories
@@ -42,6 +41,7 @@ export const handleSelectDirectory = async (win : BrowserWindow, event : IpcMain
       name: file.split("/").pop(),
       path: file,
       directory_id: directory.id,
+      mimeType: mime.lookup(file).toString(),
     }))
   );
 
