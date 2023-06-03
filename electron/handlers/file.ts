@@ -54,6 +54,8 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
     }
   }
 
+  options.limit = 50000;
+
   const files: File[] = await File.findAll(options).then((files) =>
     files.map((file) => file.toJSON())
   );
