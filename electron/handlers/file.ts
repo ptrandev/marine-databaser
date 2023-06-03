@@ -1,6 +1,6 @@
 import { BrowserWindow, IpcMainEvent, dialog } from "electron";
 import { Tag, File } from "../database/schemas";
-import { FindOptions } from "sequelize";
+import { FindOptions, Op } from "sequelize";
 import { FileTypes } from "../../shared/types"
 
 export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent) => {
@@ -48,21 +48,27 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
     ];
   }
 
+  if (fileTypes.length > 0) {
+    options.where = {
+      mimeType: {
+        [Op.or]: fileTypes.map((fileType) => {
+          switch (fileType) {
+            case 'image':
+              return { [Op.like]: 'image/%' };
+            case 'video':
+              return { [Op.like]: 'video/%' };
+            case 'audio':
+              return { [Op.like]: 'audio/%' };
+            default:
+              return 'false';
+          }
+        }),
+      }
+    }
+  }
+
   const files: File[] = await File.findAll(options).then((files) =>
-    files
-      .filter((file) => {
-        if (fileTypes.length === 0) return true;
-
-        for (const fileType of fileTypes) {
-          if (fileType === "video" && file.mimeType.startsWith("video")) return true;
-          if (fileType === "audio" && file.mimeType.startsWith("audio")) return true;
-          if (fileType === "image" && file.mimeType.startsWith("image")) return true;
-          if (fileType === "document" && file.mimeType.startsWith("text")) return true;
-        }
-
-        return false;
-      })
-      .map((file) => file.toJSON())
+    files.map((file) => file.toJSON())
   );
 
   event.reply("listed-files", files);

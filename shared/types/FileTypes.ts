@@ -5,7 +5,7 @@ export const FileTypes = [
   'document',
   'archive',
   'executable',
-  'other'
+  'unknown'
 ] as const
 
 export type FileTypes = typeof FileTypes[number]
