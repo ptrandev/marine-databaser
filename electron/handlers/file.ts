@@ -50,18 +50,7 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
 
   if (fileTypes.length > 0) {
     options.where['mime_type'] = {
-      [Op.or]: fileTypes.map((fileType) => {
-        switch (fileType) {
-          case 'image':
-            return { [Op.like]: 'image/%' };
-          case 'video':
-            return { [Op.like]: 'video/%' };
-          case 'audio':
-            return { [Op.like]: 'audio/%' };
-          default:
-            return 'false';
-        }
-      })
+      [Op.or]: matchMimeTypes(fileTypes).map((mimeType) => { return { [Op.like]: mimeType } })
     }
   }
 
@@ -70,4 +59,62 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
   );
 
   event.reply("listed-files", files);
+}
+
+/**
+ * Returns a flattened array of mime types based on the file types. This is used
+ * to filter the files based on the file types.
+ * @param FileTypes[] The file types to match
+ * @returns string[] The mime types to match
+ */
+const matchMimeTypes = (FileTypes: FileTypes[]): string[] => {
+  return FileTypes.map((fileType) => {
+    switch (fileType) {
+      case 'image':
+        return 'image/%';
+      case 'video':
+        return 'video/%';
+      case 'audio':
+        return 'audio/%';
+      case 'document':
+        return [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.ms-excel',
+          'application/vnd.ms-powerpoint',
+          'text/%'
+        ];
+      case 'archive':
+        return [
+          'application/zip',
+          'application/x-rar-compressed',
+          'application/x-7z-compressed',
+          'application/x-tar',
+          'application/x-bzip',
+          'application/x-bzip2',
+          'application/x-gzip',
+          'application/x-xz',
+          'application/x-lzip',
+          'application/x-lzma',
+          'application/x-lzop',
+          'application/x-snappy-framed',
+          'application/xz',
+          'application/x-gtar',
+        ];
+      case 'executable':
+        return [
+          'application/x-msdownload',
+          'application/x-dosexec',
+          'application/x-executable',
+          'application/x-sharedlib',
+          'application/x-shellscript',
+          'application/x-pie-executable',
+          'application/x-object',
+          'application/x-archive',
+          'application/x-mach-binary',
+        ];
+      default:
+        return 'false';
+    }
+  }).flat();
 }
