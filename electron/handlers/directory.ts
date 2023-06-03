@@ -41,7 +41,7 @@ export const handleSelectDirectory = async (win : BrowserWindow, event : IpcMain
       name: file.split("/").pop(),
       path: file,
       directory_id: directory.id,
-      mimeType: mime.lookup(file).toString(),
+      mime_type: mime.lookup(file).toString(),
     }))
   );
 

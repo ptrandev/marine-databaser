@@ -49,21 +49,19 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
   }
 
   if (fileTypes.length > 0) {
-    options.where = {
-      mimeType: {
-        [Op.or]: fileTypes.map((fileType) => {
-          switch (fileType) {
-            case 'image':
-              return { [Op.like]: 'image/%' };
-            case 'video':
-              return { [Op.like]: 'video/%' };
-            case 'audio':
-              return { [Op.like]: 'audio/%' };
-            default:
-              return 'false';
-          }
-        }),
-      }
+    options.where['mime_type'] = {
+      [Op.or]: fileTypes.map((fileType) => {
+        switch (fileType) {
+          case 'image':
+            return { [Op.like]: 'image/%' };
+          case 'video':
+            return { [Op.like]: 'video/%' };
+          case 'audio':
+            return { [Op.like]: 'audio/%' };
+          default:
+            return 'false';
+        }
+      })
     }
   }
 
