@@ -1,13 +1,12 @@
-import { FC, useState, useEffect } from "react"
+import { FC, useState } from "react"
 import { List, ListItemButton, ListItemText, IconButton, Box, Chip, Typography, Stack } from "@mui/material"
 import { ipcRenderer } from "electron"
 
-import { File } from "../../../electron/database/schemas"
 import { Virtuoso } from "react-virtuoso"
 import { Sell } from "@mui/icons-material"
 import FileTagModal from "./FileTagModal"
 
-import { FileWithTags } from "@/types/FileWithTags"
+import { FileWithTags } from "../../../shared/types"
 
 interface FileListProps {
   files: FileWithTags[]
@@ -30,7 +29,7 @@ const FileList: FC<FileListProps> = ({ files, loadFiles }) => {
     <>
       <List>
         <Virtuoso
-          style={{ height: 400 }}
+          style={{ height: 'calc(100vh - 64px - 128px - 72px)' }}
           data={files}
           itemContent={(_, file) => (
             <ListItemButton

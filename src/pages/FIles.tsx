@@ -26,9 +26,9 @@ const Files = () => {
   const loadFiles = () => {
     setIsLoading(true)
 
-    const directories : number[] = selectedDirectories?.map(directory => directory.id) ?? []
-    const tags : number[] = selectedTags?.map(tag => tag.id) ?? []
-    const fileTypes : string[] = selectedFileTypes ?? []
+    const directories: number[] = selectedDirectories?.map(directory => directory.id) ?? []
+    const tags: number[] = selectedTags?.map(tag => tag.id) ?? []
+    const fileTypes: string[] = selectedFileTypes ?? []
 
     ipcRenderer.send('list-files', { directories, tags, fileTypes })
     ipcRenderer.on('listed-files', (_, files) => {
@@ -67,9 +67,11 @@ const Files = () => {
   }, [selectedDirectories, selectedTags, selectedFileTypes])
 
   return (
-    <Box height='100%'>
-      <FileSearch />
-      <FileFilters />
+    <Box>
+      <Box>
+        <FileSearch />
+        <FileFilters />
+      </Box>
       {
         !isLoading && searchFiles && (
           <>
