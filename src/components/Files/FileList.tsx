@@ -7,13 +7,11 @@ import { Sell } from "@mui/icons-material"
 import FileTagModal from "./FileTagModal"
 
 import { FileWithTags } from "../../../shared/types"
+import useFiles from "@/hooks/useFiles"
 
-interface FileListProps {
-  files: FileWithTags[]
-  loadFiles: () => void
-}
+const FileList: FC = () => {
+  const { files, loadFiles } = useFiles()
 
-const FileList: FC<FileListProps> = ({ files, loadFiles }) => {
   const [fileTagFile, setFileTagFile] = useState<FileWithTags>()
 
   const handleFileTagModalClose = () => {
