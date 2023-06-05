@@ -1,6 +1,6 @@
 import { BrowserWindow, IpcMainEvent, dialog } from "electron";
 import { Tag, File } from "../database/schemas";
-import { FindOptions, Op } from "sequelize";
+import { FindOptions, Op, Sequelize } from "sequelize";
 import { FileTypes } from "../../shared/types"
 
 export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent) => {
@@ -20,11 +20,12 @@ export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent) 
 };
 
 export const handleListFiles = async (event: IpcMainEvent, arg: {
-  directories: number[],
-  tags: number[],
-  fileTypes: FileTypes[],
+  directories?: number[],
+  tags?: number[],
+  fileTypes?: FileTypes[],
+  searchTerm?: string
 }) => {
-  const { directories, tags, fileTypes } = arg;
+  const { directories, tags, fileTypes, searchTerm } = arg;
 
   const options: FindOptions = {
     where: {},
@@ -33,11 +34,11 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
     },
   };
 
-  if (directories.length > 0) {
+  if (directories?.length > 0) {
     options.where["directory_id"] = directories;
   }
 
-  if (tags.length > 0) {
+  if (tags?.length > 0) {
     options.include = [
       {
         model: Tag,
@@ -48,7 +49,13 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
     ];
   }
 
-  if (fileTypes.length > 0) {
+  if (searchTerm?.length > 0) {
+    options.where['name'] = {
+      [Op.like]: `%${searchTerm.toLowerCase()}%`
+    }
+  }
+
+  if (fileTypes?.length > 0) {
     options.where['mime_type'] = {
       [Op.or]: matchMimeTypes(fileTypes).map((mimeType) => { return { [Op.like]: mimeType } })
     }
