@@ -50,20 +50,9 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
   }
 
   if (searchTerm?.length > 0) {
-    const search : string = searchTerm.toLowerCase();
-
-    options.where[Op.or] = [
-      {
-        path: {
-          [Op.like]: `%${search}%`,
-        },
-      },
-      {
-        name: {
-          [Op.like]: `%${search}%`,
-        },
-      },
-    ];
+    options.where['path'] = {
+      [Op.like]: `%${searchTerm.toLowerCase()}%`,
+    };
   }
 
   if (fileTypes?.length > 0) {
