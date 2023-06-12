@@ -4,9 +4,9 @@ import { Directory } from '../../electron/database/schemas'
 
 export interface DirectoriesContextValue {
   directories: Directory[]
-  isLoadingDirectories: boolean
   directoriesFileCount: Record<number, number>
   loadDirectories: () => void
+  isLoadingDirectories: boolean
   isInitializingDirectory: boolean
   handleIsInitializingDirectory: (initializingDirectory: boolean) => void
 }
@@ -19,9 +19,10 @@ interface DirectoriesProviderProps {
 
 export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) => {
   const [directories, setDirectories] = useState<Directory[]>([])
-  const [isLoadingDirectories, setIsLoadingDirectories] = useState<boolean>(true)
 
   const [directoriesFileCount, setDirectoriesFileCount] = useState<Record<number, number>>({})
+
+  const [isLoadingDirectories, setIsLoadingDirectories] = useState<boolean>(true)
   const [isInitializingDirectory, setIsInitializingDirectory] = useState<boolean>(false)
 
   const loadDirectories = () => {
@@ -61,7 +62,7 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
       loadDirectories,
       handleIsInitializingDirectory
     }
-  }, [directories, isLoadingDirectories, directoriesFileCount])
+  }, [directories, isLoadingDirectories, isInitializingDirectory, directoriesFileCount])
 
   return (
     <DirectoriesContext.Provider value={contextValue}>
