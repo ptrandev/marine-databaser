@@ -54,7 +54,9 @@ const DirectoryList: FC = () => {
                   <>
                     {directory.name}
                     <Typography variant='caption' display='inline'>
-                      {directoriesFileCount[directory.id] ? ` (${directoriesFileCount[directory.id]} files)` : ''}
+                      {directoriesFileCount[directory.id] ? ` (${
+                        new Intl.NumberFormat().format(directoriesFileCount[directory.id])
+                      } files)` : ''}
                     </Typography>
                   </>
                 }
