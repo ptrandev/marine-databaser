@@ -2,6 +2,7 @@ import { BrowserWindow, IpcMainEvent, dialog, shell } from "electron";
 import { Directory, File } from "../database/schemas";
 const fs = require("fs").promises;
 import mime from "mime-types";
+import { Sequelize } from "sequelize";
 
 const getFileList = async (directory) => {
   let files = [];
@@ -53,6 +54,33 @@ export const handleListDirectories = async (event : IpcMainEvent) => {
     (dictionaries) => dictionaries.map((dictionary) => dictionary.toJSON())
   );
   event.reply("listed-directories", directories);
+};
+
+export const handleDirectoriesFileCount = async (event : IpcMainEvent) => {
+  // get number of files for each directory
+  const directories = await Directory.findAll({
+    attributes: [
+      "id",
+      [Sequelize.fn("COUNT", Sequelize.col("files.id")), "file_count"],
+    ],
+    include: [
+      {
+        model: File,
+        attributes: [],
+      },
+    ],
+    group: ["directory.id"],
+  }).then(
+    (directories) =>
+    directories.reduce((acc, directory) => {
+      // @ts-ignore
+      const { id, file_count } = directory.toJSON();
+      acc[id] = file_count;
+      return acc;
+    }, {})
+  );
+
+  event.reply("listed-directories-file-count", directories);
 };
 
 export const handleOpenDirectory = async (arg : { path: string }) => {

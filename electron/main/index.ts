@@ -133,7 +133,7 @@ sequelize
     console.error("Unable to connect to the database:", err);
   });
 
-import { handleDeleteDirectory, handleListDirectories, handleOpenDirectory, handleSelectDirectory } from "../handlers/directory";
+import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleSelectDirectory } from "../handlers/directory";
 import { handleListFiles, handleSelectFile } from "../handlers/file";
 import { handleListTags, handleTagFile, handleUntagFile } from "../handlers/tag";
 
@@ -155,6 +155,10 @@ ipcMain.on("open-directory", async (_, arg) => {
 
 ipcMain.on("delete-directory", async (event, arg) => {
   handleDeleteDirectory(event, arg);
+});
+
+ipcMain.on('list-directories-file-count', async (event) => {
+  handleDirectoriesFileCount(event);
 });
 
 //

@@ -1,16 +1,17 @@
 import { Delete } from "@mui/icons-material"
-import { IconButton, List, ListItemText, ListItemButton } from "@mui/material"
+import { IconButton, List, ListItemText, ListItemButton, Typography, Stack } from "@mui/material"
 import { ipcRenderer } from "electron"
-import { FC } from "react"
+import { FC, useEffect } from "react"
 
 import { Directory } from "../../../electron/database/schemas"
 
 interface DirectoryListProps {
   directories: Directory[]
+  directoriesFileCount: Record<number, number>
   loadDirectories: () => void
 }
 
-const DirectoryList: FC<DirectoryListProps> = ({ directories, loadDirectories }) => {
+const DirectoryList: FC<DirectoryListProps> = ({ directories, directoriesFileCount, loadDirectories }) => {
   const handleOpenDirectory = (path: string) => {
     ipcRenderer.send('open-directory', { path })
   }
@@ -22,6 +23,10 @@ const DirectoryList: FC<DirectoryListProps> = ({ directories, loadDirectories })
     })
   }
 
+  useEffect(() => {
+    console.log(directoriesFileCount)
+  }, [directoriesFileCount])
+
     return (
       <List>
         {
@@ -31,7 +36,14 @@ const DirectoryList: FC<DirectoryListProps> = ({ directories, loadDirectories })
               onClick={() => handleOpenDirectory(directory.path)}
             >
               <ListItemText
-                primary={directory.name}
+                primary={
+                  <>
+                  {directory.name}
+                  <Typography variant='caption' display='inline'>
+                    {directoriesFileCount[directory.id] ? ` (${directoriesFileCount[directory.id]} files)` : ''}
+                  </Typography>
+                  </>
+                }
                 secondary={directory.path}
               />
               <IconButton

@@ -8,13 +8,19 @@ import { ipcRenderer } from 'electron'
 
 const Directories = () => {
   const [directories, setDirectories] = useState<Directory[]>()
+  const [directoriesFileCount, setDirectoriesFileCount] = useState<Record<number, number>>({})
+
   const [initializingDirectory, setInitializingDirectory] = useState<boolean>(false)
 
   const loadDirectories = () => {
     ipcRenderer.send('list-directories')
     ipcRenderer.on('listed-directories', (_, directories) => {
-      console.log(directories)
       setDirectories(directories)
+    })
+
+    ipcRenderer.send('list-directories-file-count')
+    ipcRenderer.on('listed-directories-file-count', (_, data) => {
+      setDirectoriesFileCount(data)
     })
   }
 
@@ -59,7 +65,7 @@ const Directories = () => {
       }
       {
         directories &&
-        <DirectoryList directories={directories} loadDirectories={loadDirectories} />
+        <DirectoryList directories={directories} directoriesFileCount={directoriesFileCount} loadDirectories={loadDirectories} />
       }
     </Box>
   )
