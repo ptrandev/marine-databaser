@@ -53,6 +53,13 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
     loadFiles()
   }, [selectedDirectories, selectedTags, selectedFileTypes])
 
+
+  useEffect(() => {
+    return () => {
+      ipcRenderer.removeAllListeners('listed-files')
+    }
+  }, [])
+
   const contextValue = useMemo(() => {
     return {
       files,

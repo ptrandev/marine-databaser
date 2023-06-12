@@ -30,6 +30,11 @@ const FileFilters : FC = () => {
   useEffect(() => {
     loadDirectories()
     loadTags()
+
+    return () => {
+      ipcRenderer.removeAllListeners('listed-directories')
+      ipcRenderer.removeAllListeners('listed-tags')
+    }
   }, [])
 
   return (

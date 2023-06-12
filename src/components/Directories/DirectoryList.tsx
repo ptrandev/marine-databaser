@@ -1,7 +1,7 @@
 import { Delete } from "@mui/icons-material"
 import { IconButton, List, ListItemText, ListItemButton, Typography } from "@mui/material"
 import { ipcRenderer } from "electron"
-import { FC } from "react"
+import { FC, useEffect } from "react"
 
 import useDirectories from "@/hooks/useDirectories"
 
@@ -18,6 +18,12 @@ const DirectoryList: FC = () => {
       loadDirectories()
     })
   }
+
+  useEffect(() => {
+    return () => {
+      ipcRenderer.removeAllListeners('deleted-directory')
+    }
+  }, [])
 
     return (
       <List>

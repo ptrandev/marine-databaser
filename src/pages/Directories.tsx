@@ -4,6 +4,7 @@ import { Typography, Button, Box, LinearProgress, Stack, CircularProgress } from
 
 import useDirectories from "@/hooks/useDirectories"
 import { ipcRenderer } from "electron"
+import { useEffect } from "react"
 
 const Directories = () => {
   const { isLoadingDirectories, isInitializingDirectory, handleIsInitializingDirectory, loadDirectories } = useDirectories()
@@ -20,6 +21,13 @@ const Directories = () => {
       handleIsInitializingDirectory(false)
     })
   }
+
+  useEffect(() => {
+    return () => {
+      ipcRenderer.removeAllListeners('selected-directory')
+      ipcRenderer.removeAllListeners('initialized-directory')
+    }
+  }, [])
 
   return (
     <Box>

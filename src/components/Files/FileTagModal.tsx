@@ -1,9 +1,9 @@
-import { FileWithTags } from "@/types/FileWithTags"
+import { FileWithTags } from "../../../shared/types"
 import { Close } from "@mui/icons-material"
 import { Card, Modal, Typography, Box, Chip, Button, IconButton, TextField } from "@mui/material"
 import { Stack } from "@mui/system"
 import { ipcRenderer } from "electron"
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 
 interface FileTagModalProps {
   open: boolean
@@ -40,6 +40,13 @@ const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile 
       setFile(newFile)
     })
   }
+
+  useEffect(() => {
+    return () => {
+      ipcRenderer.removeAllListeners('tagged-file')
+      ipcRenderer.removeAllListeners('untagged-file')
+    }
+  }, [])
 
   return (
     <Modal open={open} onClose={handleClose}>

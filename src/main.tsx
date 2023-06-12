@@ -10,11 +10,17 @@ import '@fontsource/roboto/700.css';
 import CssBaseline from '@mui/material/CssBaseline';
 import { RouterProvider } from 'react-router-dom';
 import router from './routes';
+import { FilesProvider } from './contexts/FilesContext';
+import { DirectoriesProvider } from './contexts/DirectoriesContext';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <CssBaseline />
-    <RouterProvider router={router} />
+    <FilesProvider>
+      <DirectoriesProvider>
+        <RouterProvider router={router} />
+      </DirectoriesProvider>
+    </FilesProvider>
   </React.StrictMode>,
 )
 

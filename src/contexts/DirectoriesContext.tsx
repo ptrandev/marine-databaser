@@ -45,6 +45,11 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
 
   useEffect(() => {
     loadDirectories()
+
+    return () => {
+      ipcRenderer.removeAllListeners('listed-directories')
+      ipcRenderer.removeAllListeners('listed-directories-file-count')
+    }
   }, [])
 
   const contextValue = useMemo(() => {
