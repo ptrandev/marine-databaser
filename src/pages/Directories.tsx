@@ -1,45 +1,25 @@
-import { useState, useEffect } from "react"
 import { DirectoryList } from "@/components/Directories"
 import { Add } from "@mui/icons-material"
-import { Typography, Button, Box, LinearProgress, Stack } from "@mui/material"
+import { Typography, Button, Box, LinearProgress, Stack, CircularProgress } from "@mui/material"
 
-import { Directory } from "../../electron/database/schemas"
-import { ipcRenderer } from 'electron'
+import useDirectories from "@/hooks/useDirectories"
+import { ipcRenderer } from "electron"
 
 const Directories = () => {
-  const [directories, setDirectories] = useState<Directory[]>()
-  const [directoriesFileCount, setDirectoriesFileCount] = useState<Record<number, number>>({})
-
-  const [initializingDirectory, setInitializingDirectory] = useState<boolean>(false)
-
-  const loadDirectories = () => {
-    ipcRenderer.send('list-directories')
-    ipcRenderer.on('listed-directories', (_, directories) => {
-      setDirectories(directories)
-    })
-
-    ipcRenderer.send('list-directories-file-count')
-    ipcRenderer.on('listed-directories-file-count', (_, data) => {
-      setDirectoriesFileCount(data)
-    })
-  }
+  const { isLoadingDirectories, isInitializingDirectory, handleIsInitializingDirectory, loadDirectories } = useDirectories()
 
   const handleSelectDirectory = () => {
     ipcRenderer.send('select-directory')
 
     ipcRenderer.on('selected-directory', () => {
-      setInitializingDirectory(true)
+      handleIsInitializingDirectory(true)
     })
 
     ipcRenderer.on('initialized-directory', () => {
       loadDirectories()
-      setInitializingDirectory(false)
+      handleIsInitializingDirectory(false)
     })
   }
-
-  useEffect(() => {
-    loadDirectories()
-  }, [])
 
   return (
     <Box>
@@ -54,7 +34,7 @@ const Directories = () => {
         </Button>
       </Stack>
       {
-        initializingDirectory && (
+        isInitializingDirectory && (
           <Box width='100%'>
             <Typography mb={1}>
               Initializing new directory...
@@ -64,8 +44,16 @@ const Directories = () => {
         )
       }
       {
-        directories &&
-        <DirectoryList directories={directories} directoriesFileCount={directoriesFileCount} loadDirectories={loadDirectories} />
+        isLoadingDirectories ? (
+          <Box display='flex' flexDirection='column' mt={4} alignItems='center' justifyContent='center' width='100%' gap={2}>
+            <CircularProgress />
+            <Typography>
+              Loading directories...
+            </Typography>
+          </Box>
+        ) : (
+          <DirectoryList />
+        )
       }
     </Box>
   )

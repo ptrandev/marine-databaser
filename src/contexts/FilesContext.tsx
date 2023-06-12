@@ -7,7 +7,7 @@ import { useEffectDebounced } from '@/hooks/useEffectDebounced'
 export interface FilesContextValue {
   files: FileWithTags[]
   loadFiles: () => void
-  isLoading: boolean
+  isLoadingFiles: boolean
   searchTerm: string
   updateSearchTerm: (searchTerm: string) => void
   selectedDirectories: Directory[]
@@ -26,14 +26,14 @@ interface FilesProviderProps {
 
 export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
   const [files, setFiles] = useState<FileWithTags[]>([])
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isLoadingFiles, setIsLoadingFiles] = useState<boolean>(true)
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [selectedDirectories, setSelectedDirectories] = useState<Directory[]>([])
   const [selectedTags, setSelectedTags] = useState<Tag[]>([])
   const [selectedFileTypes, setSelectedFileTypes] = useState<FileTypes[]>([])
 
   const loadFiles = () => {
-    setIsLoading(true)
+    setIsLoadingFiles(true)
 
     const directories: number[] = selectedDirectories?.map(directory => directory.id)
     const tags: number[] = selectedTags?.map(tag => tag.id)
@@ -41,7 +41,7 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
     ipcRenderer.send('list-files', { directories, tags, searchTerm, fileTypes: selectedFileTypes })
     ipcRenderer.on('listed-files', (_, files) => {
       setFiles(files)
-      setIsLoading(false)
+      setIsLoadingFiles(false)
     })
   }
 
@@ -57,7 +57,7 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
     return {
       files,
       loadFiles,
-      isLoading,
+      isLoadingFiles,
       searchTerm,
       updateSearchTerm: (searchTerm: string) => setSearchTerm(searchTerm),
       selectedDirectories,
@@ -67,7 +67,7 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
       selectedFileTypes,
       updateSelectedFileTypes: (fileTypes: FileTypes[]) => setSelectedFileTypes(fileTypes)
     }
-  }, [files, isLoading, searchTerm, selectedDirectories, selectedTags, selectedFileTypes])
+  }, [files, isLoadingFiles, searchTerm, selectedDirectories, selectedTags, selectedFileTypes])
 
   return (
     <FilesContext.Provider value={contextValue}>

@@ -1,17 +1,13 @@
 import { Delete } from "@mui/icons-material"
-import { IconButton, List, ListItemText, ListItemButton, Typography, Stack } from "@mui/material"
+import { IconButton, List, ListItemText, ListItemButton, Typography } from "@mui/material"
 import { ipcRenderer } from "electron"
-import { FC, useEffect } from "react"
+import { FC } from "react"
 
-import { Directory } from "../../../electron/database/schemas"
+import useDirectories from "@/hooks/useDirectories"
 
-interface DirectoryListProps {
-  directories: Directory[]
-  directoriesFileCount: Record<number, number>
-  loadDirectories: () => void
-}
+const DirectoryList: FC = () => {
+  const { directories, isLoadingDirectories, directoriesFileCount, loadDirectories } = useDirectories()
 
-const DirectoryList: FC<DirectoryListProps> = ({ directories, directoriesFileCount, loadDirectories }) => {
   const handleOpenDirectory = (path: string) => {
     ipcRenderer.send('open-directory', { path })
   }
@@ -22,10 +18,6 @@ const DirectoryList: FC<DirectoryListProps> = ({ directories, directoriesFileCou
       loadDirectories()
     })
   }
-
-  useEffect(() => {
-    console.log(directoriesFileCount)
-  }, [directoriesFileCount])
 
     return (
       <List>
