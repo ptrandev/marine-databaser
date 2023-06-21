@@ -1,5 +1,6 @@
 import { AppBar, Box, Button, Toolbar } from "@mui/material"
 import { NavLink } from "react-router-dom"
+import { ipcRenderer } from 'electron'
 
 const Navbar = () => {
   return (
@@ -10,6 +11,14 @@ const Navbar = () => {
         </Button>
         <Button color='inherit' to='/directories' component={NavLink}>
           Manage Directories
+        </Button>
+        <Button
+          color='inherit'
+          onClick={() => {
+            ipcRenderer.send('extract-audio')
+          }}
+        >
+          Extract Audio
         </Button>
       </Toolbar>
     </AppBar>

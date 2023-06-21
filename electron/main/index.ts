@@ -136,6 +136,7 @@ sequelize
 import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleSelectDirectory } from "../handlers/directory";
 import { handleListFiles, handleSelectFile } from "../handlers/file";
 import { handleListTags, handleTagFile, handleUntagFile } from "../handlers/tag";
+import { handleExtractAudio } from "../handlers/ffmpeg";
 
 //
 // DIRECTORY
@@ -160,6 +161,14 @@ ipcMain.on("delete-directory", async (event, arg) => {
 ipcMain.on('list-directories-file-count', async (event) => {
   handleDirectoriesFileCount(event);
 });
+
+//
+// FFMPEG
+//
+
+ipcMain.on("extract-audio", async (_, arg) => {
+  handleExtractAudio(win);
+})
 
 //
 // FILE

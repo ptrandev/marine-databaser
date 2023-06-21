@@ -6,7 +6,9 @@ import { Sequelize } from "sequelize";
 
 const getFileList = async (directory) => {
   let files = [];
-  const items = await fs.readdir(directory, { withFileTypes: true });
+  const items = await fs.readdir(directory, { withFileTypes: true }).catch(() => {
+    return [];
+  });
 
   for (const item of items) {
     if (item.isDirectory()) {
