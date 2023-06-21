@@ -21,7 +21,7 @@ const getFileList = async (directory) => {
   return files;
 };
 
-export const handleSelectDirectory = async (win : BrowserWindow, event : IpcMainEvent) => {
+export const handleSelectDirectory = async (win: BrowserWindow, event: IpcMainEvent) => {
   const result = await dialog.showOpenDialog(win, {
     properties: ["openDirectory"],
   });
@@ -40,25 +40,26 @@ export const handleSelectDirectory = async (win : BrowserWindow, event : IpcMain
   const files = await getFileList(result.filePaths[0]);
 
   await File.bulkCreate(
-    files.map((file) => ({
+    await Promise.all(files.map(async (file) => ({
       name: file.split("/").pop(),
       path: file,
       directory_id: directory.id,
-      mime_type: mime.lookup(file).toString(),
-    }))
+      mimeType: mime.lookup(file).toString(),
+      lastModified: (await fs.stat(file)).mtime,
+    })))
   );
 
   event.reply("initialized-directory");
 };
 
-export const handleListDirectories = async (event : IpcMainEvent) => {
+export const handleListDirectories = async (event: IpcMainEvent) => {
   const directories: Directory[] = await Directory.findAll().then(
     (dictionaries) => dictionaries.map((dictionary) => dictionary.toJSON())
   );
   event.reply("listed-directories", directories);
 };
 
-export const handleDirectoriesFileCount = async (event : IpcMainEvent) => {
+export const handleDirectoriesFileCount = async (event: IpcMainEvent) => {
   // get number of files for each directory
   const directories = await Directory.findAll({
     attributes: [
@@ -74,23 +75,23 @@ export const handleDirectoriesFileCount = async (event : IpcMainEvent) => {
     group: ["directory.id"],
   }).then(
     (directories) =>
-    directories.reduce((acc, directory) => {
-      // @ts-ignore
-      const { id, file_count } = directory.toJSON();
-      acc[id] = file_count;
-      return acc;
-    }, {})
+      directories.reduce((acc, directory) => {
+        // @ts-ignore
+        const { id, file_count } = directory.toJSON();
+        acc[id] = file_count;
+        return acc;
+      }, {})
   );
 
   event.reply("listed-directories-file-count", directories);
 };
 
-export const handleOpenDirectory = async (arg : { path: string }) => {
+export const handleOpenDirectory = async (arg: { path: string }) => {
   const { path } = arg;
   shell.openPath(path);
 };
 
-export const handleDeleteDirectory = async (event : IpcMainEvent, arg : { directory_id: number }) => {
+export const handleDeleteDirectory = async (event: IpcMainEvent, arg: { directory_id: number }) => {
   const { directory_id } = arg;
 
   await Directory.destroy({
@@ -107,4 +108,13 @@ export const handleDeleteDirectory = async (event : IpcMainEvent, arg : { direct
   });
 
   event.reply("deleted-directory", arg);
+}
+
+/**
+ * Refreshes the files in every directory
+ * @param event
+ * @returns
+ */
+export const handleRefreshDirectories = async (event: IpcMainEvent) => {
+  // stub
 }

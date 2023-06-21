@@ -8,7 +8,8 @@ class File extends Model<InferAttributes<File>, InferCreationAttributes<File>> {
   directory_id: number;
   name: string;
   path: string;
-  mime_type: string;
+  mimeType: string;
+  lastModified: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,10 +32,11 @@ File.init({
     type: Sequelize.STRING,
     allowNull: false,
   },
-  mime_type: {
+  mimeType: {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  lastModified: DataTypes.DATE,
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,
 }, {

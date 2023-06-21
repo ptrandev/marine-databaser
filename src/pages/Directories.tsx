@@ -1,6 +1,6 @@
 import { DirectoryList } from "@/components/Directories"
-import { Add } from "@mui/icons-material"
-import { Typography, Button, Box, LinearProgress, Stack, CircularProgress } from "@mui/material"
+import { Add, Refresh } from "@mui/icons-material"
+import { Typography, Button, Box, LinearProgress, Stack, CircularProgress, IconButton } from "@mui/material"
 
 import useDirectories from "@/hooks/useDirectories"
 import { ipcRenderer } from "electron"
@@ -31,15 +31,24 @@ const Directories = () => {
 
   return (
     <Box>
-      <Stack flexWrap='wrap' direction='row' justifyContent='space-between' width='100%' mb={2}>
+      <Stack flexWrap='wrap' direction='row' justifyContent='space-between' width='100%' mb={2} gap={2}>
         <Typography variant='h4' mr={2}>
           Directories
         </Typography>
-        <Button variant='contained' startIcon={<Add />}
-          onClick={handleSelectDirectory}
-        >
-          Add New Directory
-        </Button>
+        <Stack direction='row' alignItems='center' gap={2}>
+          <Box>
+            <Button color='primary' startIcon={<Refresh />} size='small'>
+              Refresh
+            </Button>
+          </Box>
+          <Box>
+            <Button variant='contained' startIcon={<Add />}
+              onClick={handleSelectDirectory}
+            >
+              New Directory
+            </Button>
+          </Box>
+        </Stack>
       </Stack>
       {
         isInitializingDirectory && (

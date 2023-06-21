@@ -56,7 +56,7 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
   }
 
   if (fileTypes?.length > 0) {
-    options.where['mime_type'] = {
+    options.where['mimeType'] = {
       [Op.or]: matchMimeTypes(fileTypes).map((mimeType) => { return { [Op.like]: mimeType } })
     }
   }

@@ -54,13 +54,16 @@ const DirectoryList: FC = () => {
                   <>
                     {directory.name}
                     <Typography variant='caption' display='inline'>
-                      {directoriesFileCount[directory.id] ? ` (${
-                        new Intl.NumberFormat().format(directoriesFileCount[directory.id])
-                      } files)` : ''}
+                      {directoriesFileCount[directory.id] ? ` (${new Intl.NumberFormat().format(directoriesFileCount[directory.id])
+                        } files)` : ''}
                     </Typography>
                   </>
                 }
-                secondary={directory.path}
+                secondary={
+                  <Typography variant='body2' color='text.secondary' noWrap>
+                    {directory.path}
+                  </Typography>
+                }
               />
               <IconButton
                 aria-label='delete'

@@ -162,6 +162,10 @@ ipcMain.on('list-directories-file-count', async (event) => {
   handleDirectoriesFileCount(event);
 });
 
+ipcMain.on('refresh-directories', async (event) => {
+  handleRefreshDirectories(event);
+})
+
 //
 // FFMPEG
 //

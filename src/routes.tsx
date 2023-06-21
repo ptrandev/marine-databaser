@@ -10,7 +10,7 @@ const NavbarWrapper = () => {
   return (
     <Box>
       <Navbar />
-      <Box pt={2} px={4}>
+      <Box pt={2} px={2}>
         <Outlet />
       </Box>
     </Box>
