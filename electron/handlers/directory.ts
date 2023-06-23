@@ -48,14 +48,16 @@ const addFileToDatabase = async ({ file, directory_id }: {
     birthTime: Date,
     fileSize: number
   }> => {
+  const { mtime, birthtime, size } = await fs.stat(file);
+
   return {
     name: file.split("/").pop(),
     path: file,
     directory_id,
     mimeType: mime.lookup(file).toString(),
-    lastModified: (await fs.stat(file)).mtime,
-    birthTime: (await fs.stat(file)).birthtime,
-    fileSize: (await fs.stat(file)).size,
+    lastModified: mtime,
+    birthTime: birthtime,
+    fileSize: size,
   }
 }
 
@@ -156,22 +158,27 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
 
     const files = await getFileList(directory.path);
 
-    // check if file already exists in database
-    const existingFiles = await File.findAll({
-      where: {
-        directory_id: directory.id,
-        path: files,
-      },
-    }).then((files) => files.map((file) => file.toJSON()));
+    // get files that already exist in the database
+    // to exist in the database, it must have the same path and birthTime
+    const existingFiles = await Promise.all(
+      files.map(async (file) => {
+        return await File.findOne({
+          where: {
+            path: file,
+            birthTime: (await fs.stat(file)).birthtime,
+          },
+        });
+      })
+    ).then((files) => files.filter((file) => file !== null));
 
-    // if it does, update the lastModified and fileSize
+    // for files that already exist in the database, update metadata
     await Promise.all(
       existingFiles.map(async (file) => {
-        const { lastModified, fileSize } = await fs.stat(file.path);
+        const { mtime, size } = await fs.stat(file.path);
         await File.update(
           {
-            lastModified,
-            fileSize,
+            lastModified: mtime,
+            fileSize: size,
             updatedAt: currentTime,
           },
           {
@@ -184,10 +191,60 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
       )
     );
 
-    // if it doesn't, add it to the database
+    // get files that have been renamed
+    // to be renamed, the file must have the same birthTime, fileSize, mimeType,
+    // and lastModified, but a different path
+    const renamedFiles = await Promise.all(
+      files
+        .filter((file) => !existingFiles.map((file) => file.path).includes(file))
+        .map(async (file) => {
+          const { birthtime, size, mtime } = await fs.stat(file);
+          const mimeType = mime.lookup(file).toString();
+
+          const renamedFile = await File.findOne({
+            where: {
+              birthTime: birthtime,
+              fileSize: size,
+              lastModified: mtime,
+              mimeType,
+            },
+          });
+
+          // if the file was renamed, update the database
+          if (renamedFile !== null) {
+            await File.update(
+              {
+                name: file.split("/").pop(),
+                path: file,
+                updatedAt: currentTime,
+              },
+              {
+                where: {
+                  id: renamedFile.id,
+                },
+              }
+            ).then(() => {
+              return File.findOne({
+                where: {
+                  id: renamedFile.id,
+                },
+              });
+            });
+          }
+
+          return renamedFile;
+        })
+    ).then((files) => files.filter((file) => file !== null));
+
+    // TODO: figure out why it still adds a renamed file as a new file
+
+    // add new files to the database
     await addFilesToDatabase({
-      files: files
-        .filter((file) => !existingFiles.map((file) => file.path).includes(file)),
+      files: files.filter(
+        (file) =>
+          !existingFiles.map((file) => file.path).includes(file) &&
+          !renamedFiles.map((file) => file.path).includes(file)
+      ),
       directory_id: directory.id
     });
 
