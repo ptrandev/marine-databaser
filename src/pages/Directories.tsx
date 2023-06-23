@@ -22,10 +22,21 @@ const Directories = () => {
     })
   }
 
+  const handleRefresh = () => {
+    handleIsInitializingDirectory(true)
+    ipcRenderer.send('refresh-directories')
+
+    ipcRenderer.on('refreshed-directories', () => {
+      loadDirectories()
+      handleIsInitializingDirectory(false)
+    })
+  }
+
   useEffect(() => {
     return () => {
       ipcRenderer.removeAllListeners('selected-directory')
       ipcRenderer.removeAllListeners('initialized-directory')
+      ipcRenderer.removeAllListeners('refreshed-directories')
     }
   }, [])
 
@@ -37,7 +48,12 @@ const Directories = () => {
         </Typography>
         <Stack direction='row' alignItems='center' gap={2}>
           <Box>
-            <Button color='primary' startIcon={<Refresh />} size='small'>
+            <Button
+              color='primary'
+              startIcon={<Refresh />}
+              size='small'
+              onClick={handleRefresh}
+            >
               Refresh
             </Button>
           </Box>

@@ -2,7 +2,7 @@ import { BrowserWindow, IpcMainEvent, dialog, shell } from "electron";
 import { Directory, File } from "../database/schemas";
 const fs = require("fs").promises;
 import mime from "mime-types";
-import { Sequelize } from "sequelize";
+import { Sequelize, Op } from "sequelize";
 
 const getFileList = async (directory) => {
   let files = [];
@@ -46,6 +46,7 @@ export const handleSelectDirectory = async (win: BrowserWindow, event: IpcMainEv
       directory_id: directory.id,
       mimeType: mime.lookup(file).toString(),
       lastModified: (await fs.stat(file)).mtime,
+      fileSize: (await fs.stat(file)).size,
     })))
   );
 
@@ -116,5 +117,73 @@ export const handleDeleteDirectory = async (event: IpcMainEvent, arg: { director
  * @returns
  */
 export const handleRefreshDirectories = async (event: IpcMainEvent) => {
-  // stub
+  // get all directories
+  const directories = await Directory.findAll().then(
+    (dictionaries) => dictionaries.map((dictionary) => dictionary.toJSON())
+  )
+
+  directories.forEach(async (directory) => {
+    const files = await getFileList(directory.path);
+
+    // check if file already exists in database
+    const existingFiles = await File.findAll({
+      where: {
+        path: files,
+      },
+    }).then((files) => files.map((file) => file.toJSON()));
+
+    // if it does, update the lastModified and fileSize
+    await Promise.all(
+      existingFiles.map(async (file) => {
+        const { lastModified, fileSize } = await fs.stat(file.path);
+        await File.update(
+          {
+            lastModified,
+            fileSize,
+          },
+          {
+            where: {
+              id: file.id,
+            },
+          }
+        );
+      }
+      )
+    );
+
+    // if it doesn't, add it to the database
+    await File.bulkCreate(
+      await Promise.all(
+        files
+          .filter((file) => !existingFiles.map((file) => file.path).includes(file))
+          .map(async (file) => ({
+            name: file.split("/").pop(),
+            path: file,
+            directory_id: directory.id,
+            mimeType: mime.lookup(file).toString(),
+            lastModified: (await fs.stat(file)).mtime,
+            fileSize: (await fs.stat(file)).size,
+          }))
+      )
+    );
+
+    // get all files that are in the database but not in the directory
+    const deletedFiles = await File.findAll({
+      where: {
+        directory_id: directory.id,
+        path: {
+          [Op.notIn]: files,
+        },
+      },
+    }).then((files) => files.map((file) => file.toJSON()));
+
+    // delete them
+    await File.destroy({
+      where: {
+        id: deletedFiles.map((file) => file.id),
+      },
+    });
+
+    event.reply("refreshed-directories", directory);
+  })
 }
