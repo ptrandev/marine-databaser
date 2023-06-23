@@ -10,7 +10,7 @@ class File extends Model<InferAttributes<File>, InferCreationAttributes<File>> {
   path: string;
   mimeType: string;
   lastModified: Date;
-  createdAt: Date;
+  birthTime: Date;
   updatedAt: Date;
   fileSize: number;
 }
@@ -37,10 +37,10 @@ File.init({
     type: Sequelize.STRING,
     allowNull: false,
   },
-  lastModified: DataTypes.DATE,
-  createdAt: DataTypes.DATE,
-  updatedAt: DataTypes.DATE,
-  fileSize: DataTypes.INTEGER,
+  lastModified: DataTypes.DATE, // last time the FILE was modified
+  birthTime: DataTypes.DATE, // the time the file was CREATED
+  updatedAt: DataTypes.DATE, // the time at which our PROGRAM updated the file
+  fileSize: DataTypes.INTEGER, // the size of the file in bytes
 }, {
   sequelize,
 });

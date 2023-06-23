@@ -4,7 +4,7 @@ const fs = require("fs").promises;
 import mime from "mime-types";
 import { Sequelize, Op } from "sequelize";
 
-const getFileList = async (directory) => {
+const getFileList = async (directory: string): Promise<string[]> => {
   let files = [];
   const items = await fs.readdir(directory, { withFileTypes: true }).catch(() => {
     return [];
@@ -20,6 +20,44 @@ const getFileList = async (directory) => {
 
   return files;
 };
+
+const addFilesToDatabase = async ({ files, directory_id }: {
+  files: string[],
+  directory_id: number
+}): Promise<File[]> => {
+  return await File.bulkCreate(
+    await Promise.all(
+      files.map(async (file) => {
+        return await addFileToDatabase({ file, directory_id });
+      }
+      )
+    )
+  )
+}
+
+const addFileToDatabase = async ({ file, directory_id }: {
+  file: string,
+  directory_id: number
+}): Promise<
+  {
+    name: string,
+    path: string,
+    directory_id: number,
+    mimeType: string,
+    lastModified: Date,
+    birthTime: Date,
+    fileSize: number
+  }> => {
+  return {
+    name: file.split("/").pop(),
+    path: file,
+    directory_id,
+    mimeType: mime.lookup(file).toString(),
+    lastModified: (await fs.stat(file)).mtime,
+    birthTime: (await fs.stat(file)).birthtime,
+    fileSize: (await fs.stat(file)).size,
+  }
+}
 
 export const handleSelectDirectory = async (win: BrowserWindow, event: IpcMainEvent) => {
   const result = await dialog.showOpenDialog(win, {
@@ -39,16 +77,7 @@ export const handleSelectDirectory = async (win: BrowserWindow, event: IpcMainEv
   // look at files in directory; make sure to crawl subdirectories
   const files = await getFileList(result.filePaths[0]);
 
-  await File.bulkCreate(
-    await Promise.all(files.map(async (file) => ({
-      name: file.split("/").pop(),
-      path: file,
-      directory_id: directory.id,
-      mimeType: mime.lookup(file).toString(),
-      lastModified: (await fs.stat(file)).mtime,
-      fileSize: (await fs.stat(file)).size,
-    })))
-  );
+  await addFilesToDatabase({ files, directory_id: directory.id });
 
   event.reply("initialized-directory");
 };
@@ -123,11 +152,14 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
   )
 
   directories.forEach(async (directory) => {
+    const currentTime = new Date();
+
     const files = await getFileList(directory.path);
 
     // check if file already exists in database
     const existingFiles = await File.findAll({
       where: {
+        directory_id: directory.id,
         path: files,
       },
     }).then((files) => files.map((file) => file.toJSON()));
@@ -140,6 +172,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
           {
             lastModified,
             fileSize,
+            updatedAt: currentTime,
           },
           {
             where: {
@@ -152,20 +185,11 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
     );
 
     // if it doesn't, add it to the database
-    await File.bulkCreate(
-      await Promise.all(
-        files
-          .filter((file) => !existingFiles.map((file) => file.path).includes(file))
-          .map(async (file) => ({
-            name: file.split("/").pop(),
-            path: file,
-            directory_id: directory.id,
-            mimeType: mime.lookup(file).toString(),
-            lastModified: (await fs.stat(file)).mtime,
-            fileSize: (await fs.stat(file)).size,
-          }))
-      )
-    );
+    await addFilesToDatabase({
+      files: files
+        .filter((file) => !existingFiles.map((file) => file.path).includes(file)),
+      directory_id: directory.id
+    });
 
     // get all files that are in the database but not in the directory
     const deletedFiles = await File.findAll({
