@@ -3,6 +3,7 @@ import { Directory, Tag } from '../../electron/database/schemas'
 import { FileTypes, FileWithTags } from '../../shared/types'
 import { ipcRenderer } from 'electron'
 import { useEffectDebounced } from '@/hooks/useEffectDebounced'
+import useDirectories from '@/hooks/useDirectories'
 
 export interface FilesContextValue {
   files: FileWithTags[]
@@ -25,6 +26,8 @@ interface FilesProviderProps {
 }
 
 export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
+  const { directories } = useDirectories()
+
   const [files, setFiles] = useState<FileWithTags[]>([])
   const [isLoadingFiles, setIsLoadingFiles] = useState<boolean>(true)
   const [searchTerm, setSearchTerm] = useState<string>('')
@@ -51,7 +54,7 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
 
   useEffect(() => {
     loadFiles()
-  }, [selectedDirectories, selectedTags, selectedFileTypes])
+  }, [directories, selectedDirectories, selectedTags, selectedFileTypes])
 
 
   useEffect(() => {

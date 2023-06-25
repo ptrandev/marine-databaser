@@ -16,11 +16,11 @@ import { DirectoriesProvider } from './contexts/DirectoriesContext';
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <CssBaseline />
-    <FilesProvider>
-      <DirectoriesProvider>
+    <DirectoriesProvider>
+      <FilesProvider>
         <RouterProvider router={router} />
-      </DirectoriesProvider>
-    </FilesProvider>
+      </FilesProvider>
+    </DirectoriesProvider>
   </React.StrictMode>,
 )
 
