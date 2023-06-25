@@ -223,20 +223,18 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
                   id: renamedFile.id,
                 },
               }
-            ).then(() => {
-              return File.findOne({
-                where: {
-                  id: renamedFile.id,
-                },
-              });
+            )
+
+            return await File.findOne({
+              where: {
+                id: renamedFile.id,
+              },
             });
           }
 
-          return renamedFile;
+          return null;
         })
     ).then((files) => files.filter((file) => file !== null));
-
-    // TODO: figure out why it still adds a renamed file as a new file
 
     // add new files to the database
     await addFilesToDatabase({
