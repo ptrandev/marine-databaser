@@ -1,25 +1,77 @@
-import { AppBar, Box, Button, Toolbar } from "@mui/material"
+import { useState } from "react"
+import { AppBar, Box, Button, Toolbar, Menu, MenuItem, IconButton } from "@mui/material"
 import { NavLink } from "react-router-dom"
 import { ipcRenderer } from 'electron'
+import MenuIcon from '@mui/icons-material/Menu'
+
+const LINKS = [
+  {
+    label: 'Files',
+    to: '/'
+  },
+  {
+    label: 'Manage Directories',
+    to: '/directories'
+  },
+  {
+    label: 'Extract Audio',
+    to: '/extract-audio'
+  }
+]
 
 const Navbar = () => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+
   return (
     <AppBar position='sticky'>
       <Toolbar>
-        <Button color='inherit' to='/' component={NavLink}>
-          Files
-        </Button>
-        <Button color='inherit' to='/directories' component={NavLink}>
-          Manage Directories
-        </Button>
-        <Button
-          color='inherit'
-          onClick={() => {
-            ipcRenderer.send('extract-audio')
-          }}
-        >
-          Extract Audio
-        </Button>
+        <Box display={{
+          xs: 'block',
+          sm: 'none'
+        }}>
+          <IconButton edge="start" color="inherit" aria-label="menu"
+            onClick={(e) => {
+              setAnchorEl(e.currentTarget)
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={() => {
+              setAnchorEl(null)
+            }}
+          >
+            {LINKS.map((link) => (
+              <MenuItem
+                key={link.to}
+                onClick={() => {
+                  setAnchorEl(null)
+                }}
+                to={link.to}
+                component={NavLink}
+              >
+                {link.label}
+              </MenuItem>
+            ))}
+          </Menu>
+        </Box>
+        <Box display={{
+          xs: 'none',
+          sm: 'block'
+        }}>
+          {LINKS.map((link) => (
+            <Button
+              key={link.to}
+              color='inherit'
+              to={link.to}
+              component={NavLink}
+            >
+              {link.label}
+            </Button>
+          ))}
+        </Box>
       </Toolbar>
     </AppBar>
   )
