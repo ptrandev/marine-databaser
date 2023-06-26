@@ -56,6 +56,8 @@ export const handleBulkExtractAudio = async (arg: { files: number[] }) => {
 
   console.log(arg.files)
 
+  // TODO: ffmpeg invalid data when processing non video files
+
   // get all the files from the database; ensure that mimetype is video
   const files = await File.findAll({
     where: {

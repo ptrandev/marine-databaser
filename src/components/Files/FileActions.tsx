@@ -25,7 +25,7 @@ const FileActions: FC = () => {
   return (
     <Box ml={2} mr={2.5} display='flex' justifyContent='space-between'>
       <Checkbox
-        checked={selectedFiles?.length === files?.length}
+        checked={selectedFiles?.length === files?.length && selectedFiles?.length > 0}
         indeterminate={selectedFiles?.length > 0 && selectedFiles?.length < files?.length}
         onChange={(e) => {
           e.stopPropagation()
