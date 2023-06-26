@@ -7,6 +7,8 @@ import useDirectories from '@/hooks/useDirectories'
 
 export interface FilesContextValue {
   files: FileWithTags[]
+  selectedFiles: number[]
+  updateSelectedFiles: (selectedFiles: number[]) => void
   loadFiles: () => void
   isLoadingFiles: boolean
   searchTerm: string
@@ -29,6 +31,7 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
   const { directories } = useDirectories()
 
   const [files, setFiles] = useState<FileWithTags[]>([])
+  const [selectedFiles, setSelectedFiles] = useState<number[]>([])
   const [isLoadingFiles, setIsLoadingFiles] = useState<boolean>(true)
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [selectedDirectories, setSelectedDirectories] = useState<Directory[]>([])
@@ -50,12 +53,12 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
 
   useEffectDebounced(() => {
     loadFiles()
+    setSelectedFiles([])
   }, [searchTerm], 500)
 
   useEffect(() => {
     loadFiles()
   }, [directories, selectedDirectories, selectedTags, selectedFileTypes])
-
 
   useEffect(() => {
     return () => {
@@ -66,6 +69,8 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
   const contextValue = useMemo(() => {
     return {
       files,
+      selectedFiles,
+      updateSelectedFiles: (selectedFiles: number[]) => setSelectedFiles(selectedFiles),
       loadFiles,
       isLoadingFiles,
       searchTerm,
@@ -77,7 +82,7 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
       selectedFileTypes,
       updateSelectedFileTypes: (fileTypes: FileTypes[]) => setSelectedFileTypes(fileTypes)
     }
-  }, [files, isLoadingFiles, searchTerm, selectedDirectories, selectedTags, selectedFileTypes])
+  }, [files, isLoadingFiles, searchTerm, selectedDirectories, selectedTags, selectedFileTypes, selectedFiles])
 
   return (
     <FilesContext.Provider value={contextValue}>

@@ -1,7 +1,7 @@
-import { DirectoryList } from "@/components/Directories"
 import { Add, Refresh } from "@mui/icons-material"
-import { Typography, Button, Box, LinearProgress, Stack, CircularProgress, IconButton } from "@mui/material"
+import { Typography, Button, Box, LinearProgress, Stack, CircularProgress } from "@mui/material"
 
+import DirectoryList from "@/components/Directories/DirectoryList"
 import useDirectories from "@/hooks/useDirectories"
 import { ipcRenderer } from "electron"
 import { useEffect } from "react"

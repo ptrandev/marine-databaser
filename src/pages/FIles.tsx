@@ -1,13 +1,10 @@
 import { Box, CircularProgress, Typography } from "@mui/material"
 
-import { FileList } from '@/components/Files'
-
+import useFiles from "@/hooks/useFiles"
+import FileList from "@/components/Files/FileList"
 import FileSearch from "@/components/Files/FileSearch"
 import FileFilters from "@/components/Files/FileFilters"
-
-console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}!`)
-
-import useFiles from "@/hooks/useFiles"
+import FileActions from "@/components/Files/FileActions"
 
 const Files = () => {
   const { files, isLoadingFiles } = useFiles()
@@ -21,9 +18,10 @@ const Files = () => {
       {
         !isLoadingFiles && files && (
           <>
-            <Typography mt={2}>
+            <Typography my={2}>
               <span style={{ fontWeight: 'bold' }}>{files.length}</span> files found
             </Typography>
+            <FileActions />
             <FileList />
           </>
         )
