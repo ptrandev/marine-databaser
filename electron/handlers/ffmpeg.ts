@@ -1,4 +1,4 @@
-import { dialog } from 'electron';
+import { dialog, BrowserWindow } from 'electron';
 const ffmpeg = require('fluent-ffmpeg');
 
 //Get the paths to the packaged versions of the binaries we want to use
@@ -20,7 +20,7 @@ ffmpeg.setFfprobePath(ffprobePath);
  * @param {BrowserWindow} win - the window to show the dialog in
  * @returns {Promise<void>} - a promise that resolves when the audio has been extracted
  */
-export const handleExtractAudio = async (win): Promise<void> => {
+export const handleExtractAudio = async (win : BrowserWindow): Promise<void> => {
   const result = await dialog.showOpenDialog(win, {
     properties: ["openFile"],
     filters: [

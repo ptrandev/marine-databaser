@@ -1,6 +1,6 @@
 import { BrowserWindow, IpcMainEvent, dialog } from "electron";
 import { Tag, File } from "../database/schemas";
-import { FindOptions, Op, Sequelize } from "sequelize";
+import { FindOptions, Op } from "sequelize";
 import { FileTypes } from "../../shared/types"
 
 export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent) => {

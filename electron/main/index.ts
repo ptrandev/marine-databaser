@@ -5,8 +5,6 @@ import { join } from "node:path";
 import sequelize from "../database/initialize";
 import "../database/associations";
 
-import path from "path";
-
 // The built directory structure
 //
 // ├─┬ dist-electron

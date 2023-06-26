@@ -1,7 +1,8 @@
-import { Checkbox, Box } from '@mui/material'
+import { Checkbox, Box, IconButton } from '@mui/material'
 import { FC } from 'react'
 
 import useFiles from '@/hooks/useFiles'
+import { AudioFile } from '@mui/icons-material'
 
 const FileActions: FC = () => {
   const { selectedFiles, updateSelectedFiles, files } = useFiles()
@@ -21,6 +22,9 @@ const FileActions: FC = () => {
           )
         }}
       />
+      <IconButton>
+        <AudioFile />
+      </IconButton>
     </Box>
   )
 }
