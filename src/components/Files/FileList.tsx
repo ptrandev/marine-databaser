@@ -27,7 +27,7 @@ const FileList: FC = () => {
     <>
       <List>
         <Virtuoso
-          style={{ height: 'calc(100vh - 64px - 128px - 72px)' }}
+          style={{ height: 'calc(100vh - 64px - 128px - 72px - 64px)' }}
           data={files}
           itemContent={(_, file) => {
             const checked = selectedFiles?.includes(file.id)

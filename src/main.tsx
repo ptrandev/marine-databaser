@@ -12,13 +12,16 @@ import { RouterProvider } from 'react-router-dom';
 import router from './routes';
 import { FilesProvider } from './contexts/FilesContext';
 import { DirectoriesProvider } from './contexts/DirectoriesContext';
+import { ExtractAudioProvider } from './contexts/ExtractAudioContext';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <CssBaseline />
     <DirectoriesProvider>
       <FilesProvider>
-        <RouterProvider router={router} />
+        <ExtractAudioProvider>
+          <RouterProvider router={router} />
+        </ExtractAudioProvider>
       </FilesProvider>
     </DirectoriesProvider>
   </React.StrictMode>,

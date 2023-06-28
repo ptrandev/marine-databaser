@@ -1,6 +1,7 @@
-import { dialog, BrowserWindow, ipcRenderer } from 'electron';
+import { dialog, BrowserWindow, IpcMainEvent } from 'electron';
 import { Op } from 'sequelize';
 import { File } from '../database/schemas';
+import mime from 'mime-types';
 
 const ffmpeg = require('fluent-ffmpeg');
 
@@ -51,27 +52,53 @@ export const handleExtractAudio = async (win: BrowserWindow): Promise<void> => {
   return await extractAudio(inputPath);
 }
 
-export const handleBulkExtractAudio = async (arg: { files: number[] }) => {
+export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: { files: number[] | string[] }) => {
   if (arg.files.length === 0) return;
 
-  console.log(arg.files)
+  // if typeof files is number
+  if (typeof arg.files[0] === 'number') {
+    // get all the files from the database; ensure that mimetype is video
+    const files = await File.findAll({
+      where: {
+        id: arg.files,
+        mimeType: {
+          [Op.like]: 'video/%'
+        },
+      }
+    });
 
-  // TODO: ffmpeg invalid data when processing non video files
+    // for each file, extract the audio
+    files?.forEach(async (file) => {
+      await extractAudio(file.path)
+    });
 
-  // get all the files from the database; ensure that mimetype is video
-  const files = await File.findAll({
-    where: {
-      id: arg.files,
-      mimeType: {
-        [Op.like]: 'video/%'
-      },
+    return
+  }
+
+  // if typeof files is string
+  // filter mimetype to video
+  const files: string[] = await arg.files.map((file) => {
+    if (mime.lookup(file).toString().includes('video')) {
+      return file;
     }
-  });
+  })
 
   // for each file, extract the audio
-  files.forEach(async (file) => {
-    await extractAudio(file.path);
+  files?.forEach(async (file) => {
+    await extractAudio(file)
   });
 
-  ipcRenderer.send('bulk-extract-audio-complete');
+  event.reply('bulk-extract-audio');
+}
+
+// only allow video files
+export const handleSelectExtractAudioFiles = async (win: BrowserWindow, event: IpcMainEvent) => {
+  const result = await dialog.showOpenDialog(win, {
+    properties: ["openFile", "multiSelections"],
+    filters: [
+      { name: 'Video Files', extensions: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm'] }
+    ]
+  });
+
+  event.reply('selected-extract-audio-files', result.filePaths);
 }

@@ -15,7 +15,7 @@ const LINKS = [
   },
   {
     label: 'Extract Audio',
-    to: '/extract-audio'
+    to: '/audio'
   }
 ]
 

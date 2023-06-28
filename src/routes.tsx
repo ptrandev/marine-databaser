@@ -1,7 +1,8 @@
 import Files from "./pages/Files";
 import Directories from "./pages/Directories";
-import Navbar from "./components/Navbar";
+import ExtractAudio from "./pages/ExtractAudio";
 
+import Navbar from "./components/Navbar";
 
 import { createHashRouter, Outlet } from "react-router-dom";
 import { Box } from "@mui/system";
@@ -34,6 +35,12 @@ const router = createHashRouter([
           <Directories />
         ),
       },
+      {
+        path: "/audio",
+        element: (
+          <ExtractAudio />
+        ),
+      }
     ],
   },
 ]);
