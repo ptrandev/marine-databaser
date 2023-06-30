@@ -13,6 +13,7 @@ import router from './routes';
 import { FilesProvider } from './contexts/FilesContext';
 import { DirectoriesProvider } from './contexts/DirectoriesContext';
 import { ExtractAudioProvider } from './contexts/ExtractAudioContext';
+import { SpliceVideoProvider } from './contexts/SpliceVideoContext';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -20,7 +21,9 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <DirectoriesProvider>
       <FilesProvider>
         <ExtractAudioProvider>
-          <RouterProvider router={router} />
+          <SpliceVideoProvider>
+            <RouterProvider router={router} />
+          </SpliceVideoProvider>
         </ExtractAudioProvider>
       </FilesProvider>
     </DirectoriesProvider>

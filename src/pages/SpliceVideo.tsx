@@ -9,7 +9,7 @@ const SpliceVideo: FC = () => {
   const handleSelectVideo = () => {
     ipcRenderer.send('select-splice-video-file')
 
-    ipcRenderer.on('selected-splice-video-file', (event, path) => {
+    ipcRenderer.on('selected-splice-video-file', (_, path) => {
       updateSelectedVideo(path)
     })
   }
