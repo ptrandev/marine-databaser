@@ -102,3 +102,15 @@ export const handleSelectExtractAudioFiles = async (win: BrowserWindow, event: I
 
   event.reply('selected-extract-audio-files', result.filePaths);
 }
+
+// only allow video file
+export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: IpcMainEvent) => {
+  const result = await dialog.showOpenDialog(win, {
+    properties: ["openFile"],
+    filters: [
+      { name: 'Video Files', extensions: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm'] }
+    ]
+  });
+
+  event.reply('selected-splice-video-file', result.filePaths[0]);
+}

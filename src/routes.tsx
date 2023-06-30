@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 
 import { createHashRouter, Outlet } from "react-router-dom";
 import { Box } from "@mui/system";
+import SpliceVideo from "./pages/SpliceVideo";
 
 const NavbarWrapper = () => {
   return (
@@ -40,6 +41,12 @@ const router = createHashRouter([
         element: (
           <ExtractAudio />
         ),
+      },
+      {
+        path: '/video',
+        element: (
+          <SpliceVideo />
+        )
       }
     ],
   },
