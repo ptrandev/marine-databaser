@@ -26,17 +26,17 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
     ipcRenderer.send('bulk-extract-audio', { files: selectedFiles })
   }
 
-  ipcRenderer.on('bulk-extract-audio', () => {
-    setIsExtractingAudio(false)
-    setSelectedFiles([])
-    setNumCompletedFiles(0)
-  })
-
-  ipcRenderer.on('extracted-audio', () => {
-    setNumCompletedFiles((prev) => prev + 1)
-  })
-
   useEffect(() => {
+    ipcRenderer.on('bulk-extract-audio', () => {
+      setIsExtractingAudio(false)
+      setSelectedFiles([])
+      setNumCompletedFiles(0)
+    })
+
+    ipcRenderer.on('extracted-audio', () => {
+      setNumCompletedFiles((prev) => prev + 1)
+    })
+
     return () => {
       ipcRenderer.removeAllListeners('bulk-extract-audio')
       ipcRenderer.removeAllListeners('extracted-audio')

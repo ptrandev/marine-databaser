@@ -47,11 +47,6 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
     ipcRenderer.send('list-files', { directories, tags, searchTerm, fileTypes: selectedFileTypes })
   }
 
-  ipcRenderer.on('listed-files', (_, files) => {
-    setFiles(files)
-    setIsLoadingFiles(false)
-  })
-
   useEffectDebounced(() => {
     loadFiles()
     setSelectedFiles([])
@@ -62,6 +57,11 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
   }, [directories, selectedDirectories, selectedTags, selectedFileTypes])
 
   useEffect(() => {
+    ipcRenderer.on('listed-files', (_, files) => {
+      setFiles(files)
+      setIsLoadingFiles(false)
+    })
+
     return () => {
       ipcRenderer.removeAllListeners('listed-files')
     }

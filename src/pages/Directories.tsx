@@ -18,21 +18,21 @@ const Directories = () => {
     ipcRenderer.send('refresh-directories')
   }
 
-  ipcRenderer.on('selected-directory', () => {
-    handleIsInitializingDirectory(true)
-  })
-
-  ipcRenderer.on('initialized-directory', () => {
-    loadDirectories()
-    handleIsInitializingDirectory(false)
-  })
-
-  ipcRenderer.on('refreshed-directories', () => {
-    loadDirectories()
-    handleIsInitializingDirectory(false)
-  })
-
   useEffect(() => {
+    ipcRenderer.on('selected-directory', () => {
+      handleIsInitializingDirectory(true)
+    })
+
+    ipcRenderer.on('initialized-directory', () => {
+      loadDirectories()
+      handleIsInitializingDirectory(false)
+    })
+
+    ipcRenderer.on('refreshed-directories', () => {
+      loadDirectories()
+      handleIsInitializingDirectory(false)
+    })
+
     return () => {
       ipcRenderer.removeAllListeners('selected-directory')
       ipcRenderer.removeAllListeners('initialized-directory')

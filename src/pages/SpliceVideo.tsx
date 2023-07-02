@@ -27,14 +27,6 @@ const SpliceVideo: FC = () => {
     })
   }
 
-  ipcRenderer.on('selected-splice-video-file', (_, path) => {
-    updateSelectedVideo(path)
-  })
-
-  ipcRenderer.on('spliced-video', (_, path) => {
-    updateSelectedVideo(path)
-  })
-
   const handleAddSplicePoint = () => {
     // get current time of video
     const video = document.getElementById('splice-video') as HTMLVideoElement
@@ -80,8 +72,17 @@ const SpliceVideo: FC = () => {
   }, [selectedVideo])
 
   useEffect(() => {
+    ipcRenderer.on('selected-splice-video-file', (_, path) => {
+      updateSelectedVideo(path)
+    })
+  
+    ipcRenderer.on('spliced-video', (_, path) => {
+      updateSelectedVideo(path)
+    })
+
     return () => {
       ipcRenderer.removeAllListeners('selected-splice-video-file')
+      ipcRenderer.removeAllListeners('spliced-video')
     }
   }, [])
 
