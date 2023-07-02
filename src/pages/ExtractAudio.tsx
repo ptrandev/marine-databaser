@@ -55,12 +55,14 @@ const ExtractAudio: FC = () => {
               <ListItem
                 key={file}
                 secondaryAction={
-                  <IconButton color='error' onClick={() => handleDeleteFile(file)}>
+                  <IconButton color='error' onClick={() => handleDeleteFile(file)} disabled={isExtractingAudio}>
                     <Delete />
                   </IconButton>
                 }
               >
-                <ListItemText>{file}</ListItemText>
+                <ListItemText
+                  primary={<Typography noWrap>{file}</Typography>}
+                />
               </ListItem>
             ))
           }
@@ -74,7 +76,7 @@ const ExtractAudio: FC = () => {
             sx={{ flexGrow: 1 }}
           />
           <Typography color='textPrimary' mx={2}>
-            {numCompletedFiles} / {selectedFiles.length} files completed
+            {numCompletedFiles} / {selectedFiles.length} completed
           </Typography>
           <Button variant='contained' disabled={isExtractingAudio || selectedFiles.length === 0} onClick={handleExtractAudio}>
             Extract Audio

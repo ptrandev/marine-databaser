@@ -47,6 +47,26 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
     ipcRenderer.send('list-files', { directories, tags, searchTerm, fileTypes: selectedFileTypes })
   }
 
+  const updateSelectedFiles = (selectedFiles: number[]) => {
+    setSelectedFiles(selectedFiles)
+  }
+
+  const updateSearchTerm = (searchTerm: string) => {
+    setSearchTerm(searchTerm)
+  }
+
+  const updateSelectedDirectories = (directories: Directory[]) => {
+    setSelectedDirectories(directories)
+  }
+
+  const updateSelectedTags = (tags: Tag[]) => {
+    setSelectedTags(tags)
+  }
+
+  const updateSelectedFileTypes = (fileTypes: FileTypes[]) => {
+    setSelectedFileTypes(fileTypes)
+  }
+
   useEffectDebounced(() => {
     loadFiles()
     setSelectedFiles([])
@@ -71,19 +91,19 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
     return {
       files,
       selectedFiles,
-      updateSelectedFiles: (selectedFiles: number[]) => setSelectedFiles(selectedFiles),
+      updateSelectedFiles,
       loadFiles,
       isLoadingFiles,
       searchTerm,
-      updateSearchTerm: (searchTerm: string) => setSearchTerm(searchTerm),
+      updateSearchTerm,
       selectedDirectories,
-      updateSelectedDirectories: (directories: Directory[]) => setSelectedDirectories(directories),
+      updateSelectedDirectories,
       selectedTags,
-      updateSelectedTags: (tags: Tag[]) => setSelectedTags(tags),
+      updateSelectedTags,
       selectedFileTypes,
-      updateSelectedFileTypes: (fileTypes: FileTypes[]) => setSelectedFileTypes(fileTypes)
+      updateSelectedFileTypes,
     }
-  }, [files, isLoadingFiles, searchTerm, selectedDirectories, selectedTags, selectedFileTypes, selectedFiles])
+  }, [files, isLoadingFiles, searchTerm, selectedDirectories, selectedTags, selectedFileTypes, selectedFiles, updateSelectedFiles, updateSearchTerm, updateSelectedDirectories, updateSelectedTags, updateSelectedFileTypes])
 
   return (
     <FilesContext.Provider value={contextValue}>

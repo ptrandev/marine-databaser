@@ -63,7 +63,7 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
       loadDirectories,
       handleIsInitializingDirectory
     }
-  }, [directories, isLoadingDirectories, isInitializingDirectory, directoriesFileCount])
+  }, [directories, isLoadingDirectories, isInitializingDirectory, directoriesFileCount, loadDirectories, handleIsInitializingDirectory])
 
   return (
     <DirectoriesContext.Provider value={contextValue}>

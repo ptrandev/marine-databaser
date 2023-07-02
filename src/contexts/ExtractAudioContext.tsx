@@ -20,6 +20,10 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
   const [isExtractingAudio, setIsExtractingAudio] = useState<boolean>(false)
   const [numCompletedFiles, setNumCompletedFiles] = useState<number>(0)
 
+  const updateSelectedFiles = (files: string[]) => {
+    setSelectedFiles(files)
+  }
+
   const handleExtractAudio = () => {
     setIsExtractingAudio(true)
 
@@ -46,12 +50,12 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
   const contextValue = useMemo(() => {
     return {
       selectedFiles,
-      updateSelectedFiles: (files: string[]) => setSelectedFiles(files),
+      updateSelectedFiles,
       isExtractingAudio,
       handleExtractAudio,
       numCompletedFiles
     }
-  }, [selectedFiles, isExtractingAudio, numCompletedFiles])
+  }, [selectedFiles, updateSelectedFiles, isExtractingAudio, handleExtractAudio, numCompletedFiles])
 
   return (
     <ExtractAudioContext.Provider value={contextValue}>
