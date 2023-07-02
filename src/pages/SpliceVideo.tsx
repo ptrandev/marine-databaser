@@ -89,10 +89,10 @@ const SpliceVideo: FC = () => {
       <Typography variant="h4">
         Splice Video
       </Typography>
-      <Button onClick={handleSelectVideo}>
+      <Button onClick={handleSelectVideo} variant='contained'>
         Select Video
       </Button>
-      <Button onClick={handleSpliceVideo}>
+      <Button onClick={handleSpliceVideo} disabled={!selectedVideo}>
         Splice Video
       </Button>
       <Container maxWidth='md'>
@@ -104,7 +104,7 @@ const SpliceVideo: FC = () => {
           )
         }
       </Container>
-      <Button onClick={handleAddSplicePoint}>
+      <Button onClick={handleAddSplicePoint} disabled={!selectedVideo}>
         Add Splice Point
       </Button>
       {

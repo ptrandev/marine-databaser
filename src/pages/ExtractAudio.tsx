@@ -35,7 +35,7 @@ const ExtractAudio: FC = () => {
       <Button variant='contained' onClick={handleSelectFiles} disabled={isExtractingAudio}>
         Select Files
       </Button>
-      <Button disabled={isExtractingAudio} onClick={handleExtractAudio}>
+      <Button disabled={isExtractingAudio || selectedFiles.length === 0} onClick={handleExtractAudio}>
         Extract Audio
       </Button>
       <List>
