@@ -28,9 +28,13 @@ const SpliceVideo: FC = () => {
       <Button onClick={handleSelectVideo}>
         Select Video
       </Button>
-      <Typography>
-        {selectedVideo}
-      </Typography>
+      {
+        selectedVideo && (
+          <video controls key={selectedVideo}>
+            <source src={`media-loader://${selectedVideo}`} />
+          </video>
+        )
+      }
     </Box>
   )
 }

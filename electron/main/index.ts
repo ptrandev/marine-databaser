@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain } from "electron";
+import { app, BrowserWindow, shell, ipcMain, protocol } from "electron";
 import { release } from "node:os";
 import { join } from "node:path";
 
@@ -78,7 +78,19 @@ async function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  protocol.registerFileProtocol("media-loader", (request, callback) => {
+    const url = request.url.replace("media-loader://", "");
+    try {
+      return callback(url);
+    } catch (error) {
+      console.error(error);
+      return callback(join(__dirname, "../index.html"));
+    }
+  });
+
+  createWindow();
+});
 
 app.on("window-all-closed", () => {
   win = null;
