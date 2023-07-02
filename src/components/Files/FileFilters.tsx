@@ -8,7 +8,7 @@ import { FileTypes } from '../../../shared/types'
 
 
 const FileFilters : FC = () => {
-  const { updateSelectedDirectories, updateSelectedTags, updateSelectedFileTypes } = useFiles()
+  const { selectedDirectories, selectedTags, selectedFileTypes, updateSelectedDirectories, updateSelectedTags, updateSelectedFileTypes } = useFiles()
 
   const [directories, setDirectories] = useState<Directory[]>([])
   const [tags, setTags] = useState<Tag[]>([])
@@ -42,6 +42,7 @@ const FileFilters : FC = () => {
       <Autocomplete
         multiple
         filterSelectedOptions
+        defaultValue={selectedDirectories}
         options={directories ?? []}
         onChange={(_, value) => updateSelectedDirectories(value)}
         getOptionLabel={(option) => option.name}
@@ -57,6 +58,7 @@ const FileFilters : FC = () => {
       <Autocomplete
         multiple
         filterSelectedOptions
+        defaultValue={selectedTags}
         options={tags ?? []}
         onChange={(_, value) => updateSelectedTags(value)}
         getOptionLabel={(option) => option.name}
@@ -72,6 +74,7 @@ const FileFilters : FC = () => {
       <Autocomplete
         multiple
         filterSelectedOptions
+        defaultValue={selectedFileTypes}
         options={FileTypes}
         onChange={(_, value) => updateSelectedFileTypes(value)}
         getOptionLabel={(option) => option}
