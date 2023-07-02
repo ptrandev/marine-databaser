@@ -1,16 +1,48 @@
 import useSpliceVideo from '@/hooks/useSpliceVideo'
-import { Box, Button, Typography } from '@mui/material'
-import { FC, useEffect } from 'react'
+import { Box, Button, Container, Typography } from '@mui/material'
+import { FC, useEffect, useState } from 'react'
 import { ipcRenderer } from 'electron'
 
 const SpliceVideo: FC = () => {
   const { selectedVideo, updateSelectedVideo } = useSpliceVideo()
+
+  const [splicePoints, updateSplicePoints] = useState<number[]>()
 
   const handleSelectVideo = () => {
     ipcRenderer.send('select-splice-video-file')
 
     ipcRenderer.on('selected-splice-video-file', (_, path) => {
       updateSelectedVideo(path)
+    })
+  }
+
+  const handleAddSplicePoint = () => {
+    // get current time of video
+    const video = document.getElementById('splice-video') as HTMLVideoElement
+
+    if (!video) {
+      return
+    }
+
+    const splicePoint = video.currentTime
+
+    updateSplicePoints((prevSplicePoints) => {
+      if (!prevSplicePoints) {
+        return [splicePoint]
+      }
+
+      // return in sorted order
+      return [...prevSplicePoints, splicePoint].sort((a, b) => a - b)
+    })
+  }
+
+  const handleRemoveSplicePoint = (splicePoint: number) => {
+    updateSplicePoints((prevSplicePoints) => {
+      if (!prevSplicePoints) {
+        return
+      }
+
+      return prevSplicePoints.filter((point) => point !== splicePoint)
     })
   }
 
@@ -28,12 +60,29 @@ const SpliceVideo: FC = () => {
       <Button onClick={handleSelectVideo}>
         Select Video
       </Button>
+      <Container maxWidth='md'>
+        {
+          selectedVideo && (
+            <video id='splice-video' controls key={selectedVideo} style={{ width: '100%`' }}>
+              <source src={`media-loader://${selectedVideo}`} />
+            </video>
+          )
+        }
+      </Container>
+      <Button onClick={handleAddSplicePoint}>
+        Add Splice Point
+      </Button>
       {
-        selectedVideo && (
-          <video controls key={selectedVideo}>
-            <source src={`media-loader://${selectedVideo}`} />
-          </video>
-        )
+        splicePoints && splicePoints.map((splicePoint) => (
+          <Box>
+            <Typography variant="body1">
+              {splicePoint}
+            </Typography>
+            <Button color='error' onClick={() => handleRemoveSplicePoint(splicePoint)}>
+              Remove
+            </Button>
+          </Box>
+        ))
       }
     </Box>
   )
