@@ -11,9 +11,6 @@ const SpliceVideo: FC = () => {
   const handleSelectVideo = () => {
     ipcRenderer.send('select-splice-video-file')
 
-    ipcRenderer.on('selected-splice-video-file', (_, path) => {
-      updateSelectedVideo(path)
-    })
   }
 
   const handleSpliceVideo = () => {
@@ -28,11 +25,15 @@ const SpliceVideo: FC = () => {
       videoPath: selectedVideo,
       splicePoints: [0, ...splicePoints, video.duration]
     })
-
-    ipcRenderer.on('spliced-video', (_, path) => {
-      updateSelectedVideo(path)
-    })
   }
+
+  ipcRenderer.on('selected-splice-video-file', (_, path) => {
+    updateSelectedVideo(path)
+  })
+
+  ipcRenderer.on('spliced-video', (_, path) => {
+    updateSelectedVideo(path)
+  })
 
   const handleAddSplicePoint = () => {
     // get current time of video

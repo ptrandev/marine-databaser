@@ -45,11 +45,12 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
     const tags: number[] = selectedTags?.map(tag => tag.id)
 
     ipcRenderer.send('list-files', { directories, tags, searchTerm, fileTypes: selectedFileTypes })
-    ipcRenderer.on('listed-files', (_, files) => {
-      setFiles(files)
-      setIsLoadingFiles(false)
-    })
   }
+
+  ipcRenderer.on('listed-files', (_, files) => {
+    setFiles(files)
+    setIsLoadingFiles(false)
+  })
 
   useEffectDebounced(() => {
     loadFiles()

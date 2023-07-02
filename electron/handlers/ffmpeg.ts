@@ -19,29 +19,50 @@ const ffprobePath = require('ffprobe-static').path.replace(
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 
+/**
+ * extract the audio from a video
+ * @param {string} inputPath - the path to the video to extract audio from
+ * @returns {Promise<void>} - a promise that resolves when the audio has been extracted
+ */
 const extractAudio = async (inputPath: string) => {
-  return ffmpeg(inputPath)
+  return new Promise<void>((resolve, reject) => {
+    ffmpeg(inputPath)
     .outputOptions('-acodec', 'pcm_s16le')
     .toFormat('wav')
     // save in the same directory as the input file, but with a .wav extension and audio appended to the name
     .save(`${inputPath.replace(/\.[^/.]+$/, "")}-audio.wav`)
     .on('end', () => {
-      console.log('Audio extraction complete');
+      return resolve();
     })
     .on('error', (err) => {
       console.error('Error extracting audio:', err);
+      return reject(err);
     }).run();
+  });
 }
 
+/**
+ * splice a video
+ * @param {string} inputPath - the path to the video to splice
+ * @param {number} startTime - the time to start the splice at
+ * @param {number} endTime - the time to end the splice at
+ * @returns {Promise<void>} - a promise that resolves when the video has been spliced
+ */
 const spliceVideo = async (inputPath: string, startTime: number, endTime: number) => {
-  return ffmpeg(inputPath)
+  return new Promise<void>((resolve, reject) => {
+    ffmpeg(inputPath)
       .setStartTime(startTime)
       .setDuration(endTime - startTime)
       .outputOptions('-c', 'copy')
       .save(`${inputPath.replace(/\.[^/.]+$/, "")}-${startTime}-${endTime}.mp4`)
+      .on('end', () => {
+        return resolve();
+      })
       .on('error', (err) => {
         console.error('Error splicing video:', err);
+        return reject(err);
       }).run();
+  });
 }
 
 /**
@@ -63,6 +84,12 @@ export const handleExtractAudio = async (win: BrowserWindow): Promise<void> => {
   return await extractAudio(inputPath);
 }
 
+/**
+ * extract the audio from multiple videos
+ * @param {IpcMainEvent} event - the event to reply to
+ * @param {number[] | string[]} arg.files - the files to extract audio from
+ * @returns {Promise<void>} - a promise that resolves when the audio has been extracted
+ */
 export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: { files: number[] | string[] }) => {
   if (arg.files.length === 0) return;
 
@@ -95,14 +122,20 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: { files: 
   })
 
   // for each file, extract the audio
-  files?.forEach(async (file) => {
+  for (const file of files) {
     await extractAudio(file)
-  });
+    event.reply('extracted-audio')
+  }
 
   event.reply('bulk-extract-audio');
 }
 
-// only allow video files
+/**
+ * allow selection of multiple files to extract audio from
+ * @param {BrowserWindow} win - the window to show the dialog in
+ * @param {IpcMainEvent} event - the event to reply to
+ * @returns {Promise<void>} - a promise that resolves when the audio has been extracted
+ */
 export const handleSelectExtractAudioFiles = async (win: BrowserWindow, event: IpcMainEvent) => {
   const result = await dialog.showOpenDialog(win, {
     properties: ["openFile", "multiSelections"],
@@ -114,7 +147,12 @@ export const handleSelectExtractAudioFiles = async (win: BrowserWindow, event: I
   event.reply('selected-extract-audio-files', result.filePaths);
 }
 
-// only allow video file
+/**
+ * allow selection of a file to splice
+ * @param {BrowserWindow} win - the window to show the dialog in
+ * @param {IpcMainEvent} event - the event to reply to
+ * @returns {Promise<void>} - a promise that resolves when the audio has been extracted
+ */
 export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: IpcMainEvent) => {
   const result = await dialog.showOpenDialog(win, {
     properties: ["openFile"],
@@ -126,6 +164,13 @@ export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: Ipc
   event.reply('selected-splice-video-file', result.filePaths[0]);
 }
 
+/**
+ * splice a video
+ * @param {IpcMainEvent} event - the event to reply to
+ * @param {string} arg.videoPath - the path to the video to splice
+ * @param {number[]} arg.splicePoints - the points to splice the video at
+ * @returns {Promise<void>} - a promise that resolves when the video has been spliced
+ */
 export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, splicePoints: number[] }) => {
   const { videoPath, splicePoints } = arg;
 
