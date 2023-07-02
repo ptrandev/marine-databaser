@@ -3,6 +3,8 @@ import { Box, Button, IconButton, List, ListItem, ListItemText, Typography, Stac
 import { ipcRenderer } from 'electron'
 import useExtractAudio from '@/hooks/useExtractAudio'
 import { Add, Delete } from '@mui/icons-material'
+import { Virtuoso } from "react-virtuoso"
+
 
 const ExtractAudio: FC = () => {
   const { selectedFiles, updateSelectedFiles, handleExtractAudio, isExtractingAudio, numCompletedFiles } = useExtractAudio()
@@ -29,7 +31,7 @@ const ExtractAudio: FC = () => {
 
   return (
     <>
-      <Box mb={9}>
+      <Box>
         <Stack flexWrap='wrap' direction='row' justifyContent='space-between' width='100%' mb={2} gap={2}>
           <Typography variant='h4'>
             Extract Audio
@@ -50,8 +52,10 @@ const ExtractAudio: FC = () => {
           </Stack>
         </Stack>
         <List>
-          {
-            selectedFiles.map((file) => (
+          <Virtuoso
+            style={{ height: 'calc(100vh - 64px - 128px - 32px)' }}
+            data={selectedFiles}
+            itemContent={(_, file) => (
               <ListItem
                 key={file}
                 secondaryAction={
@@ -64,8 +68,8 @@ const ExtractAudio: FC = () => {
                   primary={<Typography noWrap>{file}</Typography>}
                 />
               </ListItem>
-            ))
-          }
+            )}
+          />
         </List>
       </Box>
       <AppBar position='fixed' sx={{ top: 'auto', bottom: 0, bgcolor: 'background.paper' }}>
