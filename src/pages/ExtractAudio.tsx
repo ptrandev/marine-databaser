@@ -7,21 +7,15 @@ import { Virtuoso } from "react-virtuoso"
 
 
 const ExtractAudio: FC = () => {
-  const { selectedFiles, updateSelectedFiles, handleExtractAudio, isExtractingAudio, numCompletedFiles } = useExtractAudio()
+  const { selectedFiles, updateSelectedFiles, handleExtractAudio, isExtractingAudio, numCompletedFiles, deleteSelectedFiles } = useExtractAudio()
 
   const handleSelectFiles = () => {
     ipcRenderer.send('select-extract-audio-files')
   }
 
-  const handleDeleteFile = (file: string) => {
-    updateSelectedFiles(selectedFiles.filter((f) => f !== file))
-  }
-
   useEffect(() => {
     ipcRenderer.on('selected-extract-audio-files', (_, files: string[]) => {
-      // don't allow duplicates
-      const newFiles = files.filter((file) => !selectedFiles.includes(file))
-      updateSelectedFiles([...selectedFiles, ...newFiles])
+      updateSelectedFiles(files)
     })
 
     return () => {
@@ -59,7 +53,7 @@ const ExtractAudio: FC = () => {
               <ListItem
                 key={file}
                 secondaryAction={
-                  <IconButton color='error' onClick={() => handleDeleteFile(file)} disabled={isExtractingAudio}>
+                  <IconButton color='error' onClick={() => deleteSelectedFiles([file])} disabled={isExtractingAudio}>
                     <Delete />
                   </IconButton>
                 }

@@ -1,26 +1,26 @@
 import { Checkbox, Box, IconButton } from '@mui/material'
-import { FC, useEffect } from 'react'
+import { FC } from 'react'
 
 import useFiles from '@/hooks/useFiles'
 import { AudioFile } from '@mui/icons-material'
-import { ipcRenderer } from 'electron'
+import useExtractAudio from '@/hooks/useExtractAudio'
+import { useNavigate } from 'react-router-dom'
 
 const FileActions: FC = () => {
+  const navigate = useNavigate()
   const { selectedFiles, updateSelectedFiles, files } = useFiles()
+  const { updateSelectedFiles : updateSelectedExtractAudioFiles } = useExtractAudio()
 
   const handleBulkExtractAudio = () => {
-    ipcRenderer.send('bulk-extract-audio', { files: selectedFiles })
+    // associate selectedFiles with the filePath
+    const filePaths : string[] = files?.filter(file => selectedFiles?.includes(file.id))?.map(file => file.path)
 
-    ipcRenderer.on('bulk-extract-audio-complete', () => {
-      alert('Bulk extract audio complete')
-    })
+    updateSelectedExtractAudioFiles(filePaths)
+    updateSelectedFiles([])
+
+    // go to extract audio page
+    navigate('/audio')
   }
-
-  useEffect(() => {
-    return () => {
-      ipcRenderer.removeAllListeners('bulk-extract-audio-complete')
-    }
-  }, [])
 
   return (
     <Box ml={2} mr={4.25} display='flex' justifyContent='space-between'>
@@ -38,7 +38,7 @@ const FileActions: FC = () => {
         }}
       />
       <Box>
-        <IconButton onClick={() => handleBulkExtractAudio()}>
+        <IconButton onClick={handleBulkExtractAudio}>
           <AudioFile />
         </IconButton>
       </Box>

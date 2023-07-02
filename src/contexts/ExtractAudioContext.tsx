@@ -5,6 +5,7 @@ export interface ExtractAudioContextValue {
   selectedFiles: string[]
   numCompletedFiles: number
   updateSelectedFiles: (files: string[]) => void
+  deleteSelectedFiles: (files: string[]) => void
   isExtractingAudio: boolean
   handleExtractAudio: () => void
 }
@@ -21,7 +22,13 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
   const [numCompletedFiles, setNumCompletedFiles] = useState<number>(0)
 
   const updateSelectedFiles = (files: string[]) => {
-    setSelectedFiles(files)
+    // don't allow duplicates
+    const newFiles = files.filter((file) => !selectedFiles.includes(file))
+    setSelectedFiles([...selectedFiles, ...newFiles])
+  }
+
+  const deleteSelectedFiles = (files: string[]) => {
+    setSelectedFiles(selectedFiles.filter((file) => !files.includes(file)))
   }
 
   const handleExtractAudio = () => {
@@ -51,11 +58,12 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
     return {
       selectedFiles,
       updateSelectedFiles,
+      deleteSelectedFiles,
       isExtractingAudio,
       handleExtractAudio,
       numCompletedFiles
     }
-  }, [selectedFiles, updateSelectedFiles, isExtractingAudio, handleExtractAudio, numCompletedFiles])
+  }, [selectedFiles, updateSelectedFiles, deleteSelectedFiles, isExtractingAudio, handleExtractAudio, numCompletedFiles])
 
   return (
     <ExtractAudioContext.Provider value={contextValue}>
