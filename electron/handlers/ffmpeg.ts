@@ -33,6 +33,17 @@ const extractAudio = async (inputPath: string) => {
     }).run();
 }
 
+const spliceVideo = async (inputPath: string, startTime: number, endTime: number) => {
+  return ffmpeg(inputPath)
+      .setStartTime(startTime)
+      .setDuration(endTime - startTime)
+      .outputOptions('-c', 'copy')
+      .save(`${inputPath.replace(/\.[^/.]+$/, "")}-${startTime}-${endTime}.mp4`)
+      .on('error', (err) => {
+        console.error('Error splicing video:', err);
+      }).run();
+}
+
 /**
  * extract the audio from a video
  * @param {BrowserWindow} win - the window to show the dialog in
@@ -113,4 +124,21 @@ export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: Ipc
   });
 
   event.reply('selected-splice-video-file', result.filePaths[0]);
+}
+
+export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, splicePoints: number[] }) => {
+  const { videoPath, splicePoints } = arg;
+
+  // turn splicePoints number[] into splicePoints [number, number][]
+  // for example, [1, 2, 3, 4] => [[1, 2], [2, 3], [3, 4]]
+  const splicePointsArray = splicePoints.map((splicePoint, index) => {
+    return [splicePoint, splicePoints[index + 1]];
+  }).filter((splicePoint) => splicePoint[1] !== undefined);
+
+  // for each splice point, splice the video; ensure this happens synchronously
+  for (const splicePoint of splicePointsArray) {
+    await spliceVideo(videoPath, splicePoint[0], splicePoint[1]);
+  }
+
+  event.reply('spliced-video');
 }
