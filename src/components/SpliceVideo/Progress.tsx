@@ -29,11 +29,15 @@ const Progress: FC = () => {
           sx={{ flexGrow: 1 }}
         />
         <Typography color='textPrimary' mx={2}>
-          {numSplicePointsCompleted} / {splicePoints.length} completed
+          {
+            splicePoints.length > 0 && (
+              `${numSplicePointsCompleted} / ${splicePoints.length} completed`
+            )
+          }
         </Typography>
         <Button variant='contained'
-        disabled={isSplicingVideo || splicePoints.length === 0}
-        onClick={handleSpliceVideo}
+          disabled={isSplicingVideo || splicePoints.length === 0}
+          onClick={handleSpliceVideo}
         >
           Splice Video
         </Button>

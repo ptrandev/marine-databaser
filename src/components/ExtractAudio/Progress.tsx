@@ -14,7 +14,11 @@ const Progress: FC = () => {
         sx={{ flexGrow: 1 }}
       />
       <Typography color='textPrimary' mx={2}>
-        {numCompletedFiles} / {selectedFiles.length} completed
+        {
+          selectedFiles.length > 0 && (
+            `${numCompletedFiles} / ${selectedFiles.length} completed`
+          )
+        }
       </Typography>
       <Button variant='contained' disabled={isExtractingAudio || selectedFiles.length === 0} onClick={handleExtractAudio}>
         Extract Audio
