@@ -6,7 +6,7 @@ import Progress from '@/components/SpliceVideo/Progress'
 import SplicePoints from '@/components/SpliceVideo/SplicePoints'
 
 const SpliceVideo: FC = () => {
-  const { selectedVideo, updateSelectedVideo, updateSplicePoints } = useSpliceVideo()
+  const { selectedVideo, updateSelectedVideo } = useSpliceVideo()
 
   const handleSelectVideo = () => {
     ipcRenderer.send('select-splice-video-file')

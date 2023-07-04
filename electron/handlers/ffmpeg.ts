@@ -115,20 +115,14 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: { files: 
  * splice a video
  * @param {IpcMainEvent} event - the event to reply to
  * @param {string} arg.videoPath - the path to the video to splice
- * @param {number[]} arg.splicePoints - the points to splice the video at
+ * @param {[number, number][]} arg.splicePoints - the points to splice the video at
  * @returns {Promise<void>} - a promise that resolves when the video has been spliced
  */
-export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, splicePoints: number[] }) => {
+export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, splicePoints: [number, number][] }) => {
   const { videoPath, splicePoints } = arg;
 
-  // turn splicePoints number[] into splicePoints [number, number][]
-  // for example, [1, 2, 3, 4] => [[1, 2], [2, 3], [3, 4]]
-  const splicePointsArray = splicePoints.map((splicePoint, index) => {
-    return [splicePoint, splicePoints[index + 1]];
-  }).filter((splicePoint) => splicePoint[1] !== undefined);
-
   // for each splice point, splice the video; ensure this happens synchronously
-  for (const splicePoint of splicePointsArray) {
+  for (const splicePoint of splicePoints) {
     await spliceVideo(videoPath, splicePoint[0], splicePoint[1]);
     event.reply('spliced-point-video');
   }

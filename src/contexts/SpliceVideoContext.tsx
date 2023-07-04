@@ -1,12 +1,13 @@
 import { ipcRenderer } from 'electron'
-import { FC, createContext, useMemo, useState } from 'react' 
+import { FC, createContext, useMemo, useState } from 'react'
 import { useEffect } from 'react'
 
 export interface SpliceVideoContextValue {
   selectedVideo: string
   updateSelectedVideo: (video: string) => void
-  splicePoints: number[]
-  updateSplicePoints: (splicePoints: number[]) => void
+  splicePoints: [number, number][] // [start, end]
+  addSplicePoint: (currentTime: number) => void
+  deleteSplicePoint: (splicePoint: [number, number]) => void
   numSplicePointsCompleted: number
   isSplicingVideo: boolean
   handleSpliceVideo: () => void
@@ -20,10 +21,10 @@ interface SpliceVideoProviderProps {
 
 export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) => {
   const [selectedVideo, setSelectedVideo] = useState<string>('')
-  const [splicePoints, setSplicePoints] = useState<number[]>([])
+  const [splicePoints, setSplicePoints] = useState<[number, number][]>([])
   const [numSplicePointsCompleted, setNumSplicePointsCompleted] = useState<number>(0)
   const [isSplicingVideo, setIsSplicingVideo] = useState<boolean>(false)
-  
+
   const handleSpliceVideo = () => {
     setIsSplicingVideo(true)
   }
@@ -32,12 +33,67 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     setSelectedVideo(video)
   }
 
-  const updateSplicePoints = (splicePoints: number[]) => {
-    setSplicePoints(splicePoints)
+  const updateSplicePoints = (splicePoints: [number, number][]) => {
+    // remove duplicates (remember to compare values and not references)
+    // sort by start time but use end time as a tiebreaker
+    setSplicePoints(
+      splicePoints
+        .filter((splicePoint, index, self) => self.findIndex(([start, end]) => start === splicePoint[0] && end === splicePoint[1]) === index)
+        .sort((a, b) => {
+          const [startA, endA] = a
+          const [startB, endB] = b
+          return startA - startB || endA - endB
+        })
+    )
+  }
+
+  const addSplicePoint = (currentTime: number) => {
+    // first splice point...
+    if (splicePoints.length === 0) {
+      updateSplicePoints([[0, currentTime]])
+      return
+    }
+
+    // check if the current time is in the middle of a splice point
+    // if so, the start is the closest start to the current time and the end is the current time
+    const [closestStart, closestEnd] = splicePoints.find(([start, end]) => start < currentTime && currentTime < end) || [-1, -1]
+
+    if (closestStart !== -1 && closestEnd !== -1) {
+      updateSplicePoints([...splicePoints, [closestStart, currentTime]])
+      return
+    }
+
+    // check if the current time is after an existing splice point but before the next splice point
+    // if so, the start is the closest end to the current time and the end is the current time
+    const [nextStart, nextEnd] = splicePoints.find(([start, end]) => currentTime < start) || [-1, -1]
+    const [prevStart, prevEnd] = splicePoints.find(([start, end]) => end < currentTime) || [-1, -1]
+
+    if (nextStart !== -1 && nextEnd !== -1 && prevStart !== -1 && prevEnd !== -1) {
+      updateSplicePoints([...splicePoints, [prevEnd, currentTime]])
+      return
+    }
+
+    // check if the current time is before an existing splice point
+    // if so, the start is 0 and the end is the current time
+    const [firstStart, ] = splicePoints[0]
+    if (currentTime < firstStart) {
+      updateSplicePoints([[0, currentTime], ...splicePoints])
+      return
+    }
+
+    // else get the latest end splice point and add a new splice point with the start being the latest end and the end being the current time
+    const [_, latestEnd] = splicePoints.sort((a, b) => a[1] - b[1])[splicePoints.length - 1]
+    updateSplicePoints([...splicePoints, [latestEnd, currentTime]])
+  }
+
+  const deleteSplicePoint = (splicePoint: [number, number]) => {
+    // remember to compare values and not references
+    // ensure this works with splicePoints that have the same start and end
+    updateSplicePoints(splicePoints.filter(([start, end]) => start !== splicePoint[0] || end !== splicePoint[1]))
   }
 
   useEffect(() => {
-    updateSplicePoints([])
+    setSplicePoints([])
   }, [selectedVideo])
 
   useEffect(() => {
@@ -58,14 +114,15 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const contextValue = useMemo(() => {
     return {
       selectedVideo,
-      numSplicePointsCompleted,
       updateSelectedVideo,
+      numSplicePointsCompleted,
+      addSplicePoint,
+      deleteSplicePoint,
       splicePoints,
-      updateSplicePoints,
       isSplicingVideo,
       handleSpliceVideo,
     }
-  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, updateSplicePoints, isSplicingVideo, handleSpliceVideo])
+  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint])
 
   return (
     <SpliceVideoContext.Provider value={contextValue}>

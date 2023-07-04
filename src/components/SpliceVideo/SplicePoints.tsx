@@ -1,9 +1,10 @@
 import { FC } from 'react'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, IconButton, Stack, Typography } from '@mui/material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
+import { Add, Delete } from '@mui/icons-material'
 
 const SplicePoints: FC = () => {
-  const { selectedVideo, splicePoints, updateSplicePoints } = useSpliceVideo()
+  const { selectedVideo, splicePoints, addSplicePoint, deleteSplicePoint } = useSpliceVideo()
 
   const handleAddSplicePoint = () => {
     // get current time of video
@@ -13,13 +14,7 @@ const SplicePoints: FC = () => {
       return
     }
 
-    const splicePoint = video.currentTime
-
-    updateSplicePoints(splicePoints.length === 0 ? [splicePoint] : [...splicePoints, splicePoint].sort((a, b) => a - b))
-  }
-
-  const handleRemoveSplicePoint = (splicePoint: number) => {
-    updateSplicePoints(splicePoints.length == 0 ? [] : splicePoints.filter((point) => point !== splicePoint))
+    addSplicePoint(video.currentTime)
   }
 
   const handleGoToSplicePoint = (splicePoint: number) => {
@@ -34,22 +29,29 @@ const SplicePoints: FC = () => {
 
   return (
     <>
-      <Button onClick={handleAddSplicePoint} disabled={!selectedVideo}>
+      <Button
+        onClick={handleAddSplicePoint}
+        disabled={!selectedVideo}
+        startIcon={<Add />}
+        sx={{
+          mb: 2
+        }}
+      >
         Add Splice Point
       </Button>
       {
-        splicePoints && splicePoints.map((splicePoint) => (
-          <Box>
+        splicePoints && splicePoints.map(([start, end]) => (
+          <Stack key={`${start}-${end}`} direction='row' justifyContent='space-between' alignItems='center' mb={2} ml={{
+            xs: 0,
+            md: 1.5,
+          }}>
             <Typography variant="body1">
-              {splicePoint}
+              {start} - {end}
             </Typography>
-            <Button onClick={() => handleGoToSplicePoint(splicePoint)}>
-              Go to Splice Point
-            </Button>
-            <Button color='error' onClick={() => handleRemoveSplicePoint(splicePoint)}>
-              Remove
-            </Button>
-          </Box>
+            <IconButton color='error' onClick={() => deleteSplicePoint([start, end])}>
+              <Delete />
+            </IconButton>
+          </Stack>
         ))
       }
     </>

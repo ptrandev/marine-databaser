@@ -16,7 +16,7 @@ const Progress: FC = () => {
 
     ipcRenderer.send('splice-video', {
       videoPath: selectedVideo,
-      splicePoints: [0, ...splicePoints, video.duration]
+      splicePoints,
     })
   }
 
