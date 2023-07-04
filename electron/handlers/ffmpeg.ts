@@ -66,25 +66,6 @@ const spliceVideo = async (inputPath: string, startTime: number, endTime: number
 }
 
 /**
- * extract the audio from a video
- * @param {BrowserWindow} win - the window to show the dialog in
- * @returns {Promise<void>} - a promise that resolves when the audio has been extracted
- */
-export const handleExtractAudio = async (win: BrowserWindow): Promise<void> => {
-  const result = await dialog.showOpenDialog(win, {
-    properties: ["openFile"],
-    filters: [
-      { name: 'Video Files', extensions: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm'] }
-    ]
-  });
-
-  if (result.filePaths.length === 0) return;
-  const inputPath = result.filePaths[0];
-
-  return await extractAudio(inputPath);
-}
-
-/**
  * extract the audio from multiple videos
  * @param {IpcMainEvent} event - the event to reply to
  * @param {number[] | string[]} arg.files - the files to extract audio from
@@ -131,6 +112,31 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: { files: 
 }
 
 /**
+ * splice a video
+ * @param {IpcMainEvent} event - the event to reply to
+ * @param {string} arg.videoPath - the path to the video to splice
+ * @param {number[]} arg.splicePoints - the points to splice the video at
+ * @returns {Promise<void>} - a promise that resolves when the video has been spliced
+ */
+export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, splicePoints: number[] }) => {
+  const { videoPath, splicePoints } = arg;
+
+  // turn splicePoints number[] into splicePoints [number, number][]
+  // for example, [1, 2, 3, 4] => [[1, 2], [2, 3], [3, 4]]
+  const splicePointsArray = splicePoints.map((splicePoint, index) => {
+    return [splicePoint, splicePoints[index + 1]];
+  }).filter((splicePoint) => splicePoint[1] !== undefined);
+
+  // for each splice point, splice the video; ensure this happens synchronously
+  for (const splicePoint of splicePointsArray) {
+    await spliceVideo(videoPath, splicePoint[0], splicePoint[1]);
+    event.reply('spliced-point-video');
+  }
+
+  event.reply('spliced-video');
+}
+
+/**
  * allow selection of multiple files to extract audio from
  * @param {BrowserWindow} win - the window to show the dialog in
  * @param {IpcMainEvent} event - the event to reply to
@@ -162,28 +168,4 @@ export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: Ipc
   });
 
   event.reply('selected-splice-video-file', result.filePaths[0]);
-}
-
-/**
- * splice a video
- * @param {IpcMainEvent} event - the event to reply to
- * @param {string} arg.videoPath - the path to the video to splice
- * @param {number[]} arg.splicePoints - the points to splice the video at
- * @returns {Promise<void>} - a promise that resolves when the video has been spliced
- */
-export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, splicePoints: number[] }) => {
-  const { videoPath, splicePoints } = arg;
-
-  // turn splicePoints number[] into splicePoints [number, number][]
-  // for example, [1, 2, 3, 4] => [[1, 2], [2, 3], [3, 4]]
-  const splicePointsArray = splicePoints.map((splicePoint, index) => {
-    return [splicePoint, splicePoints[index + 1]];
-  }).filter((splicePoint) => splicePoint[1] !== undefined);
-
-  // for each splice point, splice the video; ensure this happens synchronously
-  for (const splicePoint of splicePointsArray) {
-    await spliceVideo(videoPath, splicePoint[0], splicePoint[1]);
-  }
-
-  event.reply('spliced-video');
 }

@@ -4,7 +4,7 @@ import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { ipcRenderer } from 'electron'
 
 const Progress: FC = () => {
-  const { selectedVideo, splicePoints } = useSpliceVideo()
+  const { selectedVideo, splicePoints, numSplicePointsCompleted, isSplicingVideo } = useSpliceVideo()
 
   const handleSpliceVideo = () => {
     // get length of video
@@ -25,14 +25,14 @@ const Progress: FC = () => {
       <Toolbar>
         <LinearProgress
           variant='determinate'
-          // value={selectedFiles.length === 0 ? 0 : (numCompletedFiles / selectedFiles.length) * 100}
+          value={splicePoints.length === 0 ? 0 : (numSplicePointsCompleted / splicePoints.length) * 100}
           sx={{ flexGrow: 1 }}
         />
         <Typography color='textPrimary' mx={2}>
-          {/* {numCompletedFiles} / {selectedFiles.length} completed */}
+          {numSplicePointsCompleted} / {splicePoints.length} completed
         </Typography>
         <Button variant='contained'
-        // disabled={isExtractingAudio || selectedFiles.length === 0}
+        disabled={isSplicingVideo || splicePoints.length === 0}
         onClick={handleSpliceVideo}
         >
           Splice Video

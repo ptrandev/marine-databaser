@@ -146,7 +146,7 @@ sequelize
 import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleSelectDirectory, handleRefreshDirectories } from "../handlers/directory";
 import { handleListFiles, handleSelectFile } from "../handlers/file";
 import { handleListTags, handleTagFile, handleUntagFile } from "../handlers/tag";
-import { handleExtractAudio, handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo } from "../handlers/ffmpeg";
+import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo } from "../handlers/ffmpeg";
 
 //
 // DIRECTORY
@@ -179,10 +179,6 @@ ipcMain.on('refresh-directories', async (event) => {
 //
 // FFMPEG
 //
-
-ipcMain.on("extract-audio", async (_, arg) => {
-  handleExtractAudio(win);
-})
 
 ipcMain.on("bulk-extract-audio", async (event, arg) => {
   handleBulkExtractAudio(event, arg);
