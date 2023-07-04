@@ -1,13 +1,14 @@
 import { FC, useEffect } from 'react'
-import { Box, Button, IconButton, List, ListItem, ListItemText, Typography, Stack, AppBar, LinearProgress, Toolbar } from '@mui/material'
+import { Box, Button, Typography, Stack } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import useExtractAudio from '@/hooks/useExtractAudio'
-import { Add, Delete } from '@mui/icons-material'
-import { Virtuoso } from "react-virtuoso"
+import { Add } from '@mui/icons-material'
+import FileList from '@/components/ExtractAudio/FileList'
+import Progress from '@/components/ExtractAudio/Progress'
 
 
 const ExtractAudio: FC = () => {
-  const { selectedFiles, updateSelectedFiles, handleExtractAudio, isExtractingAudio, numCompletedFiles, deleteSelectedFiles } = useExtractAudio()
+  const { updateSelectedFiles, isExtractingAudio } = useExtractAudio()
 
   const handleSelectFiles = () => {
     ipcRenderer.send('select-extract-audio-files')
@@ -45,42 +46,9 @@ const ExtractAudio: FC = () => {
             </Box>
           </Stack>
         </Stack>
-        <List>
-          <Virtuoso
-            style={{ height: 'calc(100vh - 64px - 128px - 32px)' }}
-            data={selectedFiles}
-            itemContent={(_, file) => (
-              <ListItem
-                key={file}
-                secondaryAction={
-                  <IconButton color='error' onClick={() => deleteSelectedFiles([file])} disabled={isExtractingAudio}>
-                    <Delete />
-                  </IconButton>
-                }
-              >
-                <ListItemText
-                  primary={<Typography noWrap>{file}</Typography>}
-                />
-              </ListItem>
-            )}
-          />
-        </List>
+        <FileList />
       </Box>
-      <AppBar position='fixed' sx={{ top: 'auto', bottom: 0, bgcolor: 'background.paper' }}>
-        <Toolbar>
-          <LinearProgress
-            variant='determinate'
-            value={selectedFiles.length === 0 ? 0 : (numCompletedFiles / selectedFiles.length) * 100}
-            sx={{ flexGrow: 1 }}
-          />
-          <Typography color='textPrimary' mx={2}>
-            {numCompletedFiles} / {selectedFiles.length} completed
-          </Typography>
-          <Button variant='contained' disabled={isExtractingAudio || selectedFiles.length === 0} onClick={handleExtractAudio}>
-            Extract Audio
-          </Button>
-        </Toolbar>
-      </AppBar>
+      <Progress />
     </>
   )
 }
