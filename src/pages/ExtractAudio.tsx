@@ -27,24 +27,22 @@ const ExtractAudio: FC = () => {
   return (
     <>
       <Box>
-        <Stack flexWrap='wrap' direction='row' justifyContent='space-between' width='100%' mb={2} gap={2}>
+        <Stack flexWrap='wrap' direction='row' justifyContent='space-between' width='100%' mb={2} gap={2} alignItems='center'>
           <Typography variant='h4'>
             Extract Audio
           </Typography>
-          <Stack flexDirection='row' alignItems='center' gap={1}>
-            <Box>
-              <Button
-                variant='contained'
-                onClick={handleSelectFiles}
-                disabled={isExtractingAudio}
-                startIcon={
-                  <Add />
-                }
-              >
-                Add Files
-              </Button>
-            </Box>
-          </Stack>
+          <Box>
+            <Button
+              variant='contained'
+              onClick={handleSelectFiles}
+              disabled={isExtractingAudio}
+              startIcon={
+                <Add />
+              }
+            >
+              Add Files
+            </Button>
+          </Box>
         </Stack>
         <FileList />
       </Box>

@@ -15,11 +15,11 @@ const LINKS = [
   },
   {
     label: 'Extract Audio',
-    to: '/audio'
+    to: '/extract-audio'
   },
   {
     label: 'Splice Video',
-    to: '/video'
+    to: '/splice-video'
   }
 ]
 

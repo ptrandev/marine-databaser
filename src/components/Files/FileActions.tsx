@@ -19,7 +19,7 @@ const FileActions: FC = () => {
     updateSelectedFiles([])
 
     // go to extract audio page
-    navigate('/audio')
+    navigate('/extract-audio')
   }
 
   return (

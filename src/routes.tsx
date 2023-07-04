@@ -37,13 +37,13 @@ const router = createHashRouter([
         ),
       },
       {
-        path: "/audio",
+        path: "/extract-audio",
         element: (
           <ExtractAudio />
         ),
       },
       {
-        path: '/video',
+        path: '/splice-video',
         element: (
           <SpliceVideo />
         )
