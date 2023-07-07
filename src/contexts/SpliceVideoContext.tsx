@@ -8,6 +8,7 @@ export interface SpliceVideoContextValue {
   splicePoints: [number, number][] // [start, end]
   addSplicePoint: (currentTime: number) => void
   deleteSplicePoint: (splicePoint: [number, number]) => void
+  modifySplicePoint: (splicePoint: [number, number], newSplicePoint: [number, number]) => void
   numSplicePointsCompleted: number
   isSplicingVideo: boolean
   handleSpliceVideo: () => void
@@ -92,6 +93,11 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     updateSplicePoints(splicePoints.filter(([start, end]) => start !== splicePoint[0] || end !== splicePoint[1]))
   }
 
+  const modifySplicePoint = (splicePoint: [number, number], newSplicePoint: [number, number]) => {
+    // find splicePoint and replace with newSplicePoint
+    updateSplicePoints(splicePoints.map((splicePoint_) => splicePoint_[0] === splicePoint[0] && splicePoint_[1] === splicePoint[1] ? newSplicePoint : splicePoint_))
+  }
+
   useEffect(() => {
     setSplicePoints([])
   }, [selectedVideo])
@@ -118,11 +124,12 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       numSplicePointsCompleted,
       addSplicePoint,
       deleteSplicePoint,
+      modifySplicePoint,
       splicePoints,
       isSplicingVideo,
       handleSpliceVideo,
     }
-  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint])
+  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint, modifySplicePoint])
 
   return (
     <SpliceVideoContext.Provider value={contextValue}>
