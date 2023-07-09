@@ -1,24 +1,9 @@
 import { FC } from 'react'
 import { AppBar, Toolbar, LinearProgress, Typography, Button } from '@mui/material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
-import { ipcRenderer } from 'electron'
 
 const Progress: FC = () => {
-  const { selectedVideo, splicePoints, numSplicePointsCompleted, isSplicingVideo } = useSpliceVideo()
-
-  const handleSpliceVideo = () => {
-    // get length of video
-    const video = document.getElementById('splice-video') as HTMLVideoElement
-
-    if (!video) {
-      return
-    }
-
-    ipcRenderer.send('splice-video', {
-      videoPath: selectedVideo,
-      splicePoints,
-    })
-  }
+  const { splicePoints, numSplicePointsCompleted, isSplicingVideo, handleSpliceVideo } = useSpliceVideo()
 
   return (
     <AppBar position='fixed' sx={{ top: 'auto', bottom: 0, bgcolor: 'background.paper' }}>

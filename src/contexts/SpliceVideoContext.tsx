@@ -27,7 +27,19 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const [isSplicingVideo, setIsSplicingVideo] = useState<boolean>(false)
 
   const handleSpliceVideo = () => {
+    // get length of video
+    const video = document.getElementById('splice-video') as HTMLVideoElement
+
+    if (!video) {
+      return
+    }
+
     setIsSplicingVideo(true)
+
+    ipcRenderer.send('splice-video', {
+      videoPath: selectedVideo,
+      splicePoints,
+    })
   }
 
   const updateSelectedVideo = (video: string) => {
@@ -76,7 +88,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
     // check if the current time is before an existing splice point
     // if so, the start is 0 and the end is the current time
-    const [firstStart, ] = splicePoints[0]
+    const [firstStart,] = splicePoints[0]
     if (currentTime < firstStart) {
       updateSplicePoints([[0, currentTime], ...splicePoints])
       return

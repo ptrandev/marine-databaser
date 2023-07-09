@@ -36,10 +36,15 @@ const SpliceVideo: FC = () => {
           </Box>
         </Stack>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={6}
+            style={{
+              height: 'calc(100vh - 64px - 128px - 8px)',
+              overflowY: 'hidden'
+            }}
+          >
             {
               selectedVideo && (
-                <video id='splice-video' controls key={selectedVideo} style={{ width: '100%' }}>
+                <video id='splice-video' controls key={selectedVideo} style={{ width: '100%', height: 'auto', maxHeight: '100%' }}>
                   <source src={`media-loader://${selectedVideo}`} />
                 </video>
               )

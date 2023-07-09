@@ -87,56 +87,83 @@ const SplicePoints: FC = () => {
       >
         Add Splice Point
       </Button>
-      {
-        splicePoints && splicePoints.map(([start, end]) => (
-          <Stack key={`${start}-${end}`} direction='row' justifyContent='space-between' alignItems='center' mb={2} ml={{
-            xs: 0,
-            md: 1.5,
-          }}>
-            <Stack direction='row' alignItems='center' spacing={2}>
-              <Stack alignItems='center'>
-                <Input
-                  type='number'
-                  value={start}
-                  componentsProps={{
-                    input: {
-                      min: 0,
-                      max: end,
-                    }
-                  }}
-                />
-                <Button onClick={() => handleSetStartPoint([start, end])}>
-                  Set Current
-                </Button>
-                <Button onClick={() => handleGoToSplicePoint(start)}>
-                  Go to Time
-                </Button>
+      <Box
+        style={{
+          height: 'calc(100vh - 64px - 128px - 64px)',
+          overflowY: 'scroll'
+        }}
+      >
+        {
+          splicePoints && splicePoints.map(([start, end]) => (
+            <Stack direction='row' justifyContent='space-between' alignItems='center' mb={2} ml={{
+              xs: 0,
+              md: 1.5,
+            }}>
+              <Stack direction='row' alignItems='center' spacing={2}>
+                <Stack alignItems='center'>
+                  <Input
+                    type='number'
+                    value={start}
+                    componentsProps={{
+                      input: {
+                        min: 0,
+                        max: end,
+                      }
+                    }}
+                    fullWidth
+                    onChange={(e) => {
+                      const newStart = Number(e.target.value)
+
+                      if (newStart > end || newStart < 0) {
+                        return
+                      }
+
+                      modifySplicePoint([start, end], [newStart, end])
+                    }}
+                  />
+                  <Button onClick={() => handleSetStartPoint([start, end])}>
+                    Set Current
+                  </Button>
+                  <Button onClick={() => handleGoToSplicePoint(start)}>
+                    Go to Time
+                  </Button>
+                </Stack>
+                <Stack alignItems='center'>
+                  <Input
+                    type='number'
+                    value={end}
+                    componentsProps={{
+                      input: {
+                        min: start,
+                        max: videoDuration,
+                      }
+                    }}
+                    fullWidth
+                    onChange={(e) => {
+                      const newEnd = Number(e.target.value)
+
+                      if (newEnd > videoDuration || newEnd < start) {
+                        return
+                      }
+
+                      modifySplicePoint([start, end], [start, newEnd])
+                    }}
+                  />
+                  <Button onClick={() => handleSetEndPoint([start, end])}>
+                    Set Current
+                  </Button>
+                  <Button onClick={() => handleGoToSplicePoint(end)}>
+                    Go to Time
+                  </Button>
+                </Stack>
               </Stack>
-              <Stack alignItems='center'>
-                <Input
-                  type='number'
-                  value={end}
-                  componentsProps={{
-                    input: {
-                      min: start,
-                      max: videoDuration,
-                    }
-                  }}
-                />
-                <Button onClick={() => handleSetEndPoint([start, end])}>
-                  Set Current
-                </Button>
-                <Button onClick={() => handleGoToSplicePoint(end)}>
-                  Go to Time
-                </Button>
-              </Stack>
+              <IconButton color='error' onClick={() => deleteSplicePoint([start, end])}>
+                <Delete />
+              </IconButton>
             </Stack>
-            <IconButton color='error' onClick={() => deleteSplicePoint([start, end])}>
-              <Delete />
-            </IconButton>
-          </Stack>
-        ))
-      }
+          ))
+        }
+      </Box>
     </>
   )
 }
