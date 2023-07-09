@@ -88,6 +88,7 @@ export const handleListDirectories = async (event: IpcMainEvent) => {
   const directories: Directory[] = await Directory.findAll().then(
     (dictionaries) => dictionaries.map((dictionary) => dictionary.toJSON())
   );
+
   event.reply("listed-directories", directories);
 };
 
@@ -152,6 +153,11 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
   const directories = await Directory.findAll().then(
     (dictionaries) => dictionaries.map((dictionary) => dictionary.toJSON())
   )
+
+  if (directories.length === 0) {
+    event.reply("refreshed-directories")
+    return
+  }
 
   directories.forEach(async (directory) => {
     const currentTime = new Date();
@@ -263,6 +269,6 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
       },
     });
 
-    event.reply("refreshed-directories", directory);
+    event.reply("refreshed-directories");
   })
 }
