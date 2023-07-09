@@ -6,10 +6,15 @@ import { Add, Delete } from '@mui/icons-material'
 const SplicePoints: FC = () => {
   const { selectedVideo, splicePoints, addSplicePoint, deleteSplicePoint, modifySplicePoint } = useSpliceVideo()
 
-  const handleAddSplicePoint = () => {
-    // get current time of video
-    const video = document.getElementById('splice-video') as HTMLVideoElement
+  const video = useMemo(() => {
+    if (!selectedVideo) {
+      return null
+    }
 
+    return document.getElementById('splice-video') as HTMLVideoElement
+  }, [selectedVideo])
+
+  const handleAddSplicePoint = () => {
     if (!video) {
       return
     }
@@ -18,8 +23,6 @@ const SplicePoints: FC = () => {
   }
 
   const handleGoToSplicePoint = (splicePoint: number) => {
-    const video = document.getElementById('splice-video') as HTMLVideoElement
-
     if (!video) {
       return
     }
@@ -30,8 +33,6 @@ const SplicePoints: FC = () => {
   // handle setting startpoint; make sure it's not after the end point
   const handleSetStartPoint = (splicePoint: [number, number]) => {
     const [_, endPoint] = splicePoint
-
-    const video = document.getElementById('splice-video') as HTMLVideoElement
 
     if (!video) {
       return
@@ -50,8 +51,6 @@ const SplicePoints: FC = () => {
   const handleSetEndPoint = (splicePoint: [number, number]) => {
     const [startPoint, _] = splicePoint
 
-    const video = document.getElementById('splice-video') as HTMLVideoElement
-
     if (!video) {
       return
     }
@@ -66,8 +65,6 @@ const SplicePoints: FC = () => {
   }
 
   const videoDuration = useMemo(() => {
-    const video = document.getElementById('splice-video') as HTMLVideoElement
-
     if (!video) {
       return 0
     }
@@ -94,8 +91,8 @@ const SplicePoints: FC = () => {
         }}
       >
         {
-          splicePoints && splicePoints.map(([start, end]) => (
-            <Stack direction='row' justifyContent='space-between' alignItems='center' mb={2} ml={{
+          splicePoints && splicePoints.map(([start, end], i) => (
+            <Stack key={i} direction='row' justifyContent='space-between' alignItems='center' mb={2} ml={{
               xs: 0,
               md: 1.5,
             }}>
@@ -114,9 +111,11 @@ const SplicePoints: FC = () => {
                     onChange={(e) => {
                       const newStart = Number(e.target.value)
 
-                      if (newStart > end || newStart < 0) {
+                      if (!video || newStart > end || newStart < 0) {
                         return
                       }
+
+                      video.currentTime = newStart
 
                       modifySplicePoint([start, end], [newStart, end])
                     }}
@@ -142,9 +141,11 @@ const SplicePoints: FC = () => {
                     onChange={(e) => {
                       const newEnd = Number(e.target.value)
 
-                      if (newEnd > videoDuration || newEnd < start) {
+                      if (!video || newEnd > videoDuration || newEnd < start) {
                         return
                       }
+
+                      video.currentTime = newEnd
 
                       modifySplicePoint([start, end], [start, newEnd])
                     }}
