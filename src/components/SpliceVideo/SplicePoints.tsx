@@ -6,13 +6,7 @@ import { Add, Delete } from '@mui/icons-material'
 const SplicePoints: FC = () => {
   const { selectedVideo, splicePoints, addSplicePoint, deleteSplicePoint, modifySplicePoint } = useSpliceVideo()
 
-  const video = useMemo(() => {
-    if (!selectedVideo) {
-      return null
-    }
-
-    return document.getElementById('splice-video') as HTMLVideoElement
-  }, [selectedVideo])
+  const video = document.getElementById('splice-video') as HTMLVideoElement
 
   const handleAddSplicePoint = () => {
     if (!video) {
