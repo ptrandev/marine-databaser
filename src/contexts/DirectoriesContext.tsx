@@ -30,6 +30,15 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
 
     ipcRenderer.send('list-directories')
     ipcRenderer.send('list-directories-file-count')
+
+    ipcRenderer.once('listed-directories', (_, directories) => {
+      setDirectories(directories)
+      setIsLoadingDirectories(false)
+    })
+  
+    ipcRenderer.once('listed-directories-file-count', (_, directoriesFileCount) => {
+      setDirectoriesFileCount(directoriesFileCount)
+    })
   }
 
   const handleIsInitializingDirectory = (isInitializingDirectory: boolean) => {
@@ -38,15 +47,6 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
 
   useEffect(() => {
     loadDirectories()
-
-    ipcRenderer.on('listed-directories', (_, directories) => {
-      setDirectories(directories)
-      setIsLoadingDirectories(false)
-    })
-  
-    ipcRenderer.on('listed-directories-file-count', (_, directoriesFileCount) => {
-      setDirectoriesFileCount(directoriesFileCount)
-    })
 
     return () => {
       ipcRenderer.removeAllListeners('listed-directories')
