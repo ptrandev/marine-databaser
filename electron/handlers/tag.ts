@@ -47,7 +47,7 @@ export const handleTagFile = async (event: IpcMainEvent, arg: {
   const fileTag: FileTag = await FileTag.create({
     file_id: file.id,
     tag_id: _tag.id,
-  });
+  }).then((fileTag) => fileTag.toJSON());
 
   event.reply("tagged-file", fileTag);
 }

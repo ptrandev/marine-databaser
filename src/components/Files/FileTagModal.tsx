@@ -14,7 +14,7 @@ interface FileTagModalProps {
 }
 
 const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile }) => {
-  const { tags } = useTags()
+  const { tags, loadTags } = useTags()
 
   const [tag, setTag] = useState<string>('')
 
@@ -28,6 +28,7 @@ const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile 
       const newFile = { ...file } as FileWithTags
       newFile.Tags = [...newFile.Tags, { id: fileTag.tag_id, name: tag }] as any
       setFile(newFile)
+      loadTags()
     })
   }
 
@@ -99,7 +100,7 @@ const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile 
             </Box>
             {
               file?.Tags?.length > 0 && (
-                <Stack direction='row' spacing={1} alignItems='center'>
+                <Stack direction='row' spacing={1} alignItems='center' flexWrap='wrap'>
                   <Typography variant='caption'>
                     Tags:
                   </Typography>
