@@ -14,17 +14,20 @@ import { FilesProvider } from './contexts/FilesContext';
 import { DirectoriesProvider } from './contexts/DirectoriesContext';
 import { ExtractAudioProvider } from './contexts/ExtractAudioContext';
 import { SpliceVideoProvider } from './contexts/SpliceVideoContext';
+import { TagsProvider } from './contexts/TagsContext';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <CssBaseline />
     <DirectoriesProvider>
       <FilesProvider>
-        <ExtractAudioProvider>
-          <SpliceVideoProvider>
-            <RouterProvider router={router} />
-          </SpliceVideoProvider>
-        </ExtractAudioProvider>
+        <TagsProvider>
+          <ExtractAudioProvider>
+            <SpliceVideoProvider>
+              <RouterProvider router={router} />
+            </SpliceVideoProvider>
+          </ExtractAudioProvider>
+        </TagsProvider>
       </FilesProvider>
     </DirectoriesProvider>
   </React.StrictMode>,
