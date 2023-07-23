@@ -1,6 +1,7 @@
-import { createContext, FC, useMemo, useState } from 'react'
+import { createContext, FC, useEffect, useMemo, useState } from 'react'
 import { ipcRenderer } from 'electron'
 import { Tag } from '../../electron/database/schemas'
+import useFiles from '@/hooks/useFiles'
 
 export interface TagsContextValue {
   tags: Tag[]
@@ -14,6 +15,8 @@ interface TagsProviderProps {
 }
 
 export const TagsProvider : FC<TagsProviderProps> = ({ children }) => {
+  const { files } = useFiles()
+
   const [tags, setTags] = useState<Tag[]>([])
 
   const loadTags = () => {
@@ -23,12 +26,16 @@ export const TagsProvider : FC<TagsProviderProps> = ({ children }) => {
     })
   }
 
+  useEffect(() => {
+    loadTags()
+  }, [files])
+
   const contextValue = useMemo(() => {
     return {
       tags,
       loadTags,
     }
-  }, [])
+  }, [tags, loadTags])
 
   return (
     <TagsContext.Provider value={contextValue}>
