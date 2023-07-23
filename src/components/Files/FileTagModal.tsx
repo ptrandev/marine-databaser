@@ -1,9 +1,10 @@
 import { FileWithTags } from "../../../shared/types"
 import { Close } from "@mui/icons-material"
-import { Card, Modal, Typography, Box, Chip, Button, IconButton, TextField } from "@mui/material"
+import { Card, Modal, Typography, Box, Chip, Button, IconButton, Autocomplete, TextField } from "@mui/material"
 import { Stack } from "@mui/system"
 import { ipcRenderer } from "electron"
 import { FC, useEffect, useState } from "react"
+import useTags from "@/hooks/useTags"
 
 interface FileTagModalProps {
   open: boolean
@@ -13,6 +14,8 @@ interface FileTagModalProps {
 }
 
 const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile }) => {
+  const { tags } = useTags()
+
   const [tag, setTag] = useState<string>('')
 
   const onAddTag = () => {
@@ -68,15 +71,23 @@ const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile 
               e.preventDefault()
               onAddTag()
             }} gap={2}>
-              <TextField
+              <Autocomplete
+                freeSolo
                 size='small'
-                placeholder='Add a tag...'
-                value={tag}
-                onChange={(e) => setTag(e.target.value)}
                 fullWidth
                 sx={{
                   whiteSpace: 'nowrap',
                 }}
+                options={tags.map(tag => tag.name)}
+                value={tag}
+                onChange={(_, value) => setTag(value ?? '')}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder='Add a tag...'
+                    onChange={(e) => setTag(e.target.value)}
+                  />
+                )}
               />
               <Box display='flex' alignItems='center'>
                 <Button type='submit' sx={{
