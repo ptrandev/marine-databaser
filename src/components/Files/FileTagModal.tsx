@@ -14,21 +14,19 @@ interface FileTagModalProps {
 }
 
 const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile }) => {
-  const { tags, loadTags } = useTags()
+  const { tags, tagFile, untagFile } = useTags()
 
   const [tag, setTag] = useState<string>('')
 
-  const onAddTag = () => {
+  const onAddTag = async () => {
     if (!tag) return
 
-    ipcRenderer.send('tag-file', { file, tag })
-    setTag('')
-
-    ipcRenderer.once('tagged-file', (_, fileTag) => {
+    await tagFile(file.id, tag).then(fileTag => {
       const newFile = { ...file } as FileWithTags
+      // @ts-ignore
       newFile.Tags = [...newFile.Tags, { id: fileTag.tag_id, name: tag }] as any
       setFile(newFile)
-      loadTags()
+      setTag('')
     })
   }
 
@@ -36,11 +34,9 @@ const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile 
     if (!tag_id) return
     const file_id : number = file.id
 
-    ipcRenderer.send('untag-file', { file_id, tag_id })
-
-    ipcRenderer.once('untagged-file', () => {
+    untagFile(file_id, tag_id).then(() => {
       const newFile = { ...file } as FileWithTags
-      newFile.Tags = newFile.Tags.filter(tag => tag.id !== tag_id)
+      newFile.Tags = newFile.Tags.filter(tag => tag.id !== tag_id) as any
       setFile(newFile)
     })
   }

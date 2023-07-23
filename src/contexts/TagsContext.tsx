@@ -1,11 +1,13 @@
 import { createContext, FC, useEffect, useMemo, useState } from 'react'
 import { ipcRenderer } from 'electron'
-import { Tag } from '../../electron/database/schemas'
+import { Tag, FileTag } from '../../electron/database/schemas'
 import useFiles from '@/hooks/useFiles'
 
 export interface TagsContextValue {
   tags: Tag[]
   loadTags: () => void
+  tagFile: (file_id: number, tag: string) => Promise<FileTag>
+  untagFile: (file_id: number, tag_id: number) => Promise<void>
 }
 
 const TagsContext = createContext<TagsContextValue>(undefined as any)
@@ -26,6 +28,28 @@ export const TagsProvider : FC<TagsProviderProps> = ({ children }) => {
     })
   }
 
+  const tagFile = (file_id : number, tag: string) : Promise<FileTag> => {
+    ipcRenderer.send('tag-file', { file_id, tag })
+    
+    return new Promise((resolve, _) => {
+      ipcRenderer.once('tagged-file', (_, fileTag) => {
+        loadTags()
+        resolve(fileTag)
+      })
+    })
+  }
+
+  const untagFile = (file_id : number, tag_id: number) : Promise<void> => {
+    ipcRenderer.send('untag-file', { file_id, tag_id })
+
+    return new Promise((resolve, _) => {
+      ipcRenderer.once('untagged-file', () => {
+        loadTags()
+        resolve()
+      })
+    })
+  }
+
   useEffect(() => {
     loadTags()
   }, [files])
@@ -34,8 +58,10 @@ export const TagsProvider : FC<TagsProviderProps> = ({ children }) => {
     return {
       tags,
       loadTags,
+      tagFile,
+      untagFile,
     }
-  }, [tags, loadTags])
+  }, [tags, loadTags, tagFile, untagFile])
 
   return (
     <TagsContext.Provider value={contextValue}>

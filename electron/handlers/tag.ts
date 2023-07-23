@@ -19,17 +19,17 @@ const createTag = async (name) => {
 };
 
 export const handleTagFile = async (event: IpcMainEvent, arg: {
-  file: File;
+  file_id: number;
   tag: string;
 }) => {
-  const { file, tag } = arg;
+  const { file_id, tag } = arg;
 
   const _tag: Tag = await createTag(tag);
 
   // check if file already has tag
-  const _file: File | null = await File.findOne({
+  const file: File | null = await File.findOne({
     where: {
-      id: file.id,
+      id: file_id,
     },
     include: [
       {
@@ -41,11 +41,11 @@ export const handleTagFile = async (event: IpcMainEvent, arg: {
     ],
   });
 
-  if (_file) return;
+  if (file) return;
 
   // else add tag to file
   const fileTag: FileTag = await FileTag.create({
-    file_id: file.id,
+    file_id: file_id,
     tag_id: _tag.id,
   }).then((fileTag) => fileTag.toJSON());
 
