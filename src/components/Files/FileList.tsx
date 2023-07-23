@@ -3,8 +3,9 @@ import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack,
 import { ipcRenderer } from "electron"
 
 import { Virtuoso } from "react-virtuoso"
-import { FileOpen, Sell } from "@mui/icons-material"
+import { FileOpen, Sell, DriveFileRenameOutline } from "@mui/icons-material"
 import FileTagModal from "./FileTagModal"
+import FileRenameModal from "./FileRenameModal"
 
 import { FileWithTags } from "../../../shared/types"
 import useFiles from "@/hooks/useFiles"
@@ -13,14 +14,24 @@ const FileList: FC = () => {
   const { files, loadFiles, selectedFiles, updateSelectedFiles } = useFiles()
 
   const [fileTagFile, setFileTagFile] = useState<FileWithTags>()
+  const [fileRenameFile, setFileRenameFile] = useState<FileWithTags>()
 
   const handleFileTagModalClose = () => {
     setFileTagFile(undefined)
     loadFiles()
   }
 
+  const handleFileRenameModalClose = () => {
+    setFileRenameFile(undefined)
+    loadFiles()
+  }
+
   const handleSetFileTagFile = (file: FileWithTags) => {
     setFileTagFile(file)
+  }
+
+  const handleSetFileRenameFile = (file: FileWithTags) => {
+    setFileRenameFile(file)
   }
 
   return (
@@ -72,6 +83,16 @@ const FileList: FC = () => {
                   }
                 </Box>
                 <IconButton
+                  aria-label='rename'
+                  size='large'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setFileRenameFile(file)
+                  }}
+                >
+                  <DriveFileRenameOutline />
+                </IconButton>
+                <IconButton
                   aria-label='tags'
                   size='large'
                   color='primary'
@@ -105,6 +126,16 @@ const FileList: FC = () => {
             handleClose={handleFileTagModalClose}
             file={fileTagFile}
             setFile={handleSetFileTagFile}
+          />
+        )
+      }
+      {
+        fileRenameFile && (
+          <FileRenameModal
+            open={!!fileRenameFile}
+            handleClose={handleFileRenameModalClose}
+            file={fileRenameFile}
+            setFile={handleSetFileRenameFile}
           />
         )
       }

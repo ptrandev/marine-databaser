@@ -144,7 +144,7 @@ sequelize
   });
 
 import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleSelectDirectory, handleRefreshDirectories } from "../handlers/directory";
-import { handleListFiles, handleSelectFile } from "../handlers/file";
+import { handleFileRename, handleListFiles, handleSelectFile } from "../handlers/file";
 import { handleListTags, handleTagFile, handleUntagFile } from "../handlers/tag";
 import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo } from "../handlers/ffmpeg";
 
@@ -210,6 +210,10 @@ ipcMain.on("list-files", async (event, arg) => {
 
 ipcMain.on("open-file", async (_, arg) => {
   shell.openPath(arg);
+});
+
+ipcMain.on("rename-file", async (event, arg) => {
+  handleFileRename(event, arg);
 });
 
 //

@@ -1,8 +1,8 @@
-import { Checkbox, Box, IconButton } from '@mui/material'
+import { Checkbox, Box, IconButton, Stack } from '@mui/material'
 import { FC } from 'react'
 
 import useFiles from '@/hooks/useFiles'
-import { AudioFile } from '@mui/icons-material'
+import { AudioFile, DriveFileRenameOutline } from '@mui/icons-material'
 import useExtractAudio from '@/hooks/useExtractAudio'
 import { useNavigate } from 'react-router-dom'
 
@@ -37,11 +37,14 @@ const FileActions: FC = () => {
           )
         }}
       />
-      <Box>
-        <IconButton onClick={handleBulkExtractAudio}>
+      <Stack direction='row' spacing={2}>
+        <IconButton disabled={selectedFiles?.length === 0}>
+          <DriveFileRenameOutline />
+        </IconButton>
+        <IconButton onClick={handleBulkExtractAudio} disabled={selectedFiles?.length === 0}>
           <AudioFile />
         </IconButton>
-      </Box>
+      </Stack>
     </Box>
   )
 }

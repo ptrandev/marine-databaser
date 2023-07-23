@@ -2,6 +2,7 @@ import { BrowserWindow, IpcMainEvent, dialog } from "electron";
 import { Tag, File } from "../database/schemas";
 import { FindOptions, Op } from "sequelize";
 import { FileTypes } from "../../shared/types"
+import fs from "fs";
 
 export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent) => {
   const result = await dialog.showOpenDialog(win, {
@@ -126,4 +127,31 @@ const matchMimeTypes = (FileTypes: FileTypes[]): string[] => {
         return 'false';
     }
   }).flat();
+}
+
+export const handleFileRename = async (event: IpcMainEvent, arg: {
+  file: File;
+  name: string;
+}) => {
+  const { file, name } = arg;
+
+  const path = file.path.replace(file.name, name)
+
+  // first change filename on disk
+  fs.renameSync(file.path, path);
+
+  // then update database ... remember to update name and path
+  await File.update(
+    {
+      name,
+      path,
+    },
+    {
+      where: {
+        id: file.id,
+      },
+    }
+  );
+
+  event.reply("renamed-file", file);
 }
