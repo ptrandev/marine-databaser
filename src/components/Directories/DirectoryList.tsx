@@ -18,7 +18,7 @@ const DirectoryList: FC = () => {
     setIsDeletingDirectory(true)
 
     ipcRenderer.send('delete-directory', { directory_id })
-    ipcRenderer.on('deleted-directory', () => {
+    ipcRenderer.once('deleted-directory', () => {
       loadDirectories()
       setIsDeletingDirectory(false)
     })

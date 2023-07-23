@@ -15,14 +15,14 @@ const FileFilters : FC = () => {
 
   const loadDirectories = () => {
     ipcRenderer.send('list-directories')
-    ipcRenderer.on('listed-directories', (_, directories) => {
+    ipcRenderer.once('listed-directories', (_, directories) => {
       setDirectories(directories)
     })
   }
 
   const loadTags = () => {
     ipcRenderer.send('list-tags')
-    ipcRenderer.on('listed-tags', (_, tags) => {
+    ipcRenderer.once('listed-tags', (_, tags) => {
       setTags(tags)
     })
   }

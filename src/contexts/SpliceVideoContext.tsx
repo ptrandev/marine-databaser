@@ -40,6 +40,11 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       videoPath: selectedVideo,
       splicePoints,
     })
+
+    ipcRenderer.once('spliced-video', () => {
+      setIsSplicingVideo(false)
+      setNumSplicePointsCompleted(0)
+    })
   }
 
   const updateSelectedVideo = (video: string) => {
@@ -117,11 +122,6 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   useEffect(() => {
     ipcRenderer.on('spliced-point-video', () => {
       setNumSplicePointsCompleted((prev) => prev + 1)
-    })
-
-    ipcRenderer.on('spliced-video', () => {
-      setIsSplicingVideo(false)
-      setNumSplicePointsCompleted(0)
     })
 
     return () => {

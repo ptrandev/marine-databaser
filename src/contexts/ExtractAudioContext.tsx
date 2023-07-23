@@ -35,15 +35,15 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
     setIsExtractingAudio(true)
 
     ipcRenderer.send('bulk-extract-audio', { files: selectedFiles })
-  }
 
-  useEffect(() => {
-    ipcRenderer.on('bulk-extract-audio', () => {
+    ipcRenderer.once('bulk-extract-audio', () => {
       setIsExtractingAudio(false)
       setSelectedFiles([])
       setNumCompletedFiles(0)
     })
+  }
 
+  useEffect(() => {
     ipcRenderer.on('extracted-audio', () => {
       setNumCompletedFiles((prev) => prev + 1)
     })

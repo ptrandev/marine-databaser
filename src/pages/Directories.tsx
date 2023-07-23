@@ -11,24 +11,24 @@ const Directories = () => {
 
   const handleSelectDirectory = () => {
     ipcRenderer.send('select-directory')
+
+    ipcRenderer.once('selected-directory', () => {
+      handleIsInitializingDirectory(true)
+    })
   }
 
   const handleRefresh = () => {
     handleIsInitializingDirectory(true)
     ipcRenderer.send('refresh-directories')
-  }
 
-  useEffect(() => {
-    ipcRenderer.on('selected-directory', () => {
-      handleIsInitializingDirectory(true)
-    })
-
-    ipcRenderer.on('initialized-directory', () => {
+    ipcRenderer.once('refreshed-directories', () => {
       loadDirectories()
       handleIsInitializingDirectory(false)
     })
+  }
 
-    ipcRenderer.on('refreshed-directories', () => {
+  useEffect(() => {
+    ipcRenderer.on('initialized-directory', () => {
       loadDirectories()
       handleIsInitializingDirectory(false)
     })

@@ -19,13 +19,12 @@ const FileRenameModal: FC<FileRenameModalProps> = ({ open, handleClose, file, se
     if (!name) return
 
     ipcRenderer.send('rename-file', { file, name })
+    ipcRenderer.once('renamed-file', (_, renamedFile) => {
+      setFile(renamedFile)
+    })
   }
 
   useEffect(() => {
-    ipcRenderer.on('renamed-file', (_, renamedFile) => {
-      setFile(renamedFile)
-    })
-
     return () => {
       ipcRenderer.removeAllListeners('renamed-file')
     }

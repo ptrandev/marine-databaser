@@ -21,7 +21,7 @@ const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile 
     ipcRenderer.send('tag-file', { file, tag })
     setTag('')
 
-    ipcRenderer.on('tagged-file', (_, fileTag) => {
+    ipcRenderer.once('tagged-file', (_, fileTag) => {
       const newFile = { ...file } as FileWithTags
       newFile.Tags = [...newFile.Tags, { id: fileTag.tag_id, name: tag }] as any
       setFile(newFile)
@@ -34,7 +34,7 @@ const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile 
 
     ipcRenderer.send('untag-file', { file_id, tag_id })
 
-    ipcRenderer.on('untagged-file', () => {
+    ipcRenderer.once('untagged-file', () => {
       const newFile = { ...file } as FileWithTags
       newFile.Tags = newFile.Tags.filter(tag => tag.id !== tag_id)
       setFile(newFile)
