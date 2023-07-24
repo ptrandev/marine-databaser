@@ -13,7 +13,7 @@ interface FileTagModalProps {
   setFile: (file: FileWithTags) => void
 }
 
-const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile }) => {
+const FileTagsModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile }) => {
   const { tags, tagFile, untagFile } = useTags()
 
   const [tag, setTag] = useState<string>('')
@@ -103,4 +103,4 @@ const FileTagModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile 
   )
 }
 
-export default FileTagModal
+export default FileTagsModal

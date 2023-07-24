@@ -4,7 +4,7 @@ import { ipcRenderer } from "electron"
 
 import { Virtuoso } from "react-virtuoso"
 import { FileOpen, Sell, DriveFileRenameOutline } from "@mui/icons-material"
-import FileTagModal from "./FileTagModal"
+import FileTagsModal from "./FileTagsModal"
 import FileRenameModal from "./FileRenameModal"
 
 import { FileWithTags } from "../../../shared/types"
@@ -121,7 +121,7 @@ const FileList: FC = () => {
       </List>
       {
         fileTagFile && (
-          <FileTagModal
+          <FileTagsModal
             open={!!fileTagFile}
             handleClose={handleFileTagModalClose}
             file={fileTagFile}
