@@ -145,7 +145,7 @@ sequelize
 
 import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleSelectDirectory, handleRefreshDirectories } from "../handlers/directory";
 import { handleFileRename, handleListFiles, handleSelectFile } from "../handlers/file";
-import { handleListTags, handleTagFile, handleUntagFile } from "../handlers/tag";
+import { handleListTags, handleTagFile, handleUntagFile, handleTagFiles, handleUntagFiles } from "../handlers/tag";
 import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo } from "../handlers/ffmpeg";
 
 //
@@ -224,10 +224,18 @@ ipcMain.on("tag-file", async (event, arg) => {
   handleTagFile(event, arg);
 });
 
+ipcMain.on("tag-files", async (event, arg) => {
+  handleTagFiles(event, arg);
+});
+
 ipcMain.on("list-tags", async (event) => {
   handleListTags(event);
 });
 
 ipcMain.on("untag-file", async (event, arg) => {
   handleUntagFile(event, arg);
+});
+
+ipcMain.on("untag-files", async (event, arg) => {
+  handleUntagFiles(event, arg);
 });

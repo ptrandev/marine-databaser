@@ -8,6 +8,8 @@ export interface TagsContextValue {
   loadTags: () => void
   tagFile: (file_id: number, tag: string) => Promise<FileTag>
   untagFile: (file_id: number, tag_id: number) => Promise<void>
+  tagFiles: (file_ids: number[], tag: string) => Promise<FileTag[]>
+  untagFiles: (file_ids: number[], tag_id: number) => Promise<void>
 }
 
 const TagsContext = createContext<TagsContextValue>(undefined as any)
@@ -50,6 +52,28 @@ export const TagsProvider : FC<TagsProviderProps> = ({ children }) => {
     })
   }
 
+  const tagFiles = (file_ids : number[], tag: string) : Promise<FileTag[]> => {
+    ipcRenderer.send('tag-files', { file_ids, tag })
+
+    return new Promise((resolve, _) => {
+      ipcRenderer.once('tagged-files', (_, fileTags) => {
+        loadTags()
+        resolve(fileTags)
+      })
+    })
+  }
+
+  const untagFiles = (file_ids : number[], tag_id: number) : Promise<void> => {
+    ipcRenderer.send('untag-files', { file_ids, tag_id })
+
+    return new Promise((resolve, _) => {
+      ipcRenderer.once('untagged-files', () => {
+        loadTags()
+        resolve()
+      })
+    })
+  }
+
   useEffect(() => {
     loadTags()
   }, [files])
@@ -60,8 +84,10 @@ export const TagsProvider : FC<TagsProviderProps> = ({ children }) => {
       loadTags,
       tagFile,
       untagFile,
+      tagFiles,
+      untagFiles,
     }
-  }, [tags, loadTags, tagFile, untagFile])
+  }, [tags, loadTags, tagFile, untagFile, tagFiles, untagFiles])
 
   return (
     <TagsContext.Provider value={contextValue}>

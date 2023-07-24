@@ -23,8 +23,11 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile
 
     await tagFile(file.id, tag).then(fileTag => {
       const newFile = { ...file } as FileWithTags
-      // @ts-ignore
-      newFile.Tags = [...newFile.Tags, { id: fileTag.tag_id, name: tag }] as any
+      if (fileTag) {
+        // @ts-ignore
+        newFile.Tags = [...newFile.Tags, { id: fileTag.tag_id, name: tag }] as any
+      }
+
       setFile(newFile)
       setTag('')
     })
