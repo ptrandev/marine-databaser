@@ -228,7 +228,6 @@ ipcMain.on("list-tags", async (event) => {
   handleListTags(event);
 });
 
-
 ipcMain.on("untag-file", async (event, arg) => {
   handleUntagFile(event, arg);
 });
