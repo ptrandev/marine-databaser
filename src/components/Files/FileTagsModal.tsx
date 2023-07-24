@@ -2,7 +2,7 @@ import { FileWithTags } from "../../../shared/types"
 import { Typography, Box, Chip, Button, Autocomplete, TextField } from "@mui/material"
 import { Stack } from "@mui/system"
 import { ipcRenderer } from "electron"
-import { FC, useEffect, useState } from "react"
+import { FC, useEffect, useMemo, useState } from "react"
 import useTags from "@/hooks/useTags"
 import Modal from "@/components/Modal"
 
@@ -31,7 +31,6 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile
   }
 
   const handleDeleteTag = (tag_id: number) => {
-    if (!tag_id) return
     const file_id: number = file.id
 
     untagFile(file_id, tag_id).then(() => {
@@ -40,6 +39,11 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile
       setFile(newFile)
     })
   }
+
+  const _tags = useMemo(() => {
+    // only show tags that are not already on the file
+    return tags.filter(tag => !file.Tags.map(t => t.id).includes(tag.id))
+  }, [tags, file])
 
   useEffect(() => {
     return () => {
@@ -65,7 +69,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile
             sx={{
               whiteSpace: 'nowrap',
             }}
-            options={tags.map(tag => tag.name)}
+            options={_tags.map(tag => tag.name)}
             value={tag}
             onChange={(_, value) => setTag(value ?? '')}
             renderInput={(params) => (
@@ -86,7 +90,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile
         </Box>
         {
           file?.Tags?.length > 0 && (
-            <Stack direction='row' spacing={1} alignItems='center' flexWrap='wrap'>
+            <Stack direction='row' spacing={1} alignItems='center' flexWrap='wrap' useFlexGap>
               <Typography variant='caption'>
                 Tags:
               </Typography>

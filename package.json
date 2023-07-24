@@ -42,8 +42,8 @@
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@fontsource/roboto": "^4.5.8",
-    "@mui/icons-material": "^5.11.11",
-    "@mui/material": "^5.11.12",
+    "@mui/icons-material": "^5.14.1",
+    "@mui/material": "^5.14.1",
     "ffmpeg-static": "^5.1.0",
     "ffprobe-static": "^3.1.0",
     "fluent-ffmpeg": "^2.1.2",
@@ -55,10 +55,10 @@
     "sqlite3": "^5.1.4"
   },
   "build": {
-    "asarUnpack":[
+    "asarUnpack": [
       "node_modules/ffmpeg-static/bin/${os}/${arch}/ffmpeg",
       "node_modules/ffmpeg-static/index.js",
       "node_modules/ffmpeg-static/package.json"
-      ]
+    ]
   }
 }
