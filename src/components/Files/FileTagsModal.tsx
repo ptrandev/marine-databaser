@@ -29,8 +29,9 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile
       }
 
       setFile(newFile)
-      setTag('')
     })
+
+    setTag('')
   }
 
   const handleDeleteTag = (tag_id: number) => {

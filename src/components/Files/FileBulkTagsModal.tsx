@@ -13,7 +13,7 @@ interface FileBulkTagsModal {
 
 const FileBulkTagsModal: FC<FileBulkTagsModal> = ({ open, handleClose }) => {
   const { tags, untagFiles, tagFiles } = useTags()
-  const { files, selectedFiles, loadFiles } = useFiles()
+  const { files, selectedFiles } = useFiles()
 
   const [tag, setTag] = useState<string>('')
   // these are the files that are selected
@@ -34,18 +34,22 @@ const FileBulkTagsModal: FC<FileBulkTagsModal> = ({ open, handleClose }) => {
   const onAddTag = async () => {
     if (!tag) return
 
-    await tagFiles(selectedFiles, tag).then(fileTags => {
-      // for each file, add the tag to the file
+    await tagFiles(selectedFiles, tag).then((fileTags) => {
+      // for each file, add the tag to the file if it doesn't already exist
       const newFiles = _files.map(file => {
         // @ts-ignore
-        file.Tags = [...file.Tags, { id: fileTags.find(ft => ft.file_id === file.id)?.tag_id, name: tag }] as any
+        if (fileTags.find(fileTag => fileTag?.file_id === file.id)) {
+          // @ts-ignore
+          file.Tags = [...file.Tags, { id: fileTags.find(fileTag => fileTag.file_id === file.id).tag_id, name: tag }] as any
+        }
 
         return file
       })
 
       setFiles(newFiles)
-      setTag('')
     })
+
+    setTag('')
   }
 
   const handleDeleteTag = async (tag_id: number) => {
