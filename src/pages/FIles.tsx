@@ -11,21 +11,27 @@ const Files = () => {
 
   return (
     <Box>
-      <Box>
+      <Box mb={2}>
         <FileSearch />
         <FileFilters />
       </Box>
       {
         !isLoadingFiles && files && (
           <>
-            <Typography my={2}>
+            <Typography>
               <span style={{ fontWeight: 'bold' }}>{files.length}</span> files found
             </Typography>
-            <FileActions />
-            <FileList />
           </>
         )
       }
+      <Box mt={2}>
+        <FileActions />
+        {
+          !isLoadingFiles && files && (
+            <FileList />
+          )
+        }
+      </Box>
       {
         isLoadingFiles && (
           <Box display='flex' flexDirection='column' mt={4} alignItems='center' justifyContent='center' width='100%' gap={2}>
