@@ -1,13 +1,13 @@
-import { FC, useState } from "react"
+import { FC, useState, useMemo } from "react"
 import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack, Checkbox } from "@mui/material"
 import { ipcRenderer } from "electron"
 
 import { Virtuoso } from "react-virtuoso"
-import { FileOpen, Sell, DriveFileRenameOutline } from "@mui/icons-material"
+import { FileOpen, Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter } from "@mui/icons-material"
 import FileTagsModal from "./FileTagsModal"
 import FileRenameModal from "./FileRenameModal"
 
-import { FileWithTags } from "../../../shared/types"
+import { FileWithTags, MimeTypes } from "../../../shared/types"
 import useFiles from "@/hooks/useFiles"
 
 const FileList: FC = () => {
@@ -43,6 +43,24 @@ const FileList: FC = () => {
           itemContent={(_, file) => {
             const checked = selectedFiles?.includes(file.id)
 
+            const fileIcon = () => {
+              if (MimeTypes.image.some(type => file.mimeType?.includes(type))) {
+                return <Image />
+              } else if (MimeTypes.video.some(type => file.mimeType?.includes(type))) {
+                return <VideoFile />
+              } else if (MimeTypes.audio.some(type => file.mimeType?.includes(type))) {
+                return <AudioFile />
+              } else if (MimeTypes.document.some(type => file.mimeType?.includes(type))) {
+                return <Description />
+              } else if (MimeTypes.archive.some(type => file.mimeType?.includes(type))) {
+                return <Archive />
+              } else if (MimeTypes.executable.some(type => file.mimeType?.includes(type))) {
+                return <SettingsApplications />
+              } else {
+                return <HelpCenter />
+              }
+            }
+
             return (
               <ListItem
                 key={file.id}
@@ -63,10 +81,13 @@ const FileList: FC = () => {
                   }}
                 />
                 <Box width='100%'>
-                  <ListItemText
-                    primary={file.name}
-                    secondary={file.path}
-                  />
+                  <Stack direction='row' gap={2} alignItems='center'>
+                    {fileIcon()}
+                    <ListItemText
+                      primary={file.name}
+                      secondary={file.path}
+                    />
+                  </Stack>
                   {
                     file?.Tags?.length > 0 && (
                       <Stack direction='row' spacing={1} alignItems='center'>

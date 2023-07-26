@@ -91,6 +91,7 @@ const matchMimeTypes = (FileTypes: FileTypes[]): string[] => {
           'application/pdf',
           'application/msword',
           'application/vnd.ms-excel',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           'application/vnd.ms-powerpoint',
           'text/%'
         ];
