@@ -1,8 +1,9 @@
 import { BrowserWindow, IpcMainEvent, dialog, shell } from "electron";
-import { Directory, File } from "../database/schemas";
+import { Directory, File, FileTag } from "../database/schemas";
 const fs = require("fs").promises;
 import mime from "mime-types";
 import { Sequelize, Op } from "sequelize";
+import { handleKillOrphanedTags } from "./tag";
 
 const getFileList = async (directory: string): Promise<string[]> => {
   let files = [];
@@ -268,6 +269,17 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
         id: deletedFiles.map((file) => file.id),
       },
     });
+
+    // remove file tag associations for deleted files
+    await FileTag.destroy({
+      where: {
+        // @ts-ignore
+        file_id: deletedFiles.map((file) => file.id),
+      },
+    });
+
+    // remove tags that no longer have any associations
+    await handleKillOrphanedTags(event);
 
     event.reply("refreshed-directories");
   })
