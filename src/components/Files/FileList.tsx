@@ -45,19 +45,19 @@ const FileList: FC = () => {
 
             const fileIcon = () => {
               if (MimeTypes.image.some(type => file.mimeType?.includes(type))) {
-                return <Image />
+                return <Image color='error' />
               } else if (MimeTypes.video.some(type => file.mimeType?.includes(type))) {
-                return <VideoFile />
+                return <VideoFile color='secondary' />
               } else if (MimeTypes.audio.some(type => file.mimeType?.includes(type))) {
-                return <AudioFile />
+                return <AudioFile color='success' />
               } else if (MimeTypes.document.some(type => file.mimeType?.includes(type))) {
-                return <Description />
+                return <Description color='info' />
               } else if (MimeTypes.archive.some(type => file.mimeType?.includes(type))) {
-                return <Archive />
+                return <Archive color='warning' />
               } else if (MimeTypes.executable.some(type => file.mimeType?.includes(type))) {
-                return <SettingsApplications />
+                return <SettingsApplications color='primary' />
               } else {
-                return <HelpCenter />
+                return <HelpCenter color='action' />
               }
             }
 
