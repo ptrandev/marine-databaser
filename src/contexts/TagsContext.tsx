@@ -5,7 +5,7 @@ import useFiles from '@/hooks/useFiles'
 
 export interface TagsContextValue {
   tags: Tag[]
-  loadTags: () => void
+  loadTags: () => Promise<void>
   tagFile: (file_id: number, tag: string) => Promise<FileTag>
   untagFile: (file_id: number, tag_id: number) => Promise<void>
   tagFiles: (file_ids: number[], tag: string) => Promise<FileTag[]>
@@ -23,10 +23,14 @@ export const TagsProvider : FC<TagsProviderProps> = ({ children }) => {
 
   const [tags, setTags] = useState<Tag[]>([])
 
-  const loadTags = () => {
+  const loadTags = () : Promise<void> => {
     ipcRenderer.send('list-tags')
-    ipcRenderer.once('listed-tags', (_, tags) => {
-      setTags(tags)
+
+    return new Promise((resolve, _) => {
+      ipcRenderer.once('listed-tags', (_, tags) => {
+        setTags(tags)
+        resolve()
+      })
     })
   }
 
