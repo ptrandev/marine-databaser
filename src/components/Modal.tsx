@@ -11,7 +11,7 @@ interface ModalProps {
 const Modal: FC<ModalProps> = ({ children, open, onClose }) => {
   return (
     <MUIModal open={open} onClose={onClose}>
-      <Box display='flex' width='100%' height='100%' justifyContent='center' alignItems='center' p={4}>
+      <Box display='flex' width='100%' height='100%' justifyContent='center' alignItems='center' p={4} onClick={onClose}>
         <Card
           sx={{
             position: 'relative',
