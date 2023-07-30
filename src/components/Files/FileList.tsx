@@ -3,9 +3,10 @@ import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack,
 import { ipcRenderer } from "electron"
 
 import { Virtuoso } from "react-virtuoso"
-import { FileOpen, Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter, EditNote, NoteAlt } from "@mui/icons-material"
+import { FileOpen, Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter, NoteAlt } from "@mui/icons-material"
 import FileTagsModal from "./FileTagsModal"
 import FileRenameModal from "./FileRenameModal"
+import FileNotesModal from "./FileNotesModal"
 
 import { FileWithTags, MimeTypes } from "../../../shared/types"
 import useFiles from "@/hooks/useFiles"
@@ -15,6 +16,7 @@ const FileList: FC = () => {
 
   const [fileTagFile, setFileTagFile] = useState<FileWithTags>()
   const [fileRenameFile, setFileRenameFile] = useState<FileWithTags>()
+  const [fileNotesFile, setFileNotesFile] = useState<FileWithTags>()
 
   const handleFileTagModalClose = () => {
     setFileTagFile(undefined)
@@ -100,7 +102,6 @@ const FileList: FC = () => {
                 </Box>
                 <IconButton
                   aria-label='rename'
-                  size='large'
                   onClick={(e) => {
                     e.stopPropagation()
                     setFileRenameFile(file)
@@ -110,17 +111,16 @@ const FileList: FC = () => {
                 </IconButton>
                 <IconButton
                   aria-label='notes'
-                  size='large'
                   color='success'
                   onClick={(e) => {
                     e.stopPropagation()
+                    setFileNotesFile(file)
                   }}
                 >
                   <NoteAlt />
                 </IconButton>
                 <IconButton
                   aria-label='tags'
-                  size='large'
                   color='primary'
                   onClick={(e) => {
                     e.stopPropagation()
@@ -131,7 +131,6 @@ const FileList: FC = () => {
                 </IconButton>
                 <IconButton
                   aria-label='open'
-                  size='large'
                   color='secondary'
                   onClick={(e) => {
                     e.stopPropagation()
@@ -162,6 +161,15 @@ const FileList: FC = () => {
             handleClose={handleFileRenameModalClose}
             file={fileRenameFile}
             setFile={handleSetFileRenameFile}
+          />
+        )
+      }
+      {
+        fileNotesFile && (
+          <FileNotesModal
+            open={!!fileNotesFile}
+            handleClose={() => setFileNotesFile(undefined)}
+            file={fileNotesFile}
           />
         )
       }
