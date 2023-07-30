@@ -54,7 +54,7 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
     }
   }, [])
 
-  const contextValue = useMemo(() => {
+  const contextValue = useMemo<ExtractAudioContextValue>(() => {
     return {
       selectedFiles,
       updateSelectedFiles,

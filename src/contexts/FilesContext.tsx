@@ -87,7 +87,7 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
     }
   }, [])
 
-  const contextValue = useMemo(() => {
+  const contextValue = useMemo<FilesContextValue>(() => {
     return {
       files,
       selectedFiles,

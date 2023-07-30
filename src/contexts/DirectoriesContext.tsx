@@ -54,7 +54,7 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
     }
   }, [])
 
-  const contextValue = useMemo(() => {
+  const contextValue = useMemo<DirectoriesContextValue>(() => {
     return {
       directories,
       isLoadingDirectories,

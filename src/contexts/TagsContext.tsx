@@ -82,7 +82,7 @@ export const TagsProvider : FC<TagsProviderProps> = ({ children }) => {
     loadTags()
   }, [files])
 
-  const contextValue = useMemo(() => {
+  const contextValue = useMemo<TagsContextValue>(() => {
     return {
       tags,
       loadTags,

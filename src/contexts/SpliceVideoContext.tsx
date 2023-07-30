@@ -129,7 +129,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     }
   }, [])
 
-  const contextValue = useMemo(() => {
+  const contextValue = useMemo<SpliceVideoContextValue>(() => {
     return {
       selectedVideo,
       updateSelectedVideo,
