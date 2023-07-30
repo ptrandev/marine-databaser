@@ -3,7 +3,7 @@ import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack,
 import { ipcRenderer } from "electron"
 
 import { Virtuoso } from "react-virtuoso"
-import { FileOpen, Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter } from "@mui/icons-material"
+import { FileOpen, Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter, EditNote, NoteAlt } from "@mui/icons-material"
 import FileTagsModal from "./FileTagsModal"
 import FileRenameModal from "./FileRenameModal"
 
@@ -62,12 +62,7 @@ const FileList: FC = () => {
             }
 
             return (
-              <ListItem
-                key={file.id}
-                sx={{
-                  gap: 1,
-                }}
-              >
+              <ListItem key={file.id}>
                 <Checkbox
                   checked={checked}
                   onChange={(e) => {
@@ -81,7 +76,7 @@ const FileList: FC = () => {
                   }}
                 />
                 <Box width='100%'>
-                  <Stack direction='row' gap={2} alignItems='center'>
+                  <Stack direction='row' gap={1} alignItems='center'>
                     {fileIcon()}
                     <ListItemText
                       primary={file.name}
@@ -112,6 +107,16 @@ const FileList: FC = () => {
                   }}
                 >
                   <DriveFileRenameOutline />
+                </IconButton>
+                <IconButton
+                  aria-label='notes'
+                  size='large'
+                  color='success'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                  }}
+                >
+                  <NoteAlt />
                 </IconButton>
                 <IconButton
                   aria-label='tags'

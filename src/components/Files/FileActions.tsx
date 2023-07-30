@@ -32,7 +32,7 @@ const FileActions: FC = () => {
 
   return (
     <>
-      <Box ml={2} mr={4.25} display='flex' justifyContent='space-between'>
+      <Box ml={2} mr={2.75} display='flex' justifyContent='space-between'>
         <Checkbox
           checked={selectedFiles?.length === files?.length && selectedFiles?.length > 0}
           indeterminate={selectedFiles?.length > 0 && selectedFiles?.length < files?.length}
@@ -46,7 +46,7 @@ const FileActions: FC = () => {
             )
           }}
         />
-        <Stack direction='row' spacing={2}>
+        <Stack direction='row' spacing={1}>
           <IconButton disabled={selectedFiles?.length === 0} onClick={() => setFileBulkTagsModalOpen(true)}>
             <Sell />
           </IconButton>
