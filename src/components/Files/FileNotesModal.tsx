@@ -1,7 +1,7 @@
 import Modal from "@/components/Modal"
 import { FC, useEffect, useState } from "react"
 import { ipcRenderer } from "electron"
-import { Button, Stack, TextField, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Box, List } from "@mui/material"
+import { Button, Stack, TextField, ListItem, ListItemText, IconButton, Box, List } from "@mui/material"
 import { FileWithTags } from "shared/types"
 import { FileNote } from "electron/database/schemas"
 import { Delete, Edit } from "@mui/icons-material"
@@ -57,13 +57,9 @@ const FileNotesModal: FC<FileNotesModalProps> = ({ open, handleClose, file }) =>
     handleListNotes()
   }, [file])
 
-  useEffect(() => {
-    console.log(notes)
-  }, [notes])
-
   return (
     <Modal open={open} onClose={handleClose}>
-      <Stack spacing={2} mt={2}>
+      <Stack spacing={2} mt={3}>
         <Box
           display='flex'
           flexDirection='column'
