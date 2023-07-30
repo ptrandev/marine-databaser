@@ -67,7 +67,6 @@ const DirectoryList: FC = () => {
               />
               <IconButton
                 aria-label='delete'
-                size='large'
                 color='error'
                 onClick={(e) => {
                   e.stopPropagation()
