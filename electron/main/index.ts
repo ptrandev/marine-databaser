@@ -147,6 +147,7 @@ import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectorie
 import { handleFileRename, handleListFiles, handleSelectFile } from "../handlers/file";
 import { handleListTags, handleTagFile, handleUntagFile, handleTagFiles, handleUntagFiles } from "../handlers/tag";
 import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo } from "../handlers/ffmpeg";
+import { handleCreateNote } from "../handlers/note";
 
 //
 // DIRECTORY
@@ -239,3 +240,11 @@ ipcMain.on("untag-file", async (event, arg) => {
 ipcMain.on("untag-files", async (event, arg) => {
   handleUntagFiles(event, arg);
 });
+
+//
+// NOTES
+//
+
+ipcMain.on("create-note", async (event, arg) => {
+  handleCreateNote(event, arg);
+})
