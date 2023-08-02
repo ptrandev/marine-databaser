@@ -1,12 +1,12 @@
 import { FC, createContext, useMemo, useState, useEffect } from 'react'
 import { Directory, Tag } from '../../electron/database/schemas'
-import { FileTypes, FileWithTags } from '../../shared/types'
+import { FileTypes, FileWithMetadata } from '../../shared/types'
 import { ipcRenderer } from 'electron'
 import { useEffectDebounced } from '@/hooks/useEffectDebounced'
 import useDirectories from '@/hooks/useDirectories'
 
 export interface FilesContextValue {
-  files: FileWithTags[]
+  files: FileWithMetadata[]
   selectedFiles: number[]
   updateSelectedFiles: (selectedFiles: number[]) => void
   loadFiles: () => void
@@ -30,7 +30,7 @@ interface FilesProviderProps {
 export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
   const { directories } = useDirectories()
 
-  const [files, setFiles] = useState<FileWithTags[]>([])
+  const [files, setFiles] = useState<FileWithMetadata[]>([])
   const [selectedFiles, setSelectedFiles] = useState<number[]>([])
   const [isLoadingFiles, setIsLoadingFiles] = useState<boolean>(true)
   const [searchTerm, setSearchTerm] = useState<string>('')

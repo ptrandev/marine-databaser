@@ -1,3 +1,3 @@
 export * from "./FileTypes";
-export * from "./FileWithTags";
+export * from "./FileWithMetadata";
 export * from "./MimeTypes";

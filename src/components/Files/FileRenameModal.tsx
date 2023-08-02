@@ -1,5 +1,5 @@
 import { FC, useEffect } from 'react'
-import { FileWithTags } from '../../../shared/types'
+import { FileWithMetadata } from '../../../shared/types'
 import { Box, Stack, TextField, Button, Typography } from '@mui/material'
 import { useState } from 'react'
 import { ipcRenderer } from 'electron'
@@ -8,8 +8,8 @@ import Modal from '@/components/Modal'
 interface FileRenameModalProps {
   open: boolean
   handleClose: () => void
-  file: FileWithTags
-  setFile: (file: FileWithTags) => void
+  file: FileWithMetadata
+  setFile: (file: FileWithMetadata) => void
 }
 
 const FileRenameModal: FC<FileRenameModalProps> = ({ open, handleClose, file, setFile }) => {

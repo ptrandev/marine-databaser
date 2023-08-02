@@ -8,15 +8,15 @@ import FileTagsModal from "./FileTagsModal"
 import FileRenameModal from "./FileRenameModal"
 import FileNotesModal from "./FileNotesModal"
 
-import { FileWithTags, MimeTypes } from "../../../shared/types"
+import { FileWithMetadata, MimeTypes } from "../../../shared/types"
 import useFiles from "@/hooks/useFiles"
 
 const FileList: FC = () => {
   const { files, loadFiles, selectedFiles, updateSelectedFiles } = useFiles()
 
-  const [fileTagFile, setFileTagFile] = useState<FileWithTags>()
-  const [fileRenameFile, setFileRenameFile] = useState<FileWithTags>()
-  const [fileNotesFile, setFileNotesFile] = useState<FileWithTags>()
+  const [fileTagFile, setFileTagFile] = useState<FileWithMetadata>()
+  const [fileRenameFile, setFileRenameFile] = useState<FileWithMetadata>()
+  const [fileNotesFile, setFileNotesFile] = useState<FileWithMetadata>()
 
   const handleFileTagModalClose = () => {
     setFileTagFile(undefined)
@@ -28,11 +28,11 @@ const FileList: FC = () => {
     loadFiles()
   }
 
-  const handleSetFileTagFile = (file: FileWithTags) => {
+  const handleSetFileTagFile = (file: FileWithMetadata) => {
     setFileTagFile(file)
   }
 
-  const handleSetFileRenameFile = (file: FileWithTags) => {
+  const handleSetFileRenameFile = (file: FileWithMetadata) => {
     setFileRenameFile(file)
   }
 

@@ -2,14 +2,14 @@ import Modal from "@/components/Modal"
 import { FC, useEffect, useState } from "react"
 import { ipcRenderer } from "electron"
 import { Button, Stack, TextField, ListItem, ListItemText, IconButton, Box, List } from "@mui/material"
-import { FileWithTags } from "shared/types"
+import { FileWithMetadata } from "shared/types"
 import { FileNote } from "electron/database/schemas"
 import { Delete, Edit } from "@mui/icons-material"
 
 interface FileNotesModalProps {
   open: boolean
   handleClose: () => void
-  file: FileWithTags
+  file: FileWithMetadata
 }
 
 const FileNotesModal: FC<FileNotesModalProps> = ({ open, handleClose, file }) => {

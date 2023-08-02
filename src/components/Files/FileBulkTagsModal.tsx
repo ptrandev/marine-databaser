@@ -4,7 +4,7 @@ import { Autocomplete, Box, TextField, Button, Stack, Typography, Chip } from "@
 import useTags from "@/hooks/useTags"
 import useFiles from "@/hooks/useFiles"
 import { FileTag, Tag } from '../../../electron/database/schemas'
-import { FileWithTags } from "shared/types"
+import { FileWithMetadata } from "shared/types"
 
 interface FileBulkTagsModal {
   open: boolean
@@ -17,7 +17,7 @@ const FileBulkTagsModal: FC<FileBulkTagsModal> = ({ open, handleClose }) => {
 
   const [tag, setTag] = useState<string>('')
   // these are the files that are selected
-  const [_files, setFiles] = useState<FileWithTags[]>([])
+  const [_files, setFiles] = useState<FileWithMetadata[]>([])
 
   // these are the tags that are on the selected files; ensure no duplicates
   const _tags = useMemo(() => {

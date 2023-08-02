@@ -1,4 +1,4 @@
-import { FileWithTags } from "../../../shared/types"
+import { FileWithMetadata } from "../../../shared/types"
 import { Typography, Box, Chip, Button, Autocomplete, TextField } from "@mui/material"
 import { Stack } from "@mui/system"
 import { ipcRenderer } from "electron"
@@ -9,8 +9,8 @@ import Modal from "@/components/Modal"
 interface FileTagModalProps {
   open: boolean
   handleClose: () => void
-  file: FileWithTags
-  setFile: (file: FileWithTags) => void
+  file: FileWithMetadata
+  setFile: (file: FileWithMetadata) => void
 }
 
 const FileTagsModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile }) => {
@@ -22,7 +22,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile
     if (!tag) return
 
     await tagFile(file.id, tag).then(fileTag => {
-      const newFile = { ...file } as FileWithTags
+      const newFile = { ...file } as FileWithMetadata
       if (fileTag) {
         // @ts-ignore
         newFile.Tags = [...newFile.Tags, { id: fileTag.tag_id, name: tag }] as any
@@ -38,7 +38,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile
     const file_id: number = file.id
 
     untagFile(file_id, tag_id).then(() => {
-      const newFile = { ...file } as FileWithTags
+      const newFile = { ...file } as FileWithMetadata
       newFile.Tags = newFile.Tags.filter(tag => tag.id !== tag_id) as any
       setFile(newFile)
     })
