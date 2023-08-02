@@ -2,6 +2,7 @@ import { dialog, BrowserWindow, IpcMainEvent } from 'electron';
 import { Op } from 'sequelize';
 import { File } from '../database/schemas';
 import mime from 'mime-types';
+import path from 'path';
 
 const ffmpeg = require('fluent-ffmpeg');
 
@@ -54,7 +55,7 @@ const spliceVideo = async (inputPath: string, startTime: number, endTime: number
       .setStartTime(startTime)
       .setDuration(endTime - startTime)
       .outputOptions('-c', 'copy')
-      .save(`${inputPath.replace(/\.[^/.]+$/, "")}-${startTime}-${endTime}.mp4`)
+      .save(`${inputPath.replace(/\.[^/.]+$/, "")}-${startTime}-${endTime}.${path.extname(inputPath)}`)
       .on('end', () => {
         return resolve();
       })
