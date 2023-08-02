@@ -3,7 +3,7 @@ import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack,
 import { ipcRenderer } from "electron"
 
 import { Virtuoso } from "react-virtuoso"
-import { FileOpen, Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter, NoteAlt } from "@mui/icons-material"
+import { FileOpen, Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter, NoteAlt, Plagiarism } from "@mui/icons-material"
 import FileTagsModal from "./FileTagsModal"
 import FileRenameModal from "./FileRenameModal"
 import FileNotesModal from "./FileNotesModal"
@@ -12,7 +12,7 @@ import { FileWithMetadata, MimeTypes } from "../../../shared/types"
 import useFiles from "@/hooks/useFiles"
 
 const FileList: FC = () => {
-  const { files, loadFiles, selectedFiles, updateSelectedFiles } = useFiles()
+  const { files, loadFiles, selectedFiles, updateSelectedFiles, searchTerm } = useFiles()
 
   const [fileTagFile, setFileTagFile] = useState<FileWithMetadata>()
   const [fileRenameFile, setFileRenameFile] = useState<FileWithMetadata>()
@@ -63,6 +63,8 @@ const FileList: FC = () => {
               }
             }
 
+            const matchingNote = searchTerm ? file?.FileNotes?.find(note => note.note.includes(searchTerm))?.note : null
+
             return (
               <ListItem key={file.id}>
                 <Checkbox
@@ -85,6 +87,21 @@ const FileList: FC = () => {
                       secondary={file.path}
                     />
                   </Stack>
+                  {
+                    // TODO: make actually efficient
+                    // if the file note matches the search query, display the first matching note
+                    // make sure to highlight the search term
+                    matchingNote && (
+                      <Stack direction='row' spacing={1} mb={1} alignItems='center'>
+                        <NoteAlt fontSize='small' />
+                        <Typography variant='caption' noWrap>
+                          {matchingNote?.split(new RegExp(`(${searchTerm})`, 'gi')).map((part, index) =>
+                            part.toLowerCase() === searchTerm.toLowerCase() ? <span key={index} style={{ backgroundColor: 'aqua' }}>{part}</span> : part
+                          )}
+                        </Typography>
+                      </Stack>
+                    )
+                  }
                   {
                     file?.Tags?.length > 0 && (
                       <Stack direction='row' spacing={1} alignItems='center'>
