@@ -1,5 +1,5 @@
 import { BrowserWindow, IpcMainEvent, dialog } from "electron";
-import { Tag, File } from "../database/schemas";
+import { Tag, File, FileNote } from "../database/schemas";
 import { FindOptions, Op } from "sequelize";
 import { FileTypes } from "../../shared/types"
 import fs from "fs";
@@ -30,9 +30,14 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
 
   const options: FindOptions = {
     where: {},
-    include: {
-      model: Tag,
-    },
+    include: [
+      {
+        model: Tag,
+      },
+      {
+        model: FileNote,
+      }
+    ],
   };
 
   if (directories?.length > 0) {
@@ -47,13 +52,10 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
           id: tags,
         },
       },
+      {
+        model: FileNote,
+      }
     ];
-  }
-
-  if (searchTerm?.length > 0) {
-    options.where['path'] = {
-      [Op.like]: `%${searchTerm.toLowerCase()}%`,
-    };
   }
 
   if (fileTypes?.length > 0) {
@@ -62,7 +64,34 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
     }
   }
 
-  options.limit = 50000;
+  if (searchTerm?.length > 0) {
+    const fileNotes = await FileNote.findAll({
+      where: {
+        note: {
+          [Op.like]: `%${searchTerm.toLowerCase()}%`,
+        },
+      },
+    });
+
+    const fileIds = fileNotes.map((fileNote) => fileNote.file_id);
+
+    // make an or statement for the file ids and path
+    options.where = {
+      ...options.where,
+      [Op.or]: [
+        {
+          id: fileIds,
+        },
+        {
+          path: {
+            [Op.like]: `%${searchTerm.toLowerCase()}%`,
+          },
+        },
+      ],
+    };
+  }
+
+  options.limit = 10000;
 
   const files: File[] = await File.findAll(options).then((files) =>
     files.map((file) => file.toJSON())
