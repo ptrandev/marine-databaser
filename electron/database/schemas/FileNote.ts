@@ -33,6 +33,8 @@ FileNote.init({
   sequelize,
 });
 
-File.hasMany(FileNote);
+File.hasMany(FileNote, {
+  foreignKey: "file_id"
+});
 
 export default FileNote;
