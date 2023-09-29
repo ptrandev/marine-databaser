@@ -69,7 +69,7 @@ export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent
 
   if (result.filePaths.length === 0) return;
 
-  event.reply("selected-directory", result.filePaths);
+  event.reply("added-directory", result.filePaths);
 
   // add directory to database
   const directory = await Directory.create({

@@ -12,7 +12,7 @@ const Directories = () => {
   const handleAddDirectory = () => {
     ipcRenderer.send('add-directory')
 
-    ipcRenderer.once('selected-directory', () => {
+    ipcRenderer.once('added-directory', () => {
       handleIsInitializingDirectory(true)
     })
   }
@@ -34,7 +34,7 @@ const Directories = () => {
     })
 
     return () => {
-      ipcRenderer.removeAllListeners('selected-directory')
+      ipcRenderer.removeAllListeners('added-directory')
       ipcRenderer.removeAllListeners('initialized-directory')
       ipcRenderer.removeAllListeners('refreshed-directories')
     }
