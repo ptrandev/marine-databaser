@@ -3,13 +3,17 @@ import Modal from '../Modal'
 import { Typography, Button, MenuItem, Grid, TextField, Checkbox, Stack, Snackbar, Alert } from '@mui/material'
 import useExtractAudio from '@/hooks/useExtractAudio'
 import { ipcRenderer } from 'electron'
+import { AudioFileFormat } from '../../../shared/types/Audio'
 
 interface OptionsModalProps {
   open: boolean
   onClose: () => void
 }
 
-const fileFormats = [
+const fileFormats : {
+  value: AudioFileFormat
+  label: string
+}[] = [
   {
     value: 'pcm_s16le',
     label: 'WAV 16-Bit (recommended)'
@@ -25,7 +29,7 @@ const fileFormats = [
 ]
 
 const OptionsModal: FC<OptionsModalProps> = ({ open, onClose }) => {
-  const [fileFormat, setFileFormat] = useState('pcm_s16le')
+  const [fileFormat, setFileFormat] = useState<AudioFileFormat>('pcm_s16le')
 
   const [outputDirectory, setOutputDirectory] = useState('')
   const [useSameDirectory, setUseSameDirectory] = useState(true)
@@ -37,6 +41,9 @@ const OptionsModal: FC<OptionsModalProps> = ({ open, onClose }) => {
   useEffect(() => {
     ipcRenderer.on('bulk-extract-audio', () => {
       setShowSuccessSnackbar(true)
+      setOutputDirectory('')
+      setUseSameDirectory(true)
+      setFileFormat('pcm_s16le')
     })
 
     return () => {
@@ -52,7 +59,7 @@ const OptionsModal: FC<OptionsModalProps> = ({ open, onClose }) => {
         </Typography>
         <Grid container my={2} spacing={2}>
           <Grid item xs={12}>
-            <TextField fullWidth label='File Format' variant='outlined' select value={fileFormat} onChange={(e) => setFileFormat(e.target.value)}>
+            <TextField fullWidth label='File Format' variant='outlined' select value={fileFormat} onChange={(e) => setFileFormat(e.target.value as AudioFileFormat)}>
               {
                 fileFormats.map(({ value, label }) => (
                   <MenuItem key={value} value={value}>
@@ -81,7 +88,10 @@ const OptionsModal: FC<OptionsModalProps> = ({ open, onClose }) => {
         </Grid>
         <Grid container justifyContent='flex-end'>
           <Button variant='contained' onClick={() => {
-            handleExtractAudio()
+            handleExtractAudio({
+              fileFormat,
+              outputDirectory: useSameDirectory ? undefined : outputDirectory
+            })
             onClose()
           }} disabled={isExtractingAudio || selectedFiles.length === 0}>
             Extract Audio
