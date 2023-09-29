@@ -27,11 +27,12 @@ ffmpeg.setFfprobePath(ffprobePath);
  */
 const extractAudio = async (inputPath: string) => {
   return new Promise<void>((resolve, reject) => {
+    const date = new Date();
     ffmpeg(inputPath)
     .outputOptions('-acodec', 'pcm_s16le')
     .toFormat('wav')
     // save in the same directory as the input file, but with a .wav extension and audio appended to the name
-    .save(`${inputPath.replace(/\.[^/.]+$/, "")}-audio.wav`)
+    .save(`${inputPath.replace(/\.[^/.]+$/, "")}-audio-${date.getTime()}.wav`)
     .on('end', () => {
       return resolve();
     })
