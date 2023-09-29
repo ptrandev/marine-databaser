@@ -9,8 +9,8 @@ import { useEffect } from "react"
 const Directories = () => {
   const { isLoadingDirectories, isInitializingDirectory, handleIsInitializingDirectory, loadDirectories } = useDirectories()
 
-  const handleSelectDirectory = () => {
-    ipcRenderer.send('select-directory')
+  const handleAddDirectory = () => {
+    ipcRenderer.send('add-directory')
 
     ipcRenderer.once('selected-directory', () => {
       handleIsInitializingDirectory(true)
@@ -59,7 +59,7 @@ const Directories = () => {
           </Box>
           <Box>
             <Button variant='contained' startIcon={<Add />}
-              onClick={handleSelectDirectory}
+              onClick={handleAddDirectory}
             >
               New Directory
             </Button>

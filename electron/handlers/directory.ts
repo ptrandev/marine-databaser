@@ -62,7 +62,7 @@ const addFileToDatabase = async ({ file, directory_id }: {
   }
 }
 
-export const handleSelectDirectory = async (win: BrowserWindow, event: IpcMainEvent) => {
+export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent) => {
   const result = await dialog.showOpenDialog(win, {
     properties: ["openDirectory"],
   });
