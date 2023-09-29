@@ -13,9 +13,11 @@ const Progress: FC = () => {
       <AppBar position='fixed' sx={{ top: 'auto', bottom: 0, bgcolor: 'background.paper' }}>
         <Toolbar>
           <Grid container spacing={2} alignItems='center'>
-            <Grid item sx={{ flexGrow: 1 }}>
+            <Grid item sx={{ flexGrow: 1 }} display='flex' flexDirection='row' alignItems='center'>
               <LinearProgress
-                variant='determinate'
+                variant={
+                  numCompletedFiles > 0 ? 'determinate' : isExtractingAudio ? 'indeterminate' : 'buffer'
+                }
                 value={selectedFiles.length === 0 ? 0 : (numCompletedFiles / selectedFiles.length) * 100}
                 sx={{ flexGrow: 1 }}
               />
