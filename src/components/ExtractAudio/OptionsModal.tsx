@@ -10,23 +10,23 @@ interface OptionsModalProps {
   onClose: () => void
 }
 
-const fileFormats : {
+const fileFormats: {
   value: AudioFileFormat
   label: string
 }[] = [
-  {
-    value: 'pcm_s16le',
-    label: 'WAV 16-Bit (recommended)'
-  },
-  {
-    value: 'pcm_s24le',
-    label: 'WAV 24-Bit',
-  },
-  {
-    value: 'pcm_s32le',
-    label: 'WAV 32-Bit'
-  },
-]
+    {
+      value: 'pcm_s16le',
+      label: 'WAV 16-Bit (recommended)'
+    },
+    {
+      value: 'pcm_s24le',
+      label: 'WAV 24-Bit',
+    },
+    {
+      value: 'pcm_s32le',
+      label: 'WAV 32-Bit'
+    },
+  ]
 
 const OptionsModal: FC<OptionsModalProps> = ({ open, onClose }) => {
   const [fileFormat, setFileFormat] = useState<AudioFileFormat>('pcm_s16le')
@@ -37,6 +37,14 @@ const OptionsModal: FC<OptionsModalProps> = ({ open, onClose }) => {
   const { handleExtractAudio, isExtractingAudio, selectedFiles } = useExtractAudio()
 
   const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false)
+
+  const handleSelectOutputDirectory = () => {
+    ipcRenderer.send('select-directory')
+
+    ipcRenderer.once('selected-directory', (_, directory) => {
+      setOutputDirectory(directory)
+    })
+  }
 
   useEffect(() => {
     ipcRenderer.on('bulk-extract-audio', () => {
@@ -70,18 +78,25 @@ const OptionsModal: FC<OptionsModalProps> = ({ open, onClose }) => {
             </TextField>
           </Grid>
           <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label='Output Directory'
-              variant='outlined'
-              value={outputDirectory}
-              onChange={(e) => setOutputDirectory(e.target.value)}
-              disabled={useSameDirectory}
-            />
+            {
+              !useSameDirectory && (
+                <TextField
+                  fullWidth
+                  label='Output Directory'
+                  variant='outlined'
+                  value={outputDirectory}
+                  disabled={useSameDirectory}
+                  onClick={handleSelectOutputDirectory}
+                  inputProps={{
+                    readOnly: true
+                  }}
+                />
+              )
+            }
             <Stack direction='row' alignItems='center' mt={1}>
               <Checkbox checked={useSameDirectory} onChange={(e) => setUseSameDirectory(e.target.checked)} />
               <Typography variant='body2'>
-                Use same directory as source file (recommended)
+                Use same output directory as source file (recommended)
               </Typography>
             </Stack>
           </Grid>
@@ -93,7 +108,7 @@ const OptionsModal: FC<OptionsModalProps> = ({ open, onClose }) => {
               outputDirectory: useSameDirectory ? undefined : outputDirectory
             })
             onClose()
-          }} disabled={isExtractingAudio || selectedFiles.length === 0}>
+          }} disabled={isExtractingAudio || selectedFiles.length === 0 || (!useSameDirectory && !outputDirectory)}>
             Extract Audio
           </Button>
         </Grid>

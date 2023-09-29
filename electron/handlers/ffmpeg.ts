@@ -49,7 +49,7 @@ const extractAudio = async ({
       .outputOptions('-acodec', fileFormat)
       .toFormat('wav')
       // save in the same directory as the input file, but with a .wav extension and audio appended to the name
-      .save(`${outputDirectory}/${path.basename(inputPath).replace(/\.[^/.]+$/, "")}-audio-${date}.wav`)
+      .save(`${outputDirectory}/${path.basename(inputPath).replace(/\.[^/.]+$/, "")}-audio-${date.getTime()}.wav`)
       .on('end', () => {
         return resolve();
       })

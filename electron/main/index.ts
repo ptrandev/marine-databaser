@@ -143,7 +143,7 @@ sequelize
     console.error("Unable to connect to the database:", err);
   });
 
-import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleAddDirectory, handleRefreshDirectories } from "../handlers/directory";
+import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleAddDirectory, handleRefreshDirectories, handleSelectDirectory } from "../handlers/directory";
 import { handleFileRename, handleListFiles, handleSelectFile } from "../handlers/file";
 import { handleListTags, handleTagFile, handleUntagFile, handleTagFiles, handleUntagFiles } from "../handlers/tag";
 import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo } from "../handlers/ffmpeg";
@@ -175,6 +175,10 @@ ipcMain.on('list-directories-file-count', async (event) => {
 
 ipcMain.on('refresh-directories', async (event) => {
   handleRefreshDirectories(event);
+})
+
+ipcMain.on('select-directory', async (event) => {
+  handleSelectDirectory(win, event);
 })
 
 //

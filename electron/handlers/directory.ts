@@ -85,6 +85,22 @@ export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent
   event.reply("initialized-directory");
 };
 
+/**
+ * Allows the user to select a single directory
+ * @param {BrowserWindow} win - the window to show the dialog in
+ * @param {IpcMainEvent} event - the event to reply to
+ * @returns {Promise<void>} - a promise that resolves when the directory has been selected
+ */
+export const handleSelectDirectory = async (win: BrowserWindow, event: IpcMainEvent) => {
+  const result = await dialog.showOpenDialog(win, {
+    properties: ["openDirectory"],
+  });
+
+  if (result.filePaths.length === 0) return;
+
+  event.reply("selected-directory", result.filePaths);
+}
+
 export const handleListDirectories = async (event: IpcMainEvent) => {
   const directories: Directory[] = await Directory.findAll().then(
     (dictionaries) => dictionaries.map((dictionary) => dictionary.toJSON())
