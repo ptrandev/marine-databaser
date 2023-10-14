@@ -49,13 +49,27 @@ const extractAudio = async (inputPath: string) => {
  * @param {number} endTime - the time to end the splice at
  * @returns {Promise<void>} - a promise that resolves when the video has been spliced
  */
-const spliceVideo = async (inputPath: string, startTime: number, endTime: number) => {
+const spliceVideo = async ({
+  inputPath,
+  startTime,
+  endTime,
+  outputDirectory,
+}: {
+  inputPath: string;
+  startTime: number;
+  endTime: number;
+  outputDirectory?: string;
+}) => {
   return new Promise<void>((resolve, reject) => {
+    if (!outputDirectory) {
+      outputDirectory = path.dirname(inputPath);
+    }
+
     ffmpeg(inputPath)
       .setStartTime(startTime)
       .setDuration(endTime - startTime)
       .outputOptions('-c', 'copy')
-      .save(`${inputPath.replace(/\.[^/.]+$/, "")}-${startTime}-${endTime}.${path.extname(inputPath)}`)
+      .save(`${outputDirectory}/${path.basename(inputPath).replace(/\.[^/.]+$/, "")}-${startTime}-${endTime}.${path.extname(inputPath)}`)
       .on('end', () => {
         return resolve();
       })
@@ -72,7 +86,11 @@ const spliceVideo = async (inputPath: string, startTime: number, endTime: number
  * @param {number[] | string[]} arg.files - the files to extract audio from
  * @returns {Promise<void>} - a promise that resolves when the audio has been extracted
  */
-export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: { files: number[] | string[] }) => {
+export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
+  files: number[] | string[],
+  fileFormat: AudioFileFormat,
+  outputDirectory?: string
+}) => {
   if (arg.files.length === 0) return;
 
   // if typeof files is number
@@ -117,14 +135,15 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: { files: 
  * @param {IpcMainEvent} event - the event to reply to
  * @param {string} arg.videoPath - the path to the video to splice
  * @param {[number, number][]} arg.splicePoints - the points to splice the video at
+ * @param {string} arg.outputDirectory - the directory to save the spliced videos to
  * @returns {Promise<void>} - a promise that resolves when the video has been spliced
  */
-export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, splicePoints: [number, number][] }) => {
+export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, splicePoints: [number, number][], outputDirectory?: string }) => {
   const { videoPath, splicePoints } = arg;
 
   // for each splice point, splice the video; ensure this happens synchronously
   for (const splicePoint of splicePoints) {
-    await spliceVideo(videoPath, splicePoint[0], splicePoint[1]);
+    await spliceVideo({ inputPath: videoPath, startTime: splicePoint[0], endTime: splicePoint[1], outputDirectory: arg.outputDirectory });
     event.reply('spliced-point-video');
   }
 

@@ -1,33 +1,18 @@
-import { FC } from 'react'
-import { AppBar, Toolbar, LinearProgress, Typography, Button } from '@mui/material'
+import { FC, useState } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
+import OptionsModal from './OptionsModal'
+import ProgressComponent from '../Progress'
 
 const Progress: FC = () => {
   const { splicePoints, numSplicePointsCompleted, isSplicingVideo, handleSpliceVideo } = useSpliceVideo()
 
+  const [optionsModalOpen, setOptionsModalOpen] = useState(false)
+
   return (
-    <AppBar position='fixed' sx={{ top: 'auto', bottom: 0, bgcolor: 'background.paper' }}>
-      <Toolbar>
-        <LinearProgress
-          variant='determinate'
-          value={splicePoints.length === 0 ? 0 : (numSplicePointsCompleted / splicePoints.length) * 100}
-          sx={{ flexGrow: 1 }}
-        />
-        <Typography color='textPrimary' mx={2}>
-          {
-            splicePoints.length > 0 && (
-              `${numSplicePointsCompleted} / ${splicePoints.length} completed`
-            )
-          }
-        </Typography>
-        <Button variant='contained'
-          disabled={isSplicingVideo || splicePoints.length === 0}
-          onClick={handleSpliceVideo}
-        >
-          Splice Video
-        </Button>
-      </Toolbar>
-    </AppBar>
+    <>
+      <ProgressComponent numCompleted={numSplicePointsCompleted} totalToComplete={splicePoints.length} isProcessing={isSplicingVideo} onProcess={() => setOptionsModalOpen(true)} processText='Splice Video' />
+      <OptionsModal open={optionsModalOpen} onClose={() => setOptionsModalOpen(false)} />
+    </>
   )
 }
 

@@ -11,7 +11,11 @@ export interface SpliceVideoContextValue {
   modifySplicePoint: (splicePoint: [number, number], newSplicePoint: [number, number]) => void
   numSplicePointsCompleted: number
   isSplicingVideo: boolean
-  handleSpliceVideo: () => void
+  handleSpliceVideo: ({
+    outputDirectory,
+  }: {
+    outputDirectory?: string
+  }) => void
 }
 
 const SpliceVideoContext = createContext<SpliceVideoContextValue>(undefined as any)
@@ -26,7 +30,11 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const [numSplicePointsCompleted, setNumSplicePointsCompleted] = useState<number>(0)
   const [isSplicingVideo, setIsSplicingVideo] = useState<boolean>(false)
 
-  const handleSpliceVideo = () => {
+  const handleSpliceVideo = ({
+    outputDirectory,
+  }: {
+    outputDirectory?: string
+  }) => {
     // get length of video
     const video = document.getElementById('splice-video') as HTMLVideoElement
 
@@ -39,6 +47,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     ipcRenderer.send('splice-video', {
       videoPath: selectedVideo,
       splicePoints,
+      outputDirectory,
     })
 
     ipcRenderer.once('spliced-video', () => {
