@@ -8,7 +8,9 @@ export interface DirectoriesContextValue {
   loadDirectories: () => void
   isLoadingDirectories: boolean
   isInitializingDirectory: boolean
+  isDeletingDirectory: boolean
   handleIsInitializingDirectory: (initializingDirectory: boolean) => void
+  handleDeleteDirectory: (directoryId: number) => void
 }
 
 const DirectoriesContext = createContext<DirectoriesContextValue>(undefined as any)
@@ -24,6 +26,7 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
 
   const [isLoadingDirectories, setIsLoadingDirectories] = useState<boolean>(true)
   const [isInitializingDirectory, setIsInitializingDirectory] = useState<boolean>(false)
+  const [isDeletingDirectory, setIsDeletingDirectory] = useState<boolean>(false)
 
   const loadDirectories = () => {
     setIsLoadingDirectories(true)
@@ -45,6 +48,17 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
     setIsInitializingDirectory(isInitializingDirectory)
   }
 
+  const handleDeleteDirectory = (directoryId: number) => {
+    setIsDeletingDirectory(true)
+
+    ipcRenderer.send('delete-directory', { directoryId })
+
+    ipcRenderer.once('deleted-directory', () => {
+      loadDirectories()
+      setIsDeletingDirectory(false)
+    })
+  }
+
   useEffect(() => {
     loadDirectories()
 
@@ -61,9 +75,11 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
       directoriesFileCount,
       isInitializingDirectory,
       loadDirectories,
-      handleIsInitializingDirectory
+      handleIsInitializingDirectory,
+      isDeletingDirectory,
+      handleDeleteDirectory
     }
-  }, [directories, isLoadingDirectories, isInitializingDirectory, directoriesFileCount, loadDirectories, handleIsInitializingDirectory])
+  }, [directories, isLoadingDirectories, isInitializingDirectory, directoriesFileCount, loadDirectories, handleIsInitializingDirectory, isDeletingDirectory, handleDeleteDirectory])
 
   return (
     <DirectoriesContext.Provider value={contextValue}>

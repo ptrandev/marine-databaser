@@ -138,6 +138,12 @@ export const handleDirectoriesFileCount = async (event: IpcMainEvent) => {
 
 export const handleOpenDirectory = async (arg: { path: string }) => {
   const { path } = arg;
+
+  // make sure the directory exists before opening it
+  await fs.stat(path).catch(() => {
+    throw new Error("Directory does not exist");
+  });
+
   shell.openPath(path);
 };
 
