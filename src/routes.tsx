@@ -7,6 +7,7 @@ import Navbar from "./components/Navbar";
 import { createHashRouter, Outlet } from "react-router-dom";
 import { Box } from "@mui/system";
 import SpliceVideo from "./pages/SpliceVideo";
+import ImportExport from "./pages/ImportExport";
 
 const NavbarWrapper = () => {
   return (

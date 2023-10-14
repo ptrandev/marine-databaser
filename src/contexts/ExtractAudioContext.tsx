@@ -1,5 +1,6 @@
 import { FC, createContext, useState, useMemo, useEffect } from 'react'
 import { ipcRenderer } from 'electron'
+import { AudioFileFormat } from 'shared/types/Audio'
 
 export interface ExtractAudioContextValue {
   selectedFiles: string[]
@@ -7,7 +8,13 @@ export interface ExtractAudioContextValue {
   updateSelectedFiles: (files: string[]) => void
   deleteSelectedFiles: (files: string[]) => void
   isExtractingAudio: boolean
-  handleExtractAudio: () => void
+  handleExtractAudio: ({
+    fileFormat,
+    outputDirectory,
+  }: {
+    fileFormat?: AudioFileFormat
+    outputDirectory?: string
+  }) => void
 }
 
 const ExtractAudioContext = createContext<ExtractAudioContextValue>(undefined as any)
@@ -31,10 +38,16 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
     setSelectedFiles(selectedFiles.filter((file) => !files.includes(file)))
   }
 
-  const handleExtractAudio = () => {
+  const handleExtractAudio = ({
+    fileFormat,
+    outputDirectory,
+  }: {
+    fileFormat?: AudioFileFormat
+    outputDirectory?: string
+  }) => {
     setIsExtractingAudio(true)
 
-    ipcRenderer.send('bulk-extract-audio', { files: selectedFiles })
+    ipcRenderer.send('bulk-extract-audio', { files: selectedFiles, fileFormat, outputDirectory })
 
     ipcRenderer.once('bulk-extract-audio', () => {
       setIsExtractingAudio(false)

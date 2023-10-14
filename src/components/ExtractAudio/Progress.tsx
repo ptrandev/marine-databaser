@@ -4,7 +4,9 @@ import OptionsModal from './OptionsModal'
 import ProgressComponent from '../Progress'
 
 const Progress: FC = () => {
-  const { selectedFiles, handleExtractAudio, isExtractingAudio, numCompletedFiles } = useExtractAudio()
+  const { selectedFiles, isExtractingAudio, numCompletedFiles } = useExtractAudio()
+
+  const [optionsModalOpen, setOptionsModalOpen] = useState(false)
 
   return (
     <>
