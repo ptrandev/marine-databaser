@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import { File } from '../database/schemas';
 import mime from 'mime-types';
 import path from 'path';
+import { AudioFileFormat } from '../../shared/types/Audio';
 
 const ffmpeg = require('fluent-ffmpeg');
 
@@ -22,23 +23,40 @@ ffmpeg.setFfprobePath(ffprobePath);
 
 /**
  * extract the audio from a video
+ * @param {AudioFileFormat} fileFormat - the format to extract the audio in
  * @param {string} inputPath - the path to the video to extract audio from
+ * @param {string} outputDirectory - the directory to save the audio to
  * @returns {Promise<void>} - a promise that resolves when the audio has been extracted
  */
-const extractAudio = async (inputPath: string) => {
+const extractAudio = async ({
+  fileFormat = 'pcm_s16le',
+  inputPath,
+  outputDirectory,
+}: {
+  fileFormat?: AudioFileFormat;
+  inputPath: string;
+  outputDirectory?: string;
+}) => {
   return new Promise<void>((resolve, reject) => {
+    const date = new Date();
+
+    // if outputDirectory is not defined, save the audio in the same directory as the input file
+    if (!outputDirectory) {
+      outputDirectory = path.dirname(inputPath);
+    }
+
     ffmpeg(inputPath)
-    .outputOptions('-acodec', 'pcm_s16le')
-    .toFormat('wav')
-    // save in the same directory as the input file, but with a .wav extension and audio appended to the name
-    .save(`${inputPath.replace(/\.[^/.]+$/, "")}-audio.wav`)
-    .on('end', () => {
-      return resolve();
-    })
-    .on('error', (err) => {
-      console.error('Error extracting audio:', err);
-      return reject(err);
-    }).run();
+      .outputOptions('-acodec', fileFormat)
+      .toFormat('wav')
+      // save in the same directory as the input file, but with a .wav extension and audio appended to the name
+      .save(`${outputDirectory}/${path.basename(inputPath).replace(/\.[^/.]+$/, "")}-audio-${date.getTime()}.wav`)
+      .on('end', () => {
+        return resolve();
+      })
+      .on('error', (err) => {
+        console.error('Error extracting audio:', err);
+        return reject(err);
+      }).run();
   });
 }
 
@@ -72,7 +90,11 @@ const spliceVideo = async (inputPath: string, startTime: number, endTime: number
  * @param {number[] | string[]} arg.files - the files to extract audio from
  * @returns {Promise<void>} - a promise that resolves when the audio has been extracted
  */
-export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: { files: number[] | string[] }) => {
+export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
+  files: number[] | string[],
+  fileFormat: AudioFileFormat,
+  outputDirectory: string
+}) => {
   if (arg.files.length === 0) return;
 
   // if typeof files is number
@@ -89,7 +111,7 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: { files: 
 
     // for each file, extract the audio
     files?.forEach(async (file) => {
-      await extractAudio(file.path)
+      await extractAudio({ inputPath: file.path, fileFormat: arg.fileFormat, outputDirectory: arg.outputDirectory })
     });
 
     return
@@ -105,7 +127,7 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: { files: 
 
   // for each file, extract the audio
   for (const file of files) {
-    await extractAudio(file)
+    await extractAudio({ inputPath: file, fileFormat: arg.fileFormat, outputDirectory: arg.outputDirectory })
     event.reply('extracted-audio')
   }
 
