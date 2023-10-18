@@ -22,28 +22,28 @@ const getFileList = async (directory: string): Promise<string[]> => {
   return files;
 };
 
-const addFilesToDatabase = async ({ files, directory_id }: {
+const addFilesToDatabase = async ({ files, directoryId }: {
   files: string[],
-  directory_id: number
+  directoryId: number
 }): Promise<File[]> => {
   return await File.bulkCreate(
     await Promise.all(
       files.map(async (file) => {
-        return await addFileToDatabase({ file, directory_id });
+        return await addFileToDatabase({ file, directoryId });
       }
       )
     )
   )
 }
 
-const addFileToDatabase = async ({ file, directory_id }: {
+const addFileToDatabase = async ({ file, directoryId }: {
   file: string,
-  directory_id: number
+  directoryId: number
 }): Promise<
   {
     name: string,
     path: string,
-    directory_id: number,
+    directoryId: number,
     mimeType: string,
     lastModified: Date,
     birthTime: Date,
@@ -54,7 +54,7 @@ const addFileToDatabase = async ({ file, directory_id }: {
   return {
     name: file.split("/").pop(),
     path: file,
-    directory_id,
+    directoryId,
     mimeType: mime.lookup(file).toString(),
     lastModified: mtime,
     birthTime: birthtime,
@@ -80,7 +80,7 @@ export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent
   // look at files in directory; make sure to crawl subdirectories
   const files = await getFileList(result.filePaths[0]);
 
-  await addFilesToDatabase({ files, directory_id: directory.id });
+  await addFilesToDatabase({ files, directoryId: directory.id });
 
   event.reply("initialized-directory");
 };
@@ -147,19 +147,19 @@ export const handleOpenDirectory = async (arg: { path: string }) => {
   shell.openPath(path);
 };
 
-export const handleDeleteDirectory = async (event: IpcMainEvent, arg: { directory_id: number }) => {
-  const { directory_id } = arg;
+export const handleDeleteDirectory = async (event: IpcMainEvent, arg: { directoryId: number }) => {
+  const { directoryId } = arg;
 
   await Directory.destroy({
     where: {
-      id: directory_id,
+      id: directoryId,
     },
   });
 
   // remove all files associated with directory
   await File.destroy({
     where: {
-      directory_id: directory_id,
+      directoryId: directoryId,
     },
   });
 
@@ -272,13 +272,13 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
           !existingFiles.map((file) => file.path).includes(file) &&
           !renamedFiles.map((file) => file.path).includes(file)
       ),
-      directory_id: directory.id
+      directoryId: directory.id
     });
 
     // get all files that are in the database but not in the directory
     const deletedFiles = await File.findAll({
       where: {
-        directory_id: directory.id,
+        directoryId: directory.id,
         path: {
           [Op.notIn]: files,
         },
@@ -299,10 +299,10 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
         file_id: deletedFiles.map((file) => file.id),
       },
     });
-
-    // remove tags that no longer have any associations
-    await handleKillOrphanedTags(event);
-
-    event.reply("refreshed-directories");
   })
+
+  // remove tags that no longer have any associations
+  await handleKillOrphanedTags(event);
+
+  event.reply("refreshed-directories");
 }

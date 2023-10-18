@@ -19,6 +19,10 @@ const DirectoryDeleteModal: FC<DirectoryDeleteModalProps> = ({
   const [isDisabled, setIsDisabled] = useState(true)
 
   useEffect(() => {
+    console.log('directoryId', directoryId)
+  }, [directoryId])
+
+  useEffect(() => {
     // enable the delete button after 5 seconds
     const timeout = setTimeout(() => {
       setIsDisabled(false)

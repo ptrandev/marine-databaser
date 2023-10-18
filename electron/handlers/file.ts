@@ -41,7 +41,7 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
   };
 
   if (directories?.length > 0) {
-    options.where["directory_id"] = directories;
+    options.where["directoryId"] = directories;
   }
 
   if (tags?.length > 0) {

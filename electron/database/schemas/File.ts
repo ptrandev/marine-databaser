@@ -5,7 +5,7 @@ import { Model, InferAttributes, InferCreationAttributes, DataTypes } from 'sequ
 
 class File extends Model<InferAttributes<File>, InferCreationAttributes<File>> {
   id: number;
-  directory_id: number;
+  directoryId: number;
   name: string;
   path: string;
   mimeType: string;
@@ -21,7 +21,7 @@ File.init({
     autoIncrement: true,
     primaryKey: true,
   },
-  directory_id: {
+  directoryId: {
     type: Sequelize.INTEGER,
     allowNull: false,
   },
