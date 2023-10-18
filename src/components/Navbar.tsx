@@ -10,8 +10,12 @@ const LINKS = [
     to: '/'
   },
   {
-    label: 'Manage Directories',
+    label: 'Directories',
     to: '/directories'
+  },
+  {
+    label: 'Collections',
+    to: '/collections'
   },
   {
     label: 'Extract Audio',

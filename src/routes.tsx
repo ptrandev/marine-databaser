@@ -1,13 +1,14 @@
 import Files from "./pages/Files";
 import Directories from "./pages/Directories";
+import Collections from "./pages/Collections";
 import ExtractAudio from "./pages/ExtractAudio";
+import SpliceVideo from "./pages/SpliceVideo";
 
 import Navbar from "./components/Navbar";
 
 import { createHashRouter, Outlet } from "react-router-dom";
 import { Box } from "@mui/system";
-import SpliceVideo from "./pages/SpliceVideo";
-import ImportExport from "./pages/ImportExport";
+
 
 const NavbarWrapper = () => {
   return (
@@ -35,6 +36,12 @@ const router = createHashRouter([
         path: "/directories",
         element: (
           <Directories />
+        ),
+      },
+      {
+        path: "/collections",
+        element: (
+          <Collections />
         ),
       },
       {
