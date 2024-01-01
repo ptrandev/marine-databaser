@@ -1,7 +1,7 @@
 import { Delete } from "@mui/icons-material"
 import { IconButton, List, ListItemText, ListItemButton, Typography, Box, LinearProgress } from "@mui/material"
 import { ipcRenderer } from "electron"
-import { FC, useEffect, useState } from "react"
+import { FC, useState } from "react"
 
 import useDirectories from "@/hooks/useDirectories"
 import DirectoryDeleteModal from "./DirectoryDeleteModal"

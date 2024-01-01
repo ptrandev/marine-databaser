@@ -315,7 +315,13 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
       },
     });
 
-    event.reply("refreshed-directory", directory.id);
+    event.reply("refreshed-directory", {
+      directoryId: directory.id,
+      numExistingFiles: existingFiles.length,
+      numRenamedFiles: renamedFiles.length,
+      numDeletedFiles: deletedFiles.length,
+      numNewFiles: files.length - existingFiles.length - renamedFiles.length,
+    });
   }
 
   // remove tags that no longer have any associations

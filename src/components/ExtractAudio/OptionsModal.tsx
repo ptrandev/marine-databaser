@@ -23,7 +23,7 @@ const fileFormats: {
     },
   ]
 
-const OptionsModal: FC<ModalProps> = ({ open, onClose }) => {
+const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
   const [fileFormat, setFileFormat] = useState<AudioFileFormat>('pcm_s16le')
 
   const [outputDirectory, setOutputDirectory] = useState('')
