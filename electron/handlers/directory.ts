@@ -189,43 +189,56 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
 
     // get files that already exist in the database
     // to exist in the database, it must have the same path and birthTime
-    const existingFiles = await Promise.all(
-      files.map(async (file) => {
-        return await File.findOne({
-          where: {
-            path: file,
-            birthTime: (await fs.stat(file)).birthtime,
-          },
-        });
-      })
-    ).then((files) => files.filter((file) => file !== null));
+    const _existingFiles = await File.findAll({
+      where: {
+        path: {
+          [Op.in]: files
+        }
+      }
+    })
 
-    // for files that already exist in the database, update metadata
-    await Promise.all(
+    // filter out files that don't have the same birthTime as the file on disk
+    // use await fs.stat(file.path) to get the birthTime of the file on disk
+    const existingFiles = await Promise.all(
+      _existingFiles.map(async (file) => {
+        const { birthtime } = await fs.stat(file.path);
+        if (birthtime.getTime() === file.birthTime.getTime()) {
+          return file
+        }
+        return null
+      })
+    ).then((files) => files.filter((file) => file !== null))
+
+    // for files that already exist in the database, update metadata based upon the file id
+    const updateExistingFiles = await Promise.all(
       existingFiles.map(async (file) => {
         const { mtime, size } = await fs.stat(file.path);
-        await File.update(
-          {
-            lastModified: mtime,
-            fileSize: size,
-            updatedAt: currentTime,
-          },
-          {
-            where: {
-              id: file.id,
-            },
-          }
-        );
+        return {
+          ...file.toJSON(),
+          lastModified: mtime,
+          fileSize: size,
+          updatedAt: currentTime,
+        }
       }
       )
-    );
+    )
+
+    await File.bulkCreate(updateExistingFiles, {
+      updateOnDuplicate: [
+        "lastModified",
+        "fileSize",
+        "updatedAt"
+      ]
+    })
+
+    const existingFilesPaths = existingFiles.map((file) => file.path);
 
     // get files that have been renamed
     // to be renamed, the file must have the same birthTime, fileSize, mimeType,
     // and lastModified, but a different path
     const renamedFiles = await Promise.all(
       files
-        .filter((file) => !existingFiles.map((file) => file.path).includes(file))
+        .filter((file) => !existingFilesPaths.includes(file))
         .map(async (file) => {
           const { birthtime, size, mtime } = await fs.stat(file);
           const mimeType = mime.lookup(file).toString();
@@ -265,12 +278,14 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
         })
     ).then((files) => files.filter((file) => file !== null));
 
+    const renamedFilesPaths = renamedFiles.map((file) => file.path);
+
     // add new files to the database
     await addFilesToDatabase({
       files: files.filter(
         (file) =>
-          !existingFiles.map((file) => file.path).includes(file) &&
-          !renamedFiles.map((file) => file.path).includes(file)
+          !existingFilesPaths.includes(file) &&
+          !renamedFilesPaths.includes(file)
       ),
       directoryId: directory.id
     });
@@ -299,10 +314,12 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
         file_id: deletedFiles.map((file) => file.id),
       },
     });
+
+    event.reply("refreshed-directory", directory.id);
   })
 
   // remove tags that no longer have any associations
   await handleKillOrphanedTags(event);
 
-  event.reply("refreshed-directories");
+  event.reply("refreshed-directories")
 }
