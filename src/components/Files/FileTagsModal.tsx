@@ -4,16 +4,14 @@ import { Stack } from "@mui/system"
 import { ipcRenderer } from "electron"
 import { FC, useEffect, useMemo, useState } from "react"
 import useTags from "@/hooks/useTags"
-import Modal from "@/components/Modal"
+import { Modal, ModalProps } from "@/components/Modal"
 
-interface FileTagModalProps {
-  open: boolean
-  handleClose: () => void
+interface FileTagModalProps extends Omit<ModalProps, 'children'> {
   file: FileWithMetadata
   setFile: (file: FileWithMetadata) => void
 }
 
-const FileTagsModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile }) => {
+const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) => {
   const { tags, tagFile, untagFile } = useTags()
 
   const [tag, setTag] = useState<string>('')
@@ -57,7 +55,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, handleClose, file, setFile
   }, [])
 
   return (
-    <Modal open={open} onClose={handleClose}>
+    <Modal open={open} onClose={onClose}>
       <Stack spacing={2}>
         <Typography>
           {file.name}

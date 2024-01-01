@@ -1,4 +1,4 @@
-import Modal from "@/components/Modal"
+import { Modal, ModalProps } from "@/components/Modal"
 import { FC, useEffect, useState } from "react"
 import { ipcRenderer } from "electron"
 import { Button, Stack, TextField, ListItem, ListItemText, IconButton, Box, List } from "@mui/material"
@@ -6,13 +6,11 @@ import { FileWithMetadata } from "shared/types"
 import { FileNote } from "electron/database/schemas"
 import { Delete, Edit } from "@mui/icons-material"
 
-interface FileNotesModalProps {
-  open: boolean
-  handleClose: () => void
+interface FileNotesModalProps extends Omit<ModalProps, 'children'> {
   file: FileWithMetadata
 }
 
-const FileNotesModal: FC<FileNotesModalProps> = ({ open, handleClose, file }) => {
+const FileNotesModal: FC<FileNotesModalProps> = ({ open, onClose, file }) => {
   const [notes, setNotes] = useState<FileNote[]>([])
   const [note, setNote] = useState<string>('')
 
@@ -58,7 +56,7 @@ const FileNotesModal: FC<FileNotesModalProps> = ({ open, handleClose, file }) =>
   }, [file])
 
   return (
-    <Modal open={open} onClose={handleClose}>
+    <Modal open={open} onClose={onClose}>
       <Stack spacing={2} mt={3}>
         <Box
           display='flex'

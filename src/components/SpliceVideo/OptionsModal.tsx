@@ -1,15 +1,11 @@
 import { FC, useState } from 'react'
-import Modal from '../Modal'
+import { Modal, ModalProps } from '../Modal'
 import { Typography, Snackbar, Alert, TextField, Stack, Checkbox, Grid, Button } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 
-interface OptionsModalProps {
-  open: boolean
-  onClose: () => void
-}
 
-const OptionsModal: FC<OptionsModalProps> = ({ open, onClose }) => {
+const OptionsModal: FC<ModalProps> = ({ open, onClose }) => {
   const [outputDirectory, setOutputDirectory] = useState('')
   const [useSameDirectory, setUseSameDirectory] = useState(true)
 

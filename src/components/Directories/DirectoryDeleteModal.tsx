@@ -1,11 +1,9 @@
 import { FC, useState, useEffect, useMemo } from 'react'
 import { Typography, Button, Stack, Box } from '@mui/material'
-import Modal from '../Modal'
+import { Modal, ModalProps } from '../Modal'
 import useDirectories from '@/hooks/useDirectories'
 
-interface DirectoryDeleteModalProps {
-  open: boolean
-  onClose: () => void
+interface DirectoryDeleteModalProps extends Omit<ModalProps, 'children'> {
   directoryId: number
 }
 

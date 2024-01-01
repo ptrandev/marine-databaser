@@ -1,14 +1,9 @@
 import { FC, useState, useEffect } from 'react'
-import Modal from '../Modal'
+import { Modal, ModalProps } from '../Modal'
 import { Typography, Button, MenuItem, Grid, TextField, Checkbox, Stack, Snackbar, Alert } from '@mui/material'
 import useExtractAudio from '@/hooks/useExtractAudio'
 import { ipcRenderer } from 'electron'
 import { AudioFileFormat } from '../../../shared/types/Audio'
-
-interface OptionsModalProps {
-  open: boolean
-  onClose: () => void
-}
 
 const fileFormats: {
   value: AudioFileFormat
@@ -28,7 +23,7 @@ const fileFormats: {
     },
   ]
 
-const OptionsModal: FC<OptionsModalProps> = ({ open, onClose }) => {
+const OptionsModal: FC<ModalProps> = ({ open, onClose }) => {
   const [fileFormat, setFileFormat] = useState<AudioFileFormat>('pcm_s16le')
 
   const [outputDirectory, setOutputDirectory] = useState('')

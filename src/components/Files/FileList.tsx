@@ -165,7 +165,7 @@ const FileList: FC = () => {
         fileTagFile && (
           <FileTagsModal
             open={!!fileTagFile}
-            handleClose={handleFileTagModalClose}
+            onClose={handleFileTagModalClose}
             file={fileTagFile}
             setFile={handleSetFileTagFile}
           />
@@ -175,7 +175,7 @@ const FileList: FC = () => {
         fileRenameFile && (
           <FileRenameModal
             open={!!fileRenameFile}
-            handleClose={handleFileRenameModalClose}
+            onClose={handleFileRenameModalClose}
             file={fileRenameFile}
             setFile={handleSetFileRenameFile}
           />
@@ -185,7 +185,7 @@ const FileList: FC = () => {
         fileNotesFile && (
           <FileNotesModal
             open={!!fileNotesFile}
-            handleClose={() => setFileNotesFile(undefined)}
+            onClose={() => setFileNotesFile(undefined)}
             file={fileNotesFile}
           />
         )

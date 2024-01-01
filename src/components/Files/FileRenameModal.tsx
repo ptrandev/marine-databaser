@@ -3,16 +3,14 @@ import { FileWithMetadata } from '../../../shared/types'
 import { Box, Stack, TextField, Button, Typography } from '@mui/material'
 import { useState } from 'react'
 import { ipcRenderer } from 'electron'
-import Modal from '@/components/Modal'
+import { Modal, ModalProps } from '@/components/Modal'
 
-interface FileRenameModalProps {
-  open: boolean
-  handleClose: () => void
+interface FileRenameModalProps extends Omit<ModalProps, 'children'> {
   file: FileWithMetadata
   setFile: (file: FileWithMetadata) => void
 }
 
-const FileRenameModal: FC<FileRenameModalProps> = ({ open, handleClose, file, setFile }) => {
+const FileRenameModal: FC<FileRenameModalProps> = ({ open, onClose, file, setFile }) => {
   const [name, setName] = useState<string>(file.name)
 
   const onFileRename = () => {
@@ -21,7 +19,7 @@ const FileRenameModal: FC<FileRenameModalProps> = ({ open, handleClose, file, se
     ipcRenderer.send('rename-file', { file, name })
     ipcRenderer.once('renamed-file', (_, renamedFile) => {
       setFile(renamedFile)
-      handleClose()
+      onClose()
     })
   }
 
@@ -32,7 +30,7 @@ const FileRenameModal: FC<FileRenameModalProps> = ({ open, handleClose, file, se
   }, [])
 
   return (
-    <Modal open={open} onClose={handleClose}>
+    <Modal open={open} onClose={onClose}>
       <Stack spacing={2}>
         <Typography>
           {file.name}
