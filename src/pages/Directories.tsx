@@ -4,10 +4,12 @@ import { Typography, Button, Box, LinearProgress, Stack, CircularProgress } from
 import DirectoryList from "@/components/Directories/DirectoryList"
 import useDirectories from "@/hooks/useDirectories"
 import { ipcRenderer } from "electron"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 const Directories = () => {
   const { isLoadingDirectories, isInitializingDirectory, handleIsInitializingDirectory, loadDirectories } = useDirectories()
+
+  const [isRefreshingDirectories, setIsRefreshingDirectories] = useState<boolean>(false)
 
   const handleAddDirectory = () => {
     ipcRenderer.send('add-directory')
@@ -18,12 +20,11 @@ const Directories = () => {
   }
 
   const handleRefresh = () => {
-    handleIsInitializingDirectory(true)
+    setIsRefreshingDirectories(true)
     ipcRenderer.send('refresh-directories')
-
-    ipcRenderer.once('refreshed-directories', () => {
-      loadDirectories()
-      handleIsInitializingDirectory(false)
+    ipcRenderer.once('refreshed-directories', async () => {
+      await loadDirectories()
+      setIsRefreshingDirectories(false)
     })
   }
 
@@ -53,6 +54,7 @@ const Directories = () => {
               startIcon={<Refresh />}
               size='small'
               onClick={handleRefresh}
+              disabled={isRefreshingDirectories}
             >
               Refresh
             </Button>

@@ -181,8 +181,8 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
     event.reply("refreshed-directories")
     return
   }
-
-  directories.forEach(async (directory) => {
+  
+  for (const directory of directories) {
     const currentTime = new Date();
 
     const files = await getFileList(directory.path);
@@ -316,7 +316,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
     });
 
     event.reply("refreshed-directory", directory.id);
-  })
+  }
 
   // remove tags that no longer have any associations
   await handleKillOrphanedTags(event);

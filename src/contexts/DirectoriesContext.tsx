@@ -5,7 +5,7 @@ import { Directory } from '../../electron/database/schemas'
 export interface DirectoriesContextValue {
   directories: Directory[]
   directoriesFileCount: Record<number, number>
-  loadDirectories: () => void
+  loadDirectories: () => Promise<any>
   isLoadingDirectories: boolean
   isInitializingDirectory: boolean
   isDeletingDirectory: boolean
@@ -28,20 +28,28 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
   const [isInitializingDirectory, setIsInitializingDirectory] = useState<boolean>(false)
   const [isDeletingDirectory, setIsDeletingDirectory] = useState<boolean>(false)
 
-  const loadDirectories = () => {
+  const loadDirectories = async () => {
     setIsLoadingDirectories(true)
 
     ipcRenderer.send('list-directories')
     ipcRenderer.send('list-directories-file-count')
 
-    ipcRenderer.once('listed-directories', (_, directories) => {
-      setDirectories(directories)
-      setIsLoadingDirectories(false)
-    })
-  
-    ipcRenderer.once('listed-directories-file-count', (_, directoriesFileCount) => {
-      setDirectoriesFileCount(directoriesFileCount)
-    })
+    // return and await two promises for listed-directories and listed-directories-file-count
+    return Promise.all([
+      new Promise((resolve) => {
+        ipcRenderer.once('listed-directories', (_, directories) => {
+          setDirectories(directories)
+          setIsLoadingDirectories(false)
+          resolve(true)
+        })
+      }),
+      new Promise((resolve) => {
+        ipcRenderer.once('listed-directories-file-count', (_, directoriesFileCount) => {
+          setDirectoriesFileCount(directoriesFileCount)
+          resolve(true)
+        })
+      })
+    ])
   }
 
   const handleIsInitializingDirectory = (isInitializingDirectory: boolean) => {
@@ -61,11 +69,6 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
 
   useEffect(() => {
     loadDirectories()
-
-    return () => {
-      ipcRenderer.removeAllListeners('listed-directories')
-      ipcRenderer.removeAllListeners('listed-directories-file-count')
-    }
   }, [])
 
   const contextValue = useMemo<DirectoriesContextValue>(() => {
