@@ -1,4 +1,4 @@
-
+import { DATABASE_PATH } from "../constants";
 const Sequelize = require("sequelize");
 
 const sequelize = new Sequelize("database", "username", "password", {
@@ -11,7 +11,7 @@ const sequelize = new Sequelize("database", "username", "password", {
     acquire: 30000,
     idle: 10000,
   },
-  storage: "./src/assets/data/database.sqlite",
+  storage: DATABASE_PATH,
 });
 
 export default sequelize;

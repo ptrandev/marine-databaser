@@ -3,6 +3,7 @@ import Directories from "./pages/Directories";
 import Collections from "./pages/Collections";
 import ExtractAudio from "./pages/ExtractAudio";
 import SpliceVideo from "./pages/SpliceVideo";
+import ImportExport from "./pages/ImportExport";
 
 import Navbar from "./components/Navbar";
 
@@ -55,6 +56,12 @@ const router = createHashRouter([
         element: (
           <SpliceVideo />
         )
+      },
+      {
+        path: "/import-export",
+        element: (
+          <ImportExport />
+        ),
       }
     ],
   },
