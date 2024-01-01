@@ -14,10 +14,6 @@ const LINKS = [
     to: '/directories'
   },
   {
-    label: 'Collections',
-    to: '/collections'
-  },
-  {
     label: 'Extract Audio',
     to: '/extract-audio'
   },
