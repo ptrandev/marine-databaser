@@ -1,34 +1,19 @@
 import { Delete } from "@mui/icons-material"
 import { IconButton, List, ListItemText, ListItemButton, Typography, Box, LinearProgress } from "@mui/material"
 import { ipcRenderer } from "electron"
-import { FC, useEffect, useState } from "react"
+import { FC, useState } from "react"
 
 import useDirectories from "@/hooks/useDirectories"
+import DirectoryDeleteModal from "./DirectoryDeleteModal"
 
 const DirectoryList: FC = () => {
-  const { directories, directoriesFileCount, loadDirectories } = useDirectories()
-
-  const [isDeletingDirectory, setIsDeletingDirectory] = useState<boolean>(false)
+  const { directories, directoriesFileCount, isDeletingDirectory } = useDirectories()
 
   const handleOpenDirectory = (path: string) => {
     ipcRenderer.send('open-directory', { path })
   }
 
-  const handleDeleteDirectory = (directory_id: number) => {
-    setIsDeletingDirectory(true)
-
-    ipcRenderer.send('delete-directory', { directory_id })
-    ipcRenderer.once('deleted-directory', () => {
-      loadDirectories()
-      setIsDeletingDirectory(false)
-    })
-  }
-
-  useEffect(() => {
-    return () => {
-      ipcRenderer.removeAllListeners('deleted-directory')
-    }
-  }, [])
+  const [directoryIdToDelete, setDirectoryIdToDelete] = useState<number>()
 
   return (
     <>
@@ -70,7 +55,7 @@ const DirectoryList: FC = () => {
                 color='error'
                 onClick={(e) => {
                   e.stopPropagation()
-                  handleDeleteDirectory(directory.id)
+                  setDirectoryIdToDelete(directory.id)
                 }}
                 disabled={isDeletingDirectory}
               >
@@ -80,6 +65,11 @@ const DirectoryList: FC = () => {
           ))
         }
       </List>
+      {
+        directoryIdToDelete !== undefined && (
+          <DirectoryDeleteModal open={directoryIdToDelete !== undefined} onClose={() => setDirectoryIdToDelete(undefined)} directoryId={directoryIdToDelete!} />
+        )
+      }
     </>
   )
 }

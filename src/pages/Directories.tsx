@@ -1,10 +1,11 @@
-import { Add, Refresh } from "@mui/icons-material"
+import { Add } from "@mui/icons-material"
 import { Typography, Button, Box, LinearProgress, Stack, CircularProgress } from "@mui/material"
 
 import DirectoryList from "@/components/Directories/DirectoryList"
 import useDirectories from "@/hooks/useDirectories"
 import { ipcRenderer } from "electron"
 import { useEffect } from "react"
+import RefreshButton from "@/components/Directories/RefreshButton"
 
 const Directories = () => {
   const { isLoadingDirectories, isInitializingDirectory, handleIsInitializingDirectory, loadDirectories } = useDirectories()
@@ -14,16 +15,6 @@ const Directories = () => {
 
     ipcRenderer.once('added-directory', () => {
       handleIsInitializingDirectory(true)
-    })
-  }
-
-  const handleRefresh = () => {
-    handleIsInitializingDirectory(true)
-    ipcRenderer.send('refresh-directories')
-
-    ipcRenderer.once('refreshed-directories', () => {
-      loadDirectories()
-      handleIsInitializingDirectory(false)
     })
   }
 
@@ -48,14 +39,7 @@ const Directories = () => {
         </Typography>
         <Stack direction='row' alignItems='center' gap={2}>
           <Box>
-            <Button
-              color='primary'
-              startIcon={<Refresh />}
-              size='small'
-              onClick={handleRefresh}
-            >
-              Refresh
-            </Button>
+            <RefreshButton />
           </Box>
           <Box>
             <Button variant='contained' startIcon={<Add />}

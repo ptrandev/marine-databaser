@@ -2,13 +2,14 @@ import { FC } from "react"
 import { Modal as MUIModal, Box, Card, IconButton } from "@mui/material"
 import { Close } from "@mui/icons-material"
 
-interface ModalProps {
+export interface ModalProps {
   children: React.ReactNode
   open: boolean
   onClose: () => void
+  disableClose?: boolean
 }
 
-const Modal: FC<ModalProps> = ({ children, open, onClose }) => {
+export const Modal: FC<ModalProps> = ({ children, open, onClose, disableClose }) => {
   return (
     <MUIModal open={open} onClose={onClose}>
       <Box display='flex' width='100%' height='100%' justifyContent='center' alignItems='center' p={2}>
@@ -20,7 +21,7 @@ const Modal: FC<ModalProps> = ({ children, open, onClose }) => {
             p: 4,
           }}
         >
-          <IconButton onClick={onClose} sx={{ position: 'absolute', top: 8, right: 8 }}>
+          <IconButton onClick={onClose} sx={{ position: 'absolute', top: 8, right: 8 }} disabled={disableClose}>
             <Close />
           </IconButton>
           {children}

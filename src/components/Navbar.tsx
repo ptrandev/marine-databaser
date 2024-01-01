@@ -10,7 +10,7 @@ const LINKS = [
     to: '/'
   },
   {
-    label: 'Manage Directories',
+    label: 'Directories',
     to: '/directories'
   },
   {
