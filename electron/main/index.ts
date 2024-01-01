@@ -149,6 +149,7 @@ import { handleListTags, handleTagFile, handleUntagFile, handleTagFiles, handleU
 import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo } from "../handlers/ffmpeg";
 import { handleListNotes, handleAddNote, handleUpdateNote, handleDeleteNote } from "../handlers/note";
 import { handleDatabaseExport } from "../handlers/export";
+import { handleDatabaseImport } from "../handlers/import";
 
 //
 // DIRECTORY
@@ -272,4 +273,10 @@ ipcMain.on("delete-note", async (event, arg) => {
 
 ipcMain.on("database-export", async (event) => {
   handleDatabaseExport(event);
+})
+
+// IMPORT
+
+ipcMain.on("database-import", async (event) => {
+  handleDatabaseImport(event);
 })

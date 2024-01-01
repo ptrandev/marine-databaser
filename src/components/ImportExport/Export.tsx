@@ -7,23 +7,30 @@ import { Alert } from '@mui/material'
 
 
 const Export: FC = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+
   const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false)
   const [showErrorSnackbar, setShowErrorSnackbar] = useState(false)
   const [showCancelSnackbar, setShowCancelSnackbar] = useState(false)
 
   const handleDatabaseExport = () => {
+    setIsLoading(true)
+
     ipcRenderer.send('database-export')
 
     ipcRenderer.once('database-export-canceled', () => {
       setShowCancelSnackbar(true)
+      setIsLoading(false)
     })
 
     ipcRenderer.once('database-export-error', () => {
       setShowErrorSnackbar(true)
+      setIsLoading(false)
     })
 
     ipcRenderer.once('database-export-success', () => {
       setShowSuccessSnackbar(true)
+      setIsLoading(false)
     })
   }
 
@@ -39,25 +46,25 @@ const Export: FC = () => {
       </Box>
 
       <Box>
-        <Button variant="contained" startIcon={<FileUpload />} onClick={handleDatabaseExport}>
+        <Button variant="contained" startIcon={<FileUpload />} onClick={handleDatabaseExport} disabled={isLoading}>
           Export
         </Button>
       </Box>
 
       <Snackbar open={showSuccessSnackbar} autoHideDuration={6000} onClose={() => setShowSuccessSnackbar(false)}>
-        <Alert severity="success">
+        <Alert severity="success" onClose={() => setShowSuccessSnackbar(false)}>
           Database exported successfully.
         </Alert>
       </Snackbar>
 
       <Snackbar open={showErrorSnackbar} autoHideDuration={6000} onClose={() => setShowErrorSnackbar(false)}>
-        <Alert severity="error">
+        <Alert severity="error" onClose={() => setShowErrorSnackbar(false)}>
           An error occurred while exporting the database.
         </Alert>
       </Snackbar>
 
       <Snackbar open={showCancelSnackbar} autoHideDuration={6000} onClose={() => setShowCancelSnackbar(false)}>
-        <Alert severity="warning">
+        <Alert severity="warning" onClose={() => setShowCancelSnackbar(false)}>
           Database export canceled.
         </Alert>
       </Snackbar>
