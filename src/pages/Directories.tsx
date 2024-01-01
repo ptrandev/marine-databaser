@@ -1,16 +1,14 @@
-import { Add, Refresh } from "@mui/icons-material"
+import { Add } from "@mui/icons-material"
 import { Typography, Button, Box, LinearProgress, Stack, CircularProgress } from "@mui/material"
 
 import DirectoryList from "@/components/Directories/DirectoryList"
 import useDirectories from "@/hooks/useDirectories"
 import { ipcRenderer } from "electron"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import RefreshButton from "@/components/Directories/RefreshButton"
 
 const Directories = () => {
   const { isLoadingDirectories, isInitializingDirectory, handleIsInitializingDirectory, loadDirectories } = useDirectories()
-
-  const [isRefreshingDirectories, setIsRefreshingDirectories] = useState<boolean>(false)
 
   const handleAddDirectory = () => {
     ipcRenderer.send('add-directory')
