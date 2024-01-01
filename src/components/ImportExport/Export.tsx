@@ -41,7 +41,7 @@ const Export: FC = () => {
           Export Database
         </Typography>
         <Typography variant="body1">
-          This will export the database to a sqlite file. You can import this sqlite file into another instance of this application in order to transfer your database. This will not transfer any media files. It is recommended that you use this feature to store a periodic backup of your database. In the case of a database corruption, you can use this backup to restore your database.
+          This will export the database to a sqlite file. You can import this sqlite file into another instance of this application in order to transfer your database. This will not transfer any media files. It is recommended that you use this feature to store a periodic backup of your database. In the case of a database corruption, you can use this backup to restore your database. Sqlite is a portable database format, so if this tool does not work in the future, you can use any sqlite tool to view your database.
         </Typography>
       </Box>
 
