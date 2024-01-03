@@ -1,6 +1,4 @@
 import { dialog, BrowserWindow, IpcMainEvent } from 'electron';
-import { Op } from 'sequelize';
-import { File } from '../database/schemas';
 import mime from 'mime-types';
 import path from 'path';
 import { AudioFileFormat } from '../../shared/types/Audio';
@@ -144,7 +142,10 @@ export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: s
 
   // for each splice point, splice the video; ensure this happens synchronously
   for (const splicePoint of splicePoints) {
-    await spliceVideo({ inputPath: videoPath, startTime: splicePoint[0], endTime: splicePoint[1], outputDirectory: arg.outputDirectory });
+    await spliceVideo({ inputPath: videoPath, startTime: splicePoint[0], endTime: splicePoint[1], outputDirectory: arg.outputDirectory }).catch((err) => {
+      event.reply('splice-point-video-failed', err.message);
+    });
+
     event.reply('spliced-point-video');
   }
 
