@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Alert, Box, IconButton, Snackbar, Stack, Tooltip } from '@mui/material'
-import { FirstPage, LastPage, PlayArrow, SkipNext, SkipPrevious, Pause } from '@mui/icons-material'
+import { FirstPage, LastPage, PlayArrow, SkipNext, SkipPrevious, Pause, Replay, Replay5, Forward5, Replay10, Forward10 } from '@mui/icons-material'
 import { ipcRenderer } from 'electron'
 
 const VideoControls: FC = () => {
@@ -68,6 +68,10 @@ const VideoControls: FC = () => {
     video.currentTime = 0
   }
 
+  const handleGoToEnd = () => {
+    video.currentTime = video.duration
+  }
+
   const handlePlayPause = () => {
     if (video.paused) {
       video.play()
@@ -92,8 +96,8 @@ const VideoControls: FC = () => {
     video.currentTime += 1 / videoFramerate
   }
 
-  const handleGoToEnd = () => {
-    video.currentTime = video.duration
+  const handleSecondsOffset = (seconds: number) => {
+    video.currentTime += seconds
   }
 
   return (
@@ -109,6 +113,27 @@ const VideoControls: FC = () => {
                 <Tooltip title='Go to start of video'>
                   <IconButton onClick={handleGoToStart}>
                     <SkipPrevious />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Box>
+                <Tooltip title='Go backward 10 seconds'>
+                  <IconButton onClick={() => handleSecondsOffset(-10)}>
+                    <Replay10 />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Box>
+                <Tooltip title='Go backward 5 seconds'>
+                  <IconButton onClick={() => handleSecondsOffset(-5)}>
+                    <Replay5 />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Box>
+                <Tooltip title='Go backward 1 second'>
+                  <IconButton onClick={() => handleSecondsOffset(-1)}>
+                    <Replay />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -132,6 +157,27 @@ const VideoControls: FC = () => {
                 <Tooltip title='Go forward one frame'>
                   <IconButton onClick={handleGoForwardOneFrame}>
                     <LastPage />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Box>
+                <Tooltip title='Go forward 1 second'>
+                  <IconButton onClick={() => handleSecondsOffset(1)}>
+                    <Replay sx={{ transform: 'scaleX(-1)' }} />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Box>
+                <Tooltip title='Go forward 5 seconds'>
+                  <IconButton onClick={() => handleSecondsOffset(5)}>
+                    <Forward5 />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Box>
+                <Tooltip title='Go forward 10 seconds'>
+                  <IconButton onClick={() => handleSecondsOffset(10)}>
+                    <Forward10 />
                   </IconButton>
                 </Tooltip>
               </Box>
