@@ -1,3 +1,4 @@
+import { Alert, Snackbar } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import { FC, createContext, useMemo, useState } from 'react'
 import { useEffect } from 'react'
@@ -29,6 +30,8 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const [splicePoints, setSplicePoints] = useState<[number, number][]>([])
   const [numSplicePointsCompleted, setNumSplicePointsCompleted] = useState<number>(0)
   const [isSplicingVideo, setIsSplicingVideo] = useState<boolean>(false)
+
+  const [errorMessage, setErrorMessage] = useState<string|null>(null)
 
   const handleSpliceVideo = ({
     outputDirectory,
@@ -133,8 +136,13 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       setNumSplicePointsCompleted((prev) => prev + 1)
     })
 
+    ipcRenderer.on('splice-point-video-failed', (_, err) => {
+      setErrorMessage(err)
+    });
+
     return () => {
       ipcRenderer.removeAllListeners('spliced-point-video')
+      ipcRenderer.removeAllListeners('splice-point-video-failed')
     }
   }, [])
 
@@ -155,6 +163,11 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   return (
     <SpliceVideoContext.Provider value={contextValue}>
       {children}
+      <Snackbar open={!!errorMessage} autoHideDuration={6000} onClose={() => setErrorMessage(null)}>
+        <Alert severity='error' onClose={() => setErrorMessage(null)}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </SpliceVideoContext.Provider>
   )
 }

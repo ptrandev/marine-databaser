@@ -31,14 +31,14 @@ const VideoControls: FC = () => {
       setVideoFramerate(framerate)
     })
 
-    ipcRenderer.once('failed-to-get-video-framerate', (_, errorMessage) => {
+    ipcRenderer.once('get-video-framerate-failed', (_, errorMessage) => {
       setErrorMessage(errorMessage)
     })
 
 
     return () => {
       ipcRenderer.removeAllListeners('got-video-framerate')
-      ipcRenderer.removeAllListeners('failed-to-get-video-framerate')
+      ipcRenderer.removeAllListeners('get-video-framerate-failed')
     }
   }, [selectedVideo])
 

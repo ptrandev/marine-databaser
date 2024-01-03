@@ -111,26 +111,6 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
 }) => {
   if (arg.files.length === 0) return;
 
-  // if typeof files is number
-  if (typeof arg.files[0] === 'number') {
-    // get all the files from the database; ensure that mimetype is video
-    const files = await File.findAll({
-      where: {
-        id: arg.files,
-        mimeType: {
-          [Op.like]: 'video/%'
-        },
-      }
-    });
-
-    // for each file, extract the audio
-    files?.forEach(async (file) => {
-      await extractAudio({ inputPath: file.path, fileFormat: arg.fileFormat, outputDirectory: arg.outputDirectory })
-    });
-
-    return
-  }
-
   // if typeof files is string
   // filter mimetype to video
   const files: string[] = await arg.files.map((file) => {
@@ -141,7 +121,10 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
 
   // for each file, extract the audio
   for (const file of files) {
-    await extractAudio({ inputPath: file, fileFormat: arg.fileFormat, outputDirectory: arg.outputDirectory })
+    await extractAudio({ inputPath: file, fileFormat: arg.fileFormat, outputDirectory: arg.outputDirectory }).catch((err) => {
+      event.reply('extract-audio-failed', err);
+    });
+
     event.reply('extracted-audio')
   }
 
