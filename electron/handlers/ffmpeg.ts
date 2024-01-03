@@ -43,7 +43,7 @@ const extractAudio = async ({
       outputDirectory = path.dirname(inputPath);
     }
 
-    ffmpeg(inputPath)
+    ffmpeg('inputPath')
       .outputOptions('-acodec', fileFormat)
       .toFormat('wav')
       // save in the same directory as the input file, but with a .wav extension and audio appended to the name
@@ -120,7 +120,7 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
   // for each file, extract the audio
   for (const file of files) {
     await extractAudio({ inputPath: file, fileFormat: arg.fileFormat, outputDirectory: arg.outputDirectory }).catch((err) => {
-      event.reply('extract-audio-failed', err);
+      event.reply('extracted-audio-failed', err.message);
     });
 
     event.reply('extracted-audio')

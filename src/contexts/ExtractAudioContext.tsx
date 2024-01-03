@@ -1,6 +1,7 @@
 import { FC, createContext, useState, useMemo, useEffect } from 'react'
 import { ipcRenderer } from 'electron'
 import { AudioFileFormat } from 'shared/types/Audio'
+import { Alert, Snackbar } from '@mui/material'
 
 export interface ExtractAudioContextValue {
   selectedFiles: string[]
@@ -27,6 +28,8 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
   const [selectedFiles, setSelectedFiles] = useState<string[]>([])
   const [isExtractingAudio, setIsExtractingAudio] = useState<boolean>(false)
   const [numCompletedFiles, setNumCompletedFiles] = useState<number>(0)
+
+  const [errorMessage, setErrorMessage] = useState<string|null>(null)
 
   const updateSelectedFiles = (files: string[]) => {
     // don't allow duplicates
@@ -61,9 +64,13 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
       setNumCompletedFiles((prev) => prev + 1)
     })
 
+    ipcRenderer.on('extracted-audio-failed', (_, err) => {
+      setErrorMessage(err)
+    })
+
     return () => {
-      ipcRenderer.removeAllListeners('bulk-extract-audio')
       ipcRenderer.removeAllListeners('extracted-audio')
+      ipcRenderer.removeAllListeners('extracted-audio-failed')
     }
   }, [])
 
@@ -81,6 +88,11 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
   return (
     <ExtractAudioContext.Provider value={contextValue}>
       {children}
+      <Snackbar open={!!errorMessage} autoHideDuration={6000} onClose={() => setErrorMessage(null)}>
+        <Alert severity='error' onClose={() => setErrorMessage(null)}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </ExtractAudioContext.Provider>
   )
 }
