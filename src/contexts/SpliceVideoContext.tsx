@@ -1,4 +1,3 @@
-import { Alert, Snackbar } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import { FC, createContext, useMemo, useState } from 'react'
 import { useEffect } from 'react'
@@ -17,6 +16,7 @@ export interface SpliceVideoContextValue {
   }: {
     outputDirectory?: string
   }) => void
+  errorMessages: string[]
 }
 
 const SpliceVideoContext = createContext<SpliceVideoContextValue>(undefined as any)
@@ -31,7 +31,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const [numSplicePointsCompleted, setNumSplicePointsCompleted] = useState<number>(0)
   const [isSplicingVideo, setIsSplicingVideo] = useState<boolean>(false)
 
-  const [errorMessage, setErrorMessage] = useState<string|null>(null)
+  const [errorMessages, setErrorMessages] = useState<string[]>([])
 
   const handleSpliceVideo = ({
     outputDirectory,
@@ -137,7 +137,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     })
 
     ipcRenderer.on('splice-point-video-failed', (_, err) => {
-      setErrorMessage(err)
+      setErrorMessages((prev) => [...prev, err])
     });
 
     return () => {
@@ -157,17 +157,13 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       splicePoints,
       isSplicingVideo,
       handleSpliceVideo,
+      errorMessages,
     }
-  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint, modifySplicePoint])
+  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint, modifySplicePoint, errorMessages])
 
   return (
     <SpliceVideoContext.Provider value={contextValue}>
       {children}
-      <Snackbar open={!!errorMessage} autoHideDuration={6000} onClose={() => setErrorMessage(null)}>
-        <Alert severity='error' onClose={() => setErrorMessage(null)}>
-          {errorMessage}
-        </Alert>
-      </Snackbar>
     </SpliceVideoContext.Provider>
   )
 }

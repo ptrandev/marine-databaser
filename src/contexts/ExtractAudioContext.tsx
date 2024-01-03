@@ -1,7 +1,6 @@
 import { FC, createContext, useState, useMemo, useEffect } from 'react'
 import { ipcRenderer } from 'electron'
 import { AudioFileFormat } from 'shared/types/Audio'
-import { Alert, Snackbar } from '@mui/material'
 
 export interface ExtractAudioContextValue {
   selectedFiles: string[]
@@ -16,6 +15,7 @@ export interface ExtractAudioContextValue {
     fileFormat?: AudioFileFormat
     outputDirectory?: string
   }) => void
+  errorMessages: string[]
 }
 
 const ExtractAudioContext = createContext<ExtractAudioContextValue>(undefined as any)
@@ -29,7 +29,7 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
   const [isExtractingAudio, setIsExtractingAudio] = useState<boolean>(false)
   const [numCompletedFiles, setNumCompletedFiles] = useState<number>(0)
 
-  const [errorMessage, setErrorMessage] = useState<string|null>(null)
+  const [errorMessages, setErrorMessages] = useState<string[]>([])
 
   const updateSelectedFiles = (files: string[]) => {
     // don't allow duplicates
@@ -65,7 +65,7 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
     })
 
     ipcRenderer.on('extracted-audio-failed', (_, err) => {
-      setErrorMessage(err)
+      setErrorMessages(prev => [...prev, err])
     })
 
     return () => {
@@ -81,18 +81,14 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
       deleteSelectedFiles,
       isExtractingAudio,
       handleExtractAudio,
-      numCompletedFiles
+      numCompletedFiles,
+      errorMessages,
     }
-  }, [selectedFiles, updateSelectedFiles, deleteSelectedFiles, isExtractingAudio, handleExtractAudio, numCompletedFiles])
+  }, [selectedFiles, updateSelectedFiles, deleteSelectedFiles, isExtractingAudio, handleExtractAudio, numCompletedFiles, errorMessages])
 
   return (
     <ExtractAudioContext.Provider value={contextValue}>
       {children}
-      <Snackbar open={!!errorMessage} autoHideDuration={6000} onClose={() => setErrorMessage(null)}>
-        <Alert severity='error' onClose={() => setErrorMessage(null)}>
-          {errorMessage}
-        </Alert>
-      </Snackbar>
     </ExtractAudioContext.Provider>
   )
 }
