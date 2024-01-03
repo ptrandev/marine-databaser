@@ -5,7 +5,7 @@ import { ipcRenderer } from 'electron'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 
 
-const OptionsModal: FC<ModalProps> = ({ open, onClose }) => {
+const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
   const [outputDirectory, setOutputDirectory] = useState('')
   const [useSameDirectory, setUseSameDirectory] = useState(true)
 
