@@ -43,7 +43,7 @@ const extractAudio = async ({
       outputDirectory = path.dirname(inputPath);
     }
 
-    ffmpeg('inputPath')
+    ffmpeg(inputPath)
       .outputOptions('-acodec', fileFormat)
       .toFormat('wav')
       // save in the same directory as the input file, but with a .wav extension and audio appended to the name
