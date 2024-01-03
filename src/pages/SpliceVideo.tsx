@@ -4,9 +4,10 @@ import { FC, useEffect } from 'react'
 import { ipcRenderer } from 'electron'
 import Progress from '@/components/SpliceVideo/Progress'
 import SplicePoints from '@/components/SpliceVideo/SplicePoints'
+import VideoControls from '@/components/SpliceVideo/VideoControls'
 
 const SpliceVideo: FC = () => {
-  const { selectedVideo, updateSelectedVideo } = useSpliceVideo()
+  const { updateSelectedVideo } = useSpliceVideo()
 
   const handleSelectVideo = () => {
     ipcRenderer.send('select-splice-video-file')
@@ -41,13 +42,7 @@ const SpliceVideo: FC = () => {
               overflowY: 'hidden'
             }}
           >
-            {
-              selectedVideo && (
-                <video id='splice-video' controls key={selectedVideo} style={{ width: '100%', height: 'auto', maxHeight: '100%' }}>
-                  <source src={`media-loader://${selectedVideo}`} />
-                </video>
-              )
-            }
+            <VideoControls />
           </Grid>
           <Grid item xs={12} md={6}>
             <SplicePoints />

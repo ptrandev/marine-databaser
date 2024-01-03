@@ -201,3 +201,28 @@ export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: Ipc
 
   event.reply('selected-splice-video-file', result.filePaths[0]);
 }
+
+/**
+ * get the framerate of a video
+ * @param {IpcMainEvent} event - the event to reply to
+ * @param {string} arg.videoPath - the path to the video to get the framerate of
+ * @returns {Promise<void>} - a promise that resolves when the framerate has been retrieved
+ */
+export const handleGetVideoFramerate = async (event: IpcMainEvent, arg: { videoPath: string }) => {
+  ffmpeg.ffprobe(arg.videoPath, (err, metadata) => {
+    if (err) {
+      event.reply('failed-to-get-video-framerate', err);
+      return;
+    }
+
+    // find first metadata.stream with codec_type video; get r_frame_rate from that stream
+    const framerate = metadata.streams.find((stream: { codec_type: string }) => stream.codec_type === 'video')?.r_frame_rate;
+
+    if (!framerate) {
+      event.reply('failed-to-get-video-framerate', 'Failed to get framerate of video.');
+      return;
+    }
+
+    event.reply('got-video-framerate', framerate);
+  });
+}

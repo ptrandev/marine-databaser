@@ -146,7 +146,7 @@ sequelize
 import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleAddDirectory, handleRefreshDirectories, handleSelectDirectory } from "../handlers/directory";
 import { handleFileRename, handleListFiles, handleSelectFile } from "../handlers/file";
 import { handleListTags, handleTagFile, handleUntagFile, handleTagFiles, handleUntagFiles } from "../handlers/tag";
-import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo } from "../handlers/ffmpeg";
+import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo, handleGetVideoFramerate } from "../handlers/ffmpeg";
 import { handleListNotes, handleAddNote, handleUpdateNote, handleDeleteNote } from "../handlers/note";
 import { handleDatabaseExport } from "../handlers/export";
 import { handleDatabaseImport } from "../handlers/import";
@@ -202,6 +202,10 @@ ipcMain.on("select-splice-video-file", async (event) => {
 ipcMain.on("splice-video", async (event, arg) => {
   handleSpliceVideo(event, arg);
 });
+
+ipcMain.on("get-video-framerate", async (event, arg) => {
+  handleGetVideoFramerate(event, arg);
+})
 
 //
 // FILE
