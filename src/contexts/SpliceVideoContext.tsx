@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 import { FC, createContext, useMemo, useState } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 export interface SpliceVideoContextValue {
   selectedVideo: string
@@ -18,6 +18,7 @@ export interface SpliceVideoContextValue {
   }) => void
   errorMessages: string[]
   videoFramerate: number | null
+  videoRef?: React.RefObject<HTMLVideoElement>
 }
 
 const SpliceVideoContext = createContext<SpliceVideoContextValue>(undefined as any)
@@ -36,6 +37,8 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
   // when selectedVideo changes, use electron to get the framerate of the video
   const [videoFramerate, setVideoFramerate] = useState<number | null>(null)
+
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     setVideoFramerate(null)
@@ -190,6 +193,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       handleSpliceVideo,
       errorMessages,
       videoFramerate,
+      videoRef,
     }
   }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint, modifySplicePoint, errorMessages])
 

@@ -1,17 +1,15 @@
 import { FC, useEffect, useState } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
-import { Alert, Box, IconButton, Snackbar, Stack, Tooltip } from '@mui/material'
+import { Box, IconButton, Stack, Tooltip } from '@mui/material'
 import { FirstPage, LastPage, PlayArrow, SkipNext, SkipPrevious, Pause, Replay, Replay5, Forward5, Replay10, Forward10 } from '@mui/icons-material'
-import { ipcRenderer } from 'electron'
+
 
 const VideoControls: FC = () => {
-  const { selectedVideo, videoFramerate } = useSpliceVideo()
+  const { selectedVideo, videoFramerate, videoRef } = useSpliceVideo()
 
   const video = document.getElementById('splice-video') as HTMLVideoElement
 
   const [videoState, setVideoState] = useState<'playing' | 'paused'>('paused')
-
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (!video) {
@@ -75,7 +73,7 @@ const VideoControls: FC = () => {
     <>
       {selectedVideo && (
         <>
-          <video id='splice-video' controls key={selectedVideo} style={{ width: '100%', height: 'auto', maxHeight: '100%' }}>
+          <video id='splice-video' controls key={selectedVideo} style={{ width: '100%', height: 'auto', maxHeight: '100%' }} ref={videoRef}>
             <source src={`media-loader://${selectedVideo}`} />
           </video>
           <Box display='flex' justifyContent='center'>
@@ -162,13 +160,6 @@ const VideoControls: FC = () => {
             </Stack>
           </Box>
         </>
-      )}
-      {!!errorMessage && (
-        <Snackbar open={!!errorMessage} autoHideDuration={6000} onClose={() => setErrorMessage(null)}>
-          <Alert severity='error' onClose={() => setErrorMessage(null)}>
-            {errorMessage}
-          </Alert>
-        </Snackbar>
       )}
     </>
   )
