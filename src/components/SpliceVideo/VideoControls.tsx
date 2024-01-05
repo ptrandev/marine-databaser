@@ -5,42 +5,13 @@ import { FirstPage, LastPage, PlayArrow, SkipNext, SkipPrevious, Pause, Replay, 
 import { ipcRenderer } from 'electron'
 
 const VideoControls: FC = () => {
-  const { selectedVideo } = useSpliceVideo()
+  const { selectedVideo, videoFramerate } = useSpliceVideo()
 
   const video = document.getElementById('splice-video') as HTMLVideoElement
 
   const [videoState, setVideoState] = useState<'playing' | 'paused'>('paused')
-  const [videoFramerate, setVideoFramerate] = useState<number | null>(null)
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-
-  // when selectedVideo changes, use electron to get the framerate of the video
-  useEffect(() => {
-    if (!selectedVideo) {
-      setVideoFramerate(null)
-      return
-    }
-
-    ipcRenderer.send('get-video-framerate', {
-      videoPath: selectedVideo,
-    })
-
-    ipcRenderer.once('got-video-framerate', (_, framerate) => {
-      // evaluate the string as a number; it is in the form of '30/1'
-      framerate = eval(framerate)
-      setVideoFramerate(framerate)
-    })
-
-    ipcRenderer.once('get-video-framerate-failed', (_, errorMessage) => {
-      setErrorMessage(errorMessage)
-    })
-
-
-    return () => {
-      ipcRenderer.removeAllListeners('got-video-framerate')
-      ipcRenderer.removeAllListeners('get-video-framerate-failed')
-    }
-  }, [selectedVideo])
 
   useEffect(() => {
     if (!video) {
