@@ -1,10 +1,10 @@
-import { FC, useMemo } from 'react'
-import { Box, Button, IconButton, Input, InputLabel, Stack, Typography } from '@mui/material'
+import { FC, useMemo, useEffect } from 'react'
+import { Box, Button, IconButton, Input, InputLabel, Stack } from '@mui/material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Add, Delete } from '@mui/icons-material'
 
-const SplicePoints: FC= () => {
-  const { selectedVideo, splicePoints, addSplicePoint, deleteSplicePoint, modifySplicePoint, videoRef } = useSpliceVideo()
+const SplicePoints: FC = () => {
+  const { selectedVideo, splicePoints, addSplicePoint, deleteSplicePoint, modifySplicePoint, videoRef, videoFramerate } = useSpliceVideo()
 
   const video = videoRef?.current
 
@@ -70,6 +70,18 @@ const SplicePoints: FC= () => {
     return [hours, minutes, secondsLeft]
   }
 
+  const convertSecondsToFrames = (seconds: number) => {
+    return Math.floor(seconds * videoFramerate!)
+  }
+
+  const convertFramesToSeconds = (frames: number) => {
+    return frames / videoFramerate!
+  }
+
+  const videoTotalFrames = useMemo(() => {
+    return convertSecondsToFrames(videoDuration)
+  }, [videoDuration])
+
   return (
     <>
       <Button
@@ -92,6 +104,9 @@ const SplicePoints: FC= () => {
           splicePoints && splicePoints.map(([start, end], i) => {
             const [startHours, startMinutes, startSeconds] = convertSecondsToHoursMinutesSeconds(start)
             const [endHours, endMinutes, endSeconds] = convertSecondsToHoursMinutesSeconds(end)
+
+            const startFrames = convertSecondsToFrames(start)
+            const endFrames = convertSecondsToFrames(end)
 
             return (
               <Stack key={i} gap={2} direction='row' justifyContent='space-between' alignItems='center' mb={2} ml={{
@@ -177,28 +192,39 @@ const SplicePoints: FC= () => {
                         />
                       </Box>
                     </Stack>
-                    <Input
-                      type='number'
-                      value={start}
-                      componentsProps={{
-                        input: {
-                          min: 0,
-                          max: end,
-                        }
-                      }}
-                      fullWidth
-                      onChange={(e) => {
-                        const newStart = Number(e.target.value)
+                    <Box width='100%' mt={1}>
+                      <InputLabel>Frame</InputLabel>
+                      <Input
+                        type='number'
+                        value={startFrames}
+                        componentsProps={{
+                          input: {
+                            min: 0,
+                            max: endFrames,
+                          }
+                        }}
+                        fullWidth
+                        onChange={(e) => {
+                          const newStartFrames = Number(e.target.value)
+                          let newSeconds = convertFramesToSeconds(newStartFrames)
 
-                        if (!video || newStart > end || newStart < 0) {
-                          return
-                        }
+                          if (!video || newStartFrames > endFrames || newStartFrames < 0) {
+                            return
+                          }
 
-                        video.currentTime = newStart
+                          // TODO: A hack, but it works for now
+                          // if newStartFrames and startFrames are the same...
+                          // very slightly increment newSeconds so that the video will actually update
+                          if (convertSecondsToFrames(newSeconds) === startFrames) {
+                            newSeconds += 0.0001
+                          }
 
-                        modifySplicePoint([start, end], [newStart, end])
-                      }}
-                    />
+                          video.currentTime = newSeconds
+
+                          modifySplicePoint([start, end], [newSeconds, end])
+                        }}
+                      />
+                    </Box>
                     <Button onClick={() => handleSetStartPoint([start, end])}>
                       Set Current
                     </Button>
@@ -284,28 +310,39 @@ const SplicePoints: FC= () => {
                         />
                       </Box>
                     </Stack>
-                    <Input
-                      type='number'
-                      value={end}
-                      componentsProps={{
-                        input: {
-                          min: start,
-                          max: videoDuration,
-                        }
-                      }}
-                      fullWidth
-                      onChange={(e) => {
-                        const newEnd = Number(e.target.value)
+                    <Box width='100%' mt={1}>
+                      <InputLabel>Frame</InputLabel>
+                      <Input
+                        type='number'
+                        value={endFrames}
+                        componentsProps={{
+                          input: {
+                            min: startFrames,
+                            max: videoTotalFrames,
+                          }
+                        }}
+                        fullWidth
+                        onChange={(e) => {
+                          const newEndFrames = Number(e.target.value)
+                          let newSeconds = convertFramesToSeconds(newEndFrames)
 
-                        if (!video || newEnd > videoDuration || newEnd < start) {
-                          return
-                        }
+                          if (!video || newEndFrames < startFrames || newEndFrames > videoTotalFrames) {
+                            return
+                          }
 
-                        video.currentTime = newEnd
+                          // TODO: A hack, but it works for now
+                          // if newEndFrames and endFrames are the same...
+                          // very slightly increment newSeconds so that the video will actually update
+                          if (convertSecondsToFrames(newSeconds) === endFrames) {
+                            newSeconds += 0.0001
+                          }
 
-                        modifySplicePoint([start, end], [start, newEnd])
-                      }}
-                    />
+                          video.currentTime = newSeconds
+
+                          modifySplicePoint([start, end], [start, newSeconds])
+                        }}
+                      />
+                    </Box>
                     <Button onClick={() => handleSetEndPoint([start, end])}>
                       Set Current
                     </Button>
