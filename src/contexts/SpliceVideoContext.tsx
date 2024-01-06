@@ -18,7 +18,8 @@ export interface SpliceVideoContextValue {
   }) => void
   errorMessages: string[]
   videoFramerate: number | null
-  videoRef?: React.RefObject<HTMLVideoElement>
+  videoRef: HTMLVideoElement | null
+  setVideoRef: (video: HTMLVideoElement | null) => void
 }
 
 const SpliceVideoContext = createContext<SpliceVideoContextValue>(undefined as any)
@@ -38,7 +39,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   // when selectedVideo changes, use electron to get the framerate of the video
   const [videoFramerate, setVideoFramerate] = useState<number | null>(null)
 
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null)
 
   useEffect(() => {
     setVideoFramerate(null)
@@ -194,6 +195,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       errorMessages,
       videoFramerate,
       videoRef,
+      setVideoRef,
     }
   }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint, modifySplicePoint, errorMessages])
 

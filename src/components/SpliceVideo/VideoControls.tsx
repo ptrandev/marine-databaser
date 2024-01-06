@@ -5,7 +5,7 @@ import { FirstPage, LastPage, PlayArrow, SkipNext, SkipPrevious, Pause, Replay, 
 
 
 const VideoControls: FC = () => {
-  const { selectedVideo, videoFramerate, videoRef } = useSpliceVideo()
+  const { selectedVideo, videoFramerate, setVideoRef } = useSpliceVideo()
 
   const video = document.getElementById('splice-video') as HTMLVideoElement
 
@@ -73,7 +73,7 @@ const VideoControls: FC = () => {
     <>
       {selectedVideo && (
         <>
-          <video id='splice-video' controls key={selectedVideo} style={{ width: '100%', height: 'auto', maxHeight: '100%' }} ref={videoRef}>
+          <video id='splice-video' controls key={selectedVideo} style={{ width: '100%', height: 'auto', maxHeight: '100%' }} ref={setVideoRef}>
             <source src={`media-loader://${selectedVideo}`} />
           </video>
           <Box display='flex' justifyContent='center'>

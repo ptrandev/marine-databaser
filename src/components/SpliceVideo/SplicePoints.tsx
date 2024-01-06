@@ -1,4 +1,4 @@
-import { FC, useMemo, useEffect } from 'react'
+import { FC, useMemo } from 'react'
 import { Box, Button, IconButton, Input, InputLabel, Stack } from '@mui/material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Add, Delete } from '@mui/icons-material'
@@ -6,33 +6,31 @@ import { Add, Delete } from '@mui/icons-material'
 const SplicePoints: FC = () => {
   const { selectedVideo, splicePoints, addSplicePoint, deleteSplicePoint, modifySplicePoint, videoRef, videoFramerate } = useSpliceVideo()
 
-  const video = videoRef?.current
-
   const handleAddSplicePoint = () => {
-    if (!video) {
+    if (!videoRef) {
       return
     }
 
-    addSplicePoint(video.currentTime)
+    addSplicePoint(videoRef.currentTime)
   }
 
   const handleGoToSplicePoint = (splicePoint: number) => {
-    if (!video) {
+    if (!videoRef) {
       return
     }
 
-    video.currentTime = splicePoint
+    videoRef.currentTime = splicePoint
   }
 
   // handle setting startpoint; make sure it's not after the end point
   const handleSetStartPoint = (splicePoint: [number, number]) => {
     const [_, endPoint] = splicePoint
 
-    if (!video) {
+    if (!videoRef) {
       return
     }
 
-    const newStartPoint = video.currentTime
+    const newStartPoint = videoRef.currentTime
 
     if (newStartPoint > endPoint) {
       return
@@ -45,11 +43,11 @@ const SplicePoints: FC = () => {
   const handleSetEndPoint = (splicePoint: [number, number]) => {
     const [startPoint, _] = splicePoint
 
-    if (!video) {
+    if (!videoRef) {
       return
     }
 
-    const newEndPoint = video.currentTime
+    const newEndPoint = videoRef.currentTime
 
     if (newEndPoint < startPoint) {
       return
@@ -59,8 +57,8 @@ const SplicePoints: FC = () => {
   }
 
   const videoDuration = useMemo(() => {
-    return video?.duration || 0
-  }, [video?.duration])
+    return videoRef?.duration || 0
+  }, [videoRef?.duration])
 
   const convertSecondsToHoursMinutesSeconds = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
@@ -131,11 +129,11 @@ const SplicePoints: FC = () => {
                           onChange={(e) => {
                             const newStartHours = Number(e.target.value)
 
-                            if (!video || newStartHours > endHours || newStartHours < 0) {
+                            if (!videoRef || newStartHours > endHours || newStartHours < 0) {
                               return
                             }
 
-                            video.currentTime = newStartHours * 3600 + startMinutes * 60 + startSeconds
+                            videoRef.currentTime = newStartHours * 3600 + startMinutes * 60 + startSeconds
 
                             modifySplicePoint([start, end], [newStartHours * 3600 + startMinutes * 60 + startSeconds, end])
                           }}
@@ -156,11 +154,11 @@ const SplicePoints: FC = () => {
                           onChange={(e) => {
                             const newStartMinutes = Number(e.target.value)
 
-                            if (!video || newStartMinutes > endMinutes || newStartMinutes < 0) {
+                            if (!videoRef || newStartMinutes > endMinutes || newStartMinutes < 0) {
                               return
                             }
 
-                            video.currentTime = startHours * 3600 + newStartMinutes * 60 + startSeconds
+                            videoRef.currentTime = startHours * 3600 + newStartMinutes * 60 + startSeconds
 
                             modifySplicePoint([start, end], [startHours * 3600 + newStartMinutes * 60 + startSeconds, end])
                           }}
@@ -181,11 +179,11 @@ const SplicePoints: FC = () => {
                           onChange={(e) => {
                             const newStartSeconds = Number(e.target.value)
 
-                            if (!video || newStartSeconds > endSeconds || newStartSeconds < 0) {
+                            if (!videoRef || newStartSeconds > endSeconds || newStartSeconds < 0) {
                               return
                             }
 
-                            video.currentTime = startHours * 3600 + startMinutes * 60 + newStartSeconds
+                            videoRef.currentTime = startHours * 3600 + startMinutes * 60 + newStartSeconds
 
                             modifySplicePoint([start, end], [startHours * 3600 + startMinutes * 60 + newStartSeconds, end])
                           }}
@@ -208,7 +206,7 @@ const SplicePoints: FC = () => {
                           const newStartFrames = Number(e.target.value)
                           let newSeconds = convertFramesToSeconds(newStartFrames)
 
-                          if (!video || newStartFrames > endFrames || newStartFrames < 0) {
+                          if (!videoRef || newStartFrames > endFrames || newStartFrames < 0) {
                             return
                           }
 
@@ -219,7 +217,7 @@ const SplicePoints: FC = () => {
                             newSeconds += 0.0001
                           }
 
-                          video.currentTime = newSeconds
+                          videoRef.currentTime = newSeconds
 
                           modifySplicePoint([start, end], [newSeconds, end])
                         }}
@@ -249,11 +247,11 @@ const SplicePoints: FC = () => {
                           onChange={(e) => {
                             const newEndHours = Number(e.target.value)
 
-                            if (!video || newEndHours < startHours || newEndHours > Math.floor(videoDuration / 3600)) {
+                            if (!videoRef || newEndHours < startHours || newEndHours > Math.floor(videoDuration / 3600)) {
                               return
                             }
 
-                            video.currentTime = newEndHours * 3600 + endMinutes * 60 + endSeconds
+                            videoRef.currentTime = newEndHours * 3600 + endMinutes * 60 + endSeconds
 
                             modifySplicePoint([start, end], [start, newEndHours * 3600 + endMinutes * 60 + endSeconds])
                           }}
@@ -299,11 +297,11 @@ const SplicePoints: FC = () => {
                           onChange={(e) => {
                             const newEndSeconds = Number(e.target.value)
 
-                            if (!video || newEndSeconds < startSeconds || newEndSeconds > 59) {
+                            if (!videoRef || newEndSeconds < startSeconds || newEndSeconds > 59) {
                               return
                             }
 
-                            video.currentTime = endHours * 3600 + endMinutes * 60 + newEndSeconds
+                            videoRef.currentTime = endHours * 3600 + endMinutes * 60 + newEndSeconds
 
                             modifySplicePoint([start, end], [start, endHours * 3600 + endMinutes * 60 + newEndSeconds])
                           }}
@@ -326,7 +324,7 @@ const SplicePoints: FC = () => {
                           const newEndFrames = Number(e.target.value)
                           let newSeconds = convertFramesToSeconds(newEndFrames)
 
-                          if (!video || newEndFrames < startFrames || newEndFrames > videoTotalFrames) {
+                          if (!videoRef || newEndFrames < startFrames || newEndFrames > videoTotalFrames) {
                             return
                           }
 
@@ -337,7 +335,7 @@ const SplicePoints: FC = () => {
                             newSeconds += 0.0001
                           }
 
-                          video.currentTime = newSeconds
+                          videoRef.currentTime = newSeconds
 
                           modifySplicePoint([start, end], [start, newSeconds])
                         }}
