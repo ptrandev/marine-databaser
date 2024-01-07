@@ -1,5 +1,5 @@
 import { FC, useMemo } from 'react'
-import { Box, Button, IconButton, Input, InputLabel, Stack } from '@mui/material'
+import { Box, Button, IconButton, Input, InputLabel, Stack, Typography } from '@mui/material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Add, Delete } from '@mui/icons-material'
 
@@ -124,7 +124,7 @@ const SplicePoints: FC = () => {
                 md: 1.5,
               }}>
                 <Stack direction='row' alignItems='center' spacing={2} width='100%'>
-                  <Stack alignItems='center' width='100%'>
+                  <Stack alignItems='center' width='100%' spacing={1}>
                     <Stack direction='row' spacing={2} width='100%'>
                       <Box width='100%'>
                         <InputLabel>Hours</InputLabel>
@@ -214,7 +214,12 @@ const SplicePoints: FC = () => {
                         />
                       </Box>
                     </Stack>
-                    <Box width='100%' mt={1}>
+                    <Box>
+                      <Typography variant='caption'>
+                        OR
+                      </Typography>
+                    </Box>
+                    <Box width='100%'>
                       <InputLabel>Frame</InputLabel>
                       <Input
                         type='number'
@@ -247,14 +252,16 @@ const SplicePoints: FC = () => {
                         }}
                       />
                     </Box>
-                    <Button onClick={() => handleSetStartPoint([start, end])}>
-                      Set Current
-                    </Button>
-                    <Button onClick={() => handleGoToSplicePoint(start)}>
-                      Go to Time
-                    </Button>
+                    <Stack>
+                      <Button onClick={() => handleSetStartPoint([start, end])}>
+                        Set to Current Time
+                      </Button>
+                      <Button onClick={() => handleGoToSplicePoint(start)}>
+                        Go to Time
+                      </Button>
+                    </Stack>
                   </Stack>
-                  <Stack alignItems='center' width='100%'>
+                  <Stack alignItems='center' width='100%' spacing={1}>
                     <Stack direction='row' spacing={2} width='100%'>
                       <Box width='100%'>
                         <InputLabel>Hours</InputLabel>
@@ -342,7 +349,12 @@ const SplicePoints: FC = () => {
                         />
                       </Box>
                     </Stack>
-                    <Box width='100%' mt={1}>
+                    <Box>
+                      <Typography variant='caption'>
+                        OR
+                      </Typography>
+                    </Box>
+                    <Box width='100%'>
                       <InputLabel>Frame</InputLabel>
                       <Input
                         type='number'
@@ -375,12 +387,14 @@ const SplicePoints: FC = () => {
                         }}
                       />
                     </Box>
-                    <Button onClick={() => handleSetEndPoint([start, end])}>
-                      Set Current
-                    </Button>
-                    <Button onClick={() => handleGoToSplicePoint(end)}>
-                      Go to Time
-                    </Button>
+                    <Stack>
+                      <Button onClick={() => handleSetEndPoint([start, end])}>
+                        Set to Current Time
+                      </Button>
+                      <Button onClick={() => handleGoToSplicePoint(end)}>
+                        Go to Time
+                      </Button>
+                    </Stack>
                   </Stack>
                 </Stack>
                 <IconButton color='error' onClick={() => deleteSplicePoint([start, end])}>
