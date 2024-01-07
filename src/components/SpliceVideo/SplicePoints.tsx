@@ -162,8 +162,8 @@ const SplicePoints: FC = () => {
                           value={startMinutes}
                           componentsProps={{
                             input: {
-                              min: 0,
-                              max: 59,
+                              min: -1,
+                              max: 60,
                             }
                           }}
                           fullWidth
@@ -298,8 +298,8 @@ const SplicePoints: FC = () => {
                           value={endMinutes}
                           componentsProps={{
                             input: {
-                              min: 0,
-                              max: 59,
+                              min: -1,
+                              max: 60,
                             }
                           }}
                           fullWidth
@@ -326,8 +326,8 @@ const SplicePoints: FC = () => {
                           value={endSeconds}
                           componentsProps={{
                             input: {
-                              min: 0,
-                              max: 59,
+                              min: -1,
+                              max: 60,
                             }
                           }}
                           fullWidth
