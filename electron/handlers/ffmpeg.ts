@@ -1,7 +1,7 @@
 import { dialog, BrowserWindow, IpcMainEvent } from 'electron';
 import mime from 'mime-types';
 import path from 'path';
-import { AudioFileFormat } from '../../shared/types/Audio';
+import { AudioFileFormat } from '../../shared/types';
 
 const ffmpeg = require('fluent-ffmpeg');
 

@@ -3,7 +3,7 @@ import { Modal, ModalProps } from '../Modal'
 import { Typography, Button, MenuItem, Grid, TextField, Checkbox, Stack, Snackbar, Alert } from '@mui/material'
 import useExtractAudio from '@/hooks/useExtractAudio'
 import { ipcRenderer } from 'electron'
-import { AudioFileFormat } from '../../../shared/types/Audio'
+import { AudioFileFormat } from '../../../shared/types'
 
 const fileFormats: {
   value: AudioFileFormat

@@ -1,10 +1,11 @@
 import { Box, Typography, Button, Input, InputLabel, Stack, Grid } from '@mui/material'
 import { FC, useMemo, useState, useEffect } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
+import { AutoSpliceSettings } from '../../../shared/types'
 
-const DEFAULT_AUTO_SPLICE_SETTINGS = {
-  startTime: 0,
-  endTime: 0,
+const DEFAULT_AUTO_SPLICE_SETTINGS : AutoSpliceSettings = {
+  startSeconds: 0,
+  endSeconds: 0,
   minDuration: 0,
   maxDuration: 5,
   minFrequency: 0,
@@ -25,7 +26,7 @@ const AutoSplice: FC = () => {
   useEffect(() => {
     setAutoSpliceSettings({
       ...autoSpliceSettings,
-      endTime: videoDuration,
+      endSeconds: videoDuration,
     })
   }, [videoDuration])
 
@@ -40,15 +41,15 @@ const AutoSplice: FC = () => {
             <InputLabel>Start Time (s)</InputLabel>
             <Input
               type='number'
-              value={autoSpliceSettings.startTime}
+              value={autoSpliceSettings.startSeconds}
               onChange={(e) => setAutoSpliceSettings({
                 ...autoSpliceSettings,
-                startTime: Number(e.target.value),
+                startSeconds: Number(e.target.value),
               })}
               componentsProps={{
                 input: {
                   min: 0,
-                  max: autoSpliceSettings.endTime,
+                  max: autoSpliceSettings.endSeconds,
                 }
               }}
               fullWidth
@@ -58,14 +59,14 @@ const AutoSplice: FC = () => {
             <InputLabel>End Time (s)</InputLabel>
             <Input
               type='number'
-              value={autoSpliceSettings.endTime}
+              value={autoSpliceSettings.endSeconds}
               onChange={(e) => setAutoSpliceSettings({
                 ...autoSpliceSettings,
-                endTime: Number(e.target.value),
+                endSeconds: Number(e.target.value),
               })}
               componentsProps={{
                 input: {
-                  min: autoSpliceSettings.startTime,
+                  min: autoSpliceSettings.startSeconds,
                   max: videoDuration,
                 }
               }}
