@@ -84,6 +84,14 @@ const SplicePoints: FC = () => {
     return convertSecondsToFrames(videoDuration)
   }, [videoDuration])
 
+  const verifyStartSeconds = (startSeconds: number, endSeconds: number) => {
+    return (startSeconds <= endSeconds && startSeconds >= 0 && startSeconds <= videoDuration)
+  }
+
+  const verifyEndSeconds = (startSeconds: number, endSeconds: number) => {
+    return (endSeconds >= startSeconds && endSeconds <= videoDuration && endSeconds >= 0)
+  }
+
   return (
     <>
       <Button
@@ -136,7 +144,8 @@ const SplicePoints: FC = () => {
                             const newTimestamp = convertHoursMinutesSecondsToSeconds(newStartHours, startMinutes, startSeconds)
 
                             // check if newStartHours would make startFrames > endFrames
-                            if (!videoRef || convertSecondsToFrames(newTimestamp) > endFrames) {
+                            // or make the number of seconds a negative number; if so, return
+                            if (!videoRef || !verifyStartSeconds(newTimestamp, end)) {
                               return
                             }
 
@@ -164,7 +173,8 @@ const SplicePoints: FC = () => {
                             const newTimestamp = convertHoursMinutesSecondsToSeconds(startHours, newStartMinutes, startSeconds)
 
                             // check if newStartMinutes would make startFrames > endFrames
-                            if (!videoRef || convertSecondsToFrames(newTimestamp) > endFrames) {
+                            // or make the number of seconds a negative number; if so, return
+                            if (!videoRef || !verifyStartSeconds(newTimestamp, end)) {
                               return
                             }
 
@@ -181,8 +191,8 @@ const SplicePoints: FC = () => {
                           value={startSeconds}
                           componentsProps={{
                             input: {
-                              min: 0,
-                              max: 59,
+                              min: -1,
+                              max: 60,
                             }
                           }}
                           fullWidth
@@ -192,8 +202,8 @@ const SplicePoints: FC = () => {
                             const newTimestamp = convertHoursMinutesSecondsToSeconds(startHours, startMinutes, newStartSeconds)
 
                             // check if newStartSeconds would make startFrames > endFrames
-                            // if so, return
-                            if (!videoRef || convertSecondsToFrames(newTimestamp) > endFrames) {
+                            // or make the number of seconds a negative number; if so, return
+                            if (!videoRef || !verifyStartSeconds(newTimestamp, end)) {
                               return
                             }
 
@@ -264,7 +274,7 @@ const SplicePoints: FC = () => {
                             const newTimestamp = convertHoursMinutesSecondsToSeconds(newEndHours, endMinutes, endSeconds)
 
                             // check if newEndHours would make startFrames > endFrames
-                            if (!videoRef || convertSecondsToFrames(newTimestamp) < startFrames) {
+                            if (!videoRef || !verifyEndSeconds(start, newTimestamp)) {
                               return
                             }
 
@@ -292,7 +302,7 @@ const SplicePoints: FC = () => {
                             const newTimestamp = convertHoursMinutesSecondsToSeconds(endHours, newEndMinutes, endSeconds)
 
                             // check if newEndMinutes would make startFrames > endFrames
-                            if (!videoRef || convertSecondsToFrames(newTimestamp) < startFrames) {
+                            if (!videoRef || !verifyEndSeconds(start, newTimestamp)) {
                               return
                             }
 
@@ -321,7 +331,7 @@ const SplicePoints: FC = () => {
 
                             // check if newEndSeconds would make startFrames > endFrames
                             // if so, return
-                            if (!videoRef || convertSecondsToFrames(newTimestamp) < startFrames) {
+                            if (!videoRef || !verifyEndSeconds(start, newTimestamp)) {
                               return
                             }
 
