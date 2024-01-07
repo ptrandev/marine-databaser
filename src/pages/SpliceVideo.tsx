@@ -5,6 +5,7 @@ import { ipcRenderer } from 'electron'
 import Progress from '@/components/SpliceVideo/Progress'
 import SplicePoints from '@/components/SpliceVideo/SplicePoints'
 import VideoControls from '@/components/SpliceVideo/VideoControls'
+import AutoSplice from '@/components/SpliceVideo/AutoSplice'
 
 const SpliceVideo: FC = () => {
   const { updateSelectedVideo } = useSpliceVideo()
@@ -39,10 +40,13 @@ const SpliceVideo: FC = () => {
           <Grid item xs={12} md={6}
             style={{
               height: 'calc(100vh - 64px - 128px - 8px)',
-              overflowY: 'hidden'
+              overflowY: 'auto'
             }}
           >
-            <VideoControls />
+            <Stack spacing={2}>
+              <VideoControls />
+              <AutoSplice />
+            </Stack>
           </Grid>
           <Grid item xs={12} md={6}>
             <SplicePoints />

@@ -107,7 +107,7 @@ const SplicePoints: FC = () => {
       <Box
         style={{
           height: 'calc(100vh - 64px - 128px - 64px)',
-          overflowY: 'scroll'
+          overflowY: 'auto'
         }}
       >
         {
