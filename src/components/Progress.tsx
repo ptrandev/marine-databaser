@@ -23,7 +23,7 @@ const Progress : FC<ProgressProps> = ({
         <Grid item sx={{ flexGrow: 1 }} display='flex' flexDirection='row' alignItems='center'>
           <LinearProgress
             variant={
-              numCompleted > 0 ? 'determinate' : isProcessing ? 'indeterminate' : 'buffer'
+              numCompleted > 0 ? 'determinate' : isProcessing ? 'indeterminate' : 'determinate'
             }
             value={totalToComplete === 0 ? 0 : (numCompleted / totalToComplete) * 100}
             sx={{ flexGrow: 1 }}

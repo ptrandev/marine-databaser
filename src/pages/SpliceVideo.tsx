@@ -1,6 +1,6 @@
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Box, Button, Typography, Stack, Grid } from '@mui/material'
-import { FC, useEffect } from 'react'
+import { FC, useEffect, useRef } from 'react'
 import { ipcRenderer } from 'electron'
 import Progress from '@/components/SpliceVideo/Progress'
 import SplicePoints from '@/components/SpliceVideo/SplicePoints'

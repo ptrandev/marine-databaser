@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 import { FC, createContext, useMemo, useState } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 export interface SpliceVideoContextValue {
   selectedVideo: string
@@ -17,6 +17,9 @@ export interface SpliceVideoContextValue {
     outputDirectory?: string
   }) => void
   errorMessages: string[]
+  videoFramerate: number | null
+  videoRef: HTMLVideoElement | null
+  setVideoRef: (video: HTMLVideoElement | null) => void
 }
 
 const SpliceVideoContext = createContext<SpliceVideoContextValue>(undefined as any)
@@ -32,6 +35,38 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const [isSplicingVideo, setIsSplicingVideo] = useState<boolean>(false)
 
   const [errorMessages, setErrorMessages] = useState<string[]>([])
+
+  // when selectedVideo changes, use electron to get the framerate of the video
+  const [videoFramerate, setVideoFramerate] = useState<number | null>(null)
+
+  const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null)
+
+  useEffect(() => {
+    setVideoFramerate(null)
+
+    if (!selectedVideo) {
+      return
+    }
+
+    ipcRenderer.send('get-video-framerate', {
+      videoPath: selectedVideo,
+    })
+
+    ipcRenderer.once('got-video-framerate', (_, framerate) => {
+      // evaluate the string as a number; it is in the form of '30/1'
+      framerate = eval(framerate)
+      setVideoFramerate(framerate)
+    })
+
+    ipcRenderer.once('get-video-framerate-failed', (_, errorMessage) => {
+      setErrorMessages((prev) => [...prev, errorMessage])
+    })
+
+    return () => {
+      ipcRenderer.removeAllListeners('got-video-framerate')
+      ipcRenderer.removeAllListeners('get-video-framerate-failed')
+    }
+  }, [selectedVideo])
 
   const handleSpliceVideo = ({
     outputDirectory,
@@ -158,6 +193,9 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       isSplicingVideo,
       handleSpliceVideo,
       errorMessages,
+      videoFramerate,
+      videoRef,
+      setVideoRef,
     }
   }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint, modifySplicePoint, errorMessages])
 
