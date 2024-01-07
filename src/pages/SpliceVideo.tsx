@@ -8,7 +8,7 @@ import VideoControls from '@/components/SpliceVideo/VideoControls'
 import AutoSplice from '@/components/SpliceVideo/AutoSplice'
 
 const SpliceVideo: FC = () => {
-  const { updateSelectedVideo } = useSpliceVideo()
+  const { updateSelectedVideo, selectedVideo } = useSpliceVideo()
 
   const handleSelectVideo = () => {
     ipcRenderer.send('select-splice-video-file')
@@ -40,13 +40,16 @@ const SpliceVideo: FC = () => {
           <Grid item xs={12} md={6}
             style={{
               height: 'calc(100vh - 64px - 128px - 8px)',
-              overflowY: 'auto'
+              overflowY: 'auto',
             }}
           >
-            <Stack spacing={2}>
-              <VideoControls />
-              <AutoSplice />
-            </Stack>
+            {
+              selectedVideo &&
+              <Stack spacing={2}>
+                <VideoControls />
+                <AutoSplice />
+              </Stack>
+            }
           </Grid>
           <Grid item xs={12} md={6}>
             <SplicePoints />
