@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 import { FC, createContext, useMemo, useState } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 
 export interface SpliceVideoContextValue {
   selectedVideo: string

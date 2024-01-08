@@ -2,26 +2,36 @@ import { Box, Typography, Button, Input, InputLabel, Stack, Grid } from '@mui/ma
 import { FC, useMemo, useState, useEffect } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { AutoSpliceSettings } from '../../../shared/types'
+import { ipcRenderer } from 'electron'
 
 const DEFAULT_AUTO_SPLICE_SETTINGS : AutoSpliceSettings = {
   startSeconds: 0,
   endSeconds: 0,
-  minDuration: 0,
-  maxDuration: 5,
   minFrequency: 0,
   maxFrequency: 20_000,
-  minAmplitude: -40,
-  maxAmplitude: 0,
+  minAmplitude: -10,
+  minDuration: 0.1,
 }
 
 const AutoSplice: FC = () => {
-  const { videoRef } = useSpliceVideo()
+  const { videoRef, selectedVideo } = useSpliceVideo()
 
   const videoDuration = useMemo(() => {
     return videoRef?.duration || 0
   }, [videoRef?.duration])
 
   const [autoSpliceSettings, setAutoSpliceSettings] = useState(DEFAULT_AUTO_SPLICE_SETTINGS)
+
+  const handleAutoSplice = () => {
+    ipcRenderer.send('auto-splice', {
+      videoPath: selectedVideo,
+      autoSpliceSettings,
+    })
+
+    ipcRenderer.once('auto-spliced', (_, splicePoints) => {
+      console.log(splicePoints)
+    })
+  }
 
   useEffect(() => {
     setAutoSpliceSettings({
@@ -33,11 +43,11 @@ const AutoSplice: FC = () => {
   return (
     <Stack spacing={2}>
       <Typography variant='h6'>
-        Auto Splice
+        Auto Splice (Experimental)
       </Typography>
       <Box>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={6} lg={3}>
+          <Grid item xs={12} md={6} lg={4}>
             <InputLabel>Start Time (s)</InputLabel>
             <Input
               type='number'
@@ -55,7 +65,7 @@ const AutoSplice: FC = () => {
               fullWidth
             />
           </Grid>
-          <Grid item xs={12} md={6} lg={3}>
+          <Grid item xs={12} md={6} lg={4}>
             <InputLabel>End Time (s)</InputLabel>
             <Input
               type='number'
@@ -73,43 +83,7 @@ const AutoSplice: FC = () => {
               fullWidth
             />
           </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <InputLabel>Min Duration (s)</InputLabel>
-            <Input
-              type='number'
-              value={autoSpliceSettings.minDuration}
-              onChange={(e) => setAutoSpliceSettings({
-                ...autoSpliceSettings,
-                minDuration: Number(e.target.value),
-              })}
-              componentsProps={{
-                input: {
-                  min: 0,
-                  max: autoSpliceSettings.maxDuration,
-                }
-              }}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <InputLabel>Max Duration (s)</InputLabel>
-            <Input
-              type='number'
-              value={autoSpliceSettings.maxDuration}
-              onChange={(e) => setAutoSpliceSettings({
-                ...autoSpliceSettings,
-                maxDuration: Number(e.target.value),
-              })}
-              componentsProps={{
-                input: {
-                  min: autoSpliceSettings.minDuration,
-                  max: videoDuration,
-                }
-              }}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
+          <Grid item xs={12} md={6} lg={4}>
             <InputLabel>Min Frequency (Hz)</InputLabel>
             <Input
               type='number'
@@ -127,7 +101,7 @@ const AutoSplice: FC = () => {
               fullWidth
             />
           </Grid>
-          <Grid item xs={12} md={6} lg={3}>
+          <Grid item xs={12} md={6} lg={4}>
             <InputLabel>Max Frequency (Hz)</InputLabel>
             <Input
               type='number'
@@ -144,7 +118,7 @@ const AutoSplice: FC = () => {
               fullWidth
             />
           </Grid>
-          <Grid item xs={12} md={6} lg={3}>
+          <Grid item xs={12} md={6} lg={4}>
             <InputLabel>Min Amplitude (dB)</InputLabel>
             <Input
               type='number'
@@ -156,25 +130,25 @@ const AutoSplice: FC = () => {
               componentsProps={{
                 input: {
                   min: -145,
-                  max: autoSpliceSettings.maxAmplitude,
+                  max: 0,
                 }
               }}
               fullWidth
             />
           </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <InputLabel>Max Amplitude (dB)</InputLabel>
+          <Grid item xs={12} md={6} lg={4}>
+            <InputLabel>Min Duration (s)</InputLabel>
             <Input
               type='number'
-              value={autoSpliceSettings.maxAmplitude}
+              value={autoSpliceSettings.minAmplitude}
               onChange={(e) => setAutoSpliceSettings({
                 ...autoSpliceSettings,
-                maxAmplitude: Number(e.target.value),
+                minAmplitude: Number(e.target.value),
               })}
               componentsProps={{
                 input: {
-                  min: autoSpliceSettings.minAmplitude,
-                  max: 0,
+                  min: 0,
+                  max: videoDuration,
                 }
               }}
               fullWidth
@@ -183,7 +157,7 @@ const AutoSplice: FC = () => {
         </Grid>
       </Box>
       <Box>
-        <Button variant='contained'>
+        <Button variant='contained' onClick={handleAutoSplice}>
           Confirm Auto Splice
         </Button>
       </Box>

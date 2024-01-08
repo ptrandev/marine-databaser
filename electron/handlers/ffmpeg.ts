@@ -1,9 +1,11 @@
 import { dialog, BrowserWindow, IpcMainEvent } from 'electron';
 import mime from 'mime-types';
 import path from 'path';
-import { AudioFileFormat } from '../../shared/types';
+import { AudioFileFormat, AutoSpliceSettings } from '../../shared/types';
+import fs from 'fs';
 
 const ffmpeg = require('fluent-ffmpeg');
+
 
 //Get the paths to the packaged versions of the binaries we want to use
 const ffmpegPath = require('ffmpeg-static').replace(
@@ -138,11 +140,11 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
  * @returns {Promise<void>} - a promise that resolves when the video has been spliced
  */
 export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, splicePoints: [number, number][], outputDirectory?: string }) => {
-  const { videoPath, splicePoints } = arg;
+  const { videoPath, splicePoints, outputDirectory } = arg;
 
   // for each splice point, splice the video; ensure this happens synchronously
   for (const splicePoint of splicePoints) {
-    await spliceVideo({ inputPath: videoPath, startTime: splicePoint[0], endTime: splicePoint[1], outputDirectory: arg.outputDirectory }).catch((err) => {
+    await spliceVideo({ inputPath: videoPath, startTime: splicePoint[0], endTime: splicePoint[1], outputDirectory }).catch((err) => {
       event.reply('splice-point-video-failed', err.message);
     });
 
@@ -209,4 +211,58 @@ export const handleGetVideoFramerate = async (event: IpcMainEvent, arg: { videoP
 
     event.reply('got-video-framerate', framerate);
   });
+}
+
+export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: string, autoSpliceSettings: AutoSpliceSettings, outputDirectory?: string }) => {
+  let splicePoints = [];
+
+  const { minFrequency, maxFrequency, minAmplitude, minDuration } = arg.autoSpliceSettings;
+
+  const { videoPath } = arg;
+
+  let outputDirectory = arg.outputDirectory;
+
+  // if outputDirectory is not defined, save the audio in the same directory as the input file
+  if (!arg.outputDirectory) {
+    outputDirectory = path.dirname(videoPath);
+  }
+
+  // use a timestamp as the temporary file name
+  const timestamp = new Date().getTime().toString(16) + '.wav';
+
+  // Apply the following audio filters:
+  // - filter out frequencies below minFrequency and above maxFrequency
+  // - filter out frequencies below minAmplitude and above maxAmplitude
+  // - filter out audio clips shorter than minDuration and longer than maxDuration
+  // Output the timestamps of the start and end of each clip
+  ffmpeg()
+    .input(videoPath)
+    .audioCodec('pcm_s16le') // Output audio in PCM format
+    .audioFilter(`highpass=f=${minFrequency},lowpass=f=${maxFrequency}`)
+    .audioFilters(`silencedetect=n=${minAmplitude}dB:d=${minDuration}`)
+    .on('end', () => {
+      console.log('Processing finished successfully');
+      console.log(splicePoints);
+      event.reply('auto-spliced', splicePoints);
+
+      fs.unlinkSync(timestamp);
+    })
+    .on('error', (err) => {
+      console.error('Error splicing video:', err);
+      event.reply('auto-splice-failed', err.message);
+
+      fs.unlinkSync(timestamp);
+    })
+    .on('stderr', (stderrLine) => {
+      if (stderrLine.includes('silence_start')) {
+        const start = parseFloat(stderrLine.split('silence_start: ')[1]);
+        splicePoints.push([start]);
+      }
+
+      if (stderrLine.includes('silence_end')) {
+        const end = parseFloat(stderrLine.split('silence_end: ')[1]);
+        splicePoints[splicePoints.length - 1].push(end);
+      }
+    })
+    .save(timestamp);
 }
