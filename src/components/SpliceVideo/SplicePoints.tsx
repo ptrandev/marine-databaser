@@ -7,6 +7,8 @@ import { Modal, ModalProps } from '../Modal'
 interface DeleteModalProps extends Omit<ModalProps, 'children'> { }
 
 const DeleteModal: FC<DeleteModalProps> = ({ open, onClose }) => {
+  const { setSplicePoints } = useSpliceVideo()
+
   return (
     <Modal open={open} onClose={onClose}>
       <Box>
@@ -23,7 +25,10 @@ const DeleteModal: FC<DeleteModalProps> = ({ open, onClose }) => {
             </Button>
           </Box>
           <Box>
-            <Button color='error' variant='contained'>
+            <Button color='error' variant='contained' onClick={() => {
+              setSplicePoints([])
+              onClose()
+            }}>
               Delete All Splice Points
             </Button>
           </Box>
