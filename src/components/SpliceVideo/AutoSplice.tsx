@@ -44,6 +44,11 @@ const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSe
       // turn from fraction to percentage out of 100
       setSplicingProgress(progress * 100)
     })
+
+    ipcRenderer.once('auto-splice-failed', () => {
+      setIsSplicing(false)
+      onClose()
+    })
   }
 
   useEffect(() => {
