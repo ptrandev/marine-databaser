@@ -282,6 +282,8 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
 
   const outputDirectory = arg.outputDirectory;
 
+  const videoLength = await getVideoLength(videoPath);
+
   // use a timestamp as the temporary file name
   const timestamp = new Date().getTime().toString(16) + '.wav';
 
@@ -294,7 +296,6 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
     .audioFilter(`highpass=f=${minFrequency},lowpass=f=${maxFrequency}`)
     .audioFilters(`silencedetect=n=${minAmplitude}dB:d=${minDuration}`)
     .on('end', async () => {
-      const videoLength = await getVideoLength(videoPath);
       const noiseTimestamps = findNoiseTimeStamps(splicePoints, videoLength);
 
       fs.unlinkSync(timestamp);
@@ -313,6 +314,11 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
       if (stderrLine.includes('silence_end')) {
         const end = parseFloat(stderrLine.split('silence_end: ')[1]);
         splicePoints[splicePoints.length - 1].push(end);
+
+        console.log('auto-splice-progress', end / videoLength);
+
+        // progress is the endpoint / video length
+        event.reply('auto-spliced-progress', end / videoLength);
       }
     })
     .save(timestamp);
