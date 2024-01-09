@@ -1,10 +1,42 @@
-import { FC, useMemo } from 'react'
+import { FC, useMemo, useState } from 'react'
 import { Box, Button, IconButton, Input, InputLabel, Stack, Typography } from '@mui/material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Add, Delete } from '@mui/icons-material'
+import { Modal, ModalProps } from '../Modal'
+
+interface DeleteModalProps extends Omit<ModalProps, 'children'> { }
+
+const DeleteModal: FC<DeleteModalProps> = ({ open, onClose }) => {
+  return (
+    <Modal open={open} onClose={onClose}>
+      <Box>
+        <Typography variant='h5' mb={2}>
+          Delete All Splice Points?
+        </Typography>
+        <Typography variant='body1' mb={2}>
+          Are you sure you want to delete all splice points? This action cannot be undone.
+        </Typography>
+        <Stack direction='row' justifyContent='flex-end' spacing={2}>
+          <Box>
+            <Button onClick={onClose}>
+              Cancel Deletion
+            </Button>
+          </Box>
+          <Box>
+            <Button color='error' variant='contained'>
+              Delete All Splice Points
+            </Button>
+          </Box>
+        </Stack>
+      </Box>
+    </Modal>
+  )
+}
 
 const SplicePoints: FC = () => {
   const { selectedVideo, splicePoints, addSplicePoint, deleteSplicePoint, modifySplicePoint, videoRef, videoFramerate } = useSpliceVideo()
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
   const handleAddSplicePoint = () => {
     if (!videoRef) {
@@ -94,20 +126,37 @@ const SplicePoints: FC = () => {
 
   return (
     <>
-      <Button
-        onClick={handleAddSplicePoint}
-        disabled={!selectedVideo}
-        startIcon={<Add />}
-        sx={{
-          mb: 2
-        }}
-      >
-        Add Splice Point
-      </Button>
+      {
+        deleteModalOpen && (
+          <DeleteModal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} />
+        )
+      }
+      <Stack direction='row' justifyContent='space-between' alignItems='center' mb={4}>
+        <Box>
+          <Button
+            variant='contained'
+            onClick={handleAddSplicePoint}
+            disabled={!selectedVideo}
+            startIcon={<Add />}
+          >
+            Add Splice Point
+          </Button>
+        </Box>
+        <Box>
+          <Button
+            color='error'
+            disabled={!selectedVideo || splicePoints?.length === 0}
+            endIcon={<Delete />}
+            onClick={() => setDeleteModalOpen(true)}
+          >
+            Delete All Splice Points
+          </Button>
+        </Box>
+      </Stack>
       <Box
         style={{
           height: 'calc(100vh - 64px - 128px - 64px)',
-          overflowY: 'scroll'
+          overflowY: 'auto'
         }}
       >
         {
@@ -119,7 +168,7 @@ const SplicePoints: FC = () => {
             const endFrames = convertSecondsToFrames(end)
 
             return (
-              <Stack key={i} gap={2} direction='row' justifyContent='space-between' alignItems='center' mb={2} ml={{
+              <Stack key={i} gap={2} direction='row' justifyContent='space-between' alignItems='center' mb={4} ml={{
                 xs: 0,
                 md: 1.5,
               }}>

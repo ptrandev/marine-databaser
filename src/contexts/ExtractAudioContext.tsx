@@ -1,6 +1,6 @@
 import { FC, createContext, useState, useMemo, useEffect } from 'react'
 import { ipcRenderer } from 'electron'
-import { AudioFileFormat } from 'shared/types/Audio'
+import { AudioFileFormat } from 'shared/types'
 
 export interface ExtractAudioContextValue {
   selectedFiles: string[]

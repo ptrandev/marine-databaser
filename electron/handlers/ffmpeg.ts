@@ -1,9 +1,11 @@
 import { dialog, BrowserWindow, IpcMainEvent } from 'electron';
 import mime from 'mime-types';
 import path from 'path';
-import { AudioFileFormat } from '../../shared/types/Audio';
+import { AudioFileFormat, AutoSpliceSettings } from '../../shared/types';
+import fs from 'fs';
 
 const ffmpeg = require('fluent-ffmpeg');
+
 
 //Get the paths to the packaged versions of the binaries we want to use
 const ffmpegPath = require('ffmpeg-static').replace(
@@ -97,6 +99,63 @@ const spliceVideo = async ({
 }
 
 /**
+ * Using ffmpeg, find the length of the video
+ * @param {string} videoPath - the path to the video to get the length of
+ * @returns {Promise<number>} - a promise that resolves with the length of the video
+ */
+const getVideoLength = (videoPath: string) => {
+  return new Promise<number>((resolve, reject) => {
+    ffmpeg.ffprobe(videoPath, (err, metadata) => {
+      if (err) {
+        reject(err);
+      }
+
+      const duration = metadata.format.duration;
+
+      resolve(duration);
+    });
+  });
+}
+
+/**
+ * Using a list of silence timestamps, find the timestamps containing noise
+ * @param {[number, number][]} silenceTimestamps - the list of silence timestamps
+ * @param {number} audioLength - the length of the audio
+ * @returns {[number, number][]} - a list of timestamps containing noise
+ */
+const findNoiseTimeStamps = (silenceTimestamps: [number, number][], audioLength: number) => {
+  let noiseTimestamps = [];
+
+  // If the list of silence timestamps is empty, the whole audio contains noise
+  if (silenceTimestamps.length === 0) {
+    noiseTimestamps.push([0, audioLength]);
+    return noiseTimestamps;
+  }
+
+  // Check for noise before the first silence timestamp
+  if (silenceTimestamps[0][0] > 0) {
+    noiseTimestamps.push([0, silenceTimestamps[0][0]]);
+  }
+
+  // Check for noise between silence timestamps
+  for (let i = 1; i < silenceTimestamps.length; i++) {
+    let start = silenceTimestamps[i - 1][1];
+    let end = silenceTimestamps[i][0];
+
+    if (end > start) {
+      noiseTimestamps.push([start, end]);
+    }
+  }
+
+  // Check for noise after the last silence timestamp
+  if (silenceTimestamps[silenceTimestamps.length - 1][1] < audioLength) {
+    noiseTimestamps.push([silenceTimestamps[silenceTimestamps.length - 1][1], audioLength]);
+  }
+
+  return noiseTimestamps;
+}
+
+/**
  * extract the audio from multiple videos
  * @param {IpcMainEvent} event - the event to reply to
  * @param {number[] | string[]} arg.files - the files to extract audio from
@@ -138,11 +197,11 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
  * @returns {Promise<void>} - a promise that resolves when the video has been spliced
  */
 export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, splicePoints: [number, number][], outputDirectory?: string }) => {
-  const { videoPath, splicePoints } = arg;
+  const { videoPath, splicePoints, outputDirectory } = arg;
 
   // for each splice point, splice the video; ensure this happens synchronously
   for (const splicePoint of splicePoints) {
-    await spliceVideo({ inputPath: videoPath, startTime: splicePoint[0], endTime: splicePoint[1], outputDirectory: arg.outputDirectory }).catch((err) => {
+    await spliceVideo({ inputPath: videoPath, startTime: splicePoint[0], endTime: splicePoint[1], outputDirectory }).catch((err) => {
       event.reply('splice-point-video-failed', err.message);
     });
 
@@ -209,4 +268,56 @@ export const handleGetVideoFramerate = async (event: IpcMainEvent, arg: { videoP
 
     event.reply('got-video-framerate', framerate);
   });
+}
+
+export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: string, autoSpliceSettings: AutoSpliceSettings, outputDirectory?: string }) => {
+  let splicePoints = [];
+
+  const { minFrequency, maxFrequency, minAmplitude, minDuration } = arg.autoSpliceSettings;
+  const { videoPath } = arg;
+
+  if (!arg.outputDirectory) {
+    arg.outputDirectory = path.dirname(videoPath);
+  }
+
+  const outputDirectory = arg.outputDirectory;
+
+  const videoLength = await getVideoLength(videoPath);
+
+  // use a timestamp as the temporary file name
+  const timestamp = new Date().getTime().toString(16) + '.wav';
+
+  // Apply the following audio filters:
+  // - filter out frequencies below minFrequency and above maxFrequency
+  // - filter out silence below minAmplitude for at least minDuration
+  ffmpeg()
+    .input(videoPath)
+    .audioCodec('pcm_s16le') // Output audio in PCM format
+    .audioFilter(`highpass=f=${minFrequency},lowpass=f=${maxFrequency}`)
+    .audioFilters(`silencedetect=n=${minAmplitude}dB:d=${minDuration}`)
+    .on('end', async () => {
+      const noiseTimestamps = findNoiseTimeStamps(splicePoints, videoLength);
+
+      fs.unlinkSync(timestamp);
+      event.reply('auto-spliced', noiseTimestamps);
+    })
+    .on('error', (err) => {
+      event.reply('auto-splice-failed', err.message);
+      fs.unlinkSync(timestamp);
+    })
+    .on('stderr', (stderrLine) => {
+      if (stderrLine.includes('silence_start')) {
+        const start = parseFloat(stderrLine.split('silence_start: ')[1]);
+        splicePoints.push([start]);
+      }
+
+      if (stderrLine.includes('silence_end')) {
+        const end = parseFloat(stderrLine.split('silence_end: ')[1]);
+        splicePoints[splicePoints.length - 1].push(end);
+
+        // progress is the endpoint / video length
+        event.reply('auto-spliced-progress', end / videoLength);
+      }
+    })
+    .save(timestamp);
 }
