@@ -68,7 +68,7 @@ const RefreshModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
     <Modal open={open} onClose={onClose} disableClose={!allDirectoriesRefreshed}>
       {
         !refreshedDirectories?.length && (
-          <Typography>
+          <Typography mb={2}>
             Refreshing...
           </Typography>
         )
@@ -104,9 +104,7 @@ const RefreshModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
         }
         <Grid item sx={{ flexGrow: 1 }} display='flex' flexDirection='row' alignItems='center'>
           <LinearProgress
-            variant={
-              refreshedDirectories?.length > 0 ? 'determinate' : 'indeterminate'
-            }
+            variant='determinate'
             value={
               refreshedDirectories?.length > 0 ? (refreshedDirectories.length / directories.length) * 100 : 0
             }
@@ -115,11 +113,7 @@ const RefreshModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
         </Grid>
         <Grid item>
           <Typography color='textPrimary'>
-            {
-              refreshedDirectories?.length > 0 && (
-                `${refreshedDirectories.length} / ${directories.length} completed`
-              )
-            }
+            {`${refreshedDirectories.length} / ${directories.length} completed`}
           </Typography>
         </Grid>
       </Grid>
