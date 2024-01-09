@@ -119,7 +119,7 @@ const SplicePoints: FC = () => {
             const endFrames = convertSecondsToFrames(end)
 
             return (
-              <Stack key={i} gap={2} direction='row' justifyContent='space-between' alignItems='center' mb={2} ml={{
+              <Stack key={i} gap={2} direction='row' justifyContent='space-between' alignItems='center' mb={4} ml={{
                 xs: 0,
                 md: 1.5,
               }}>

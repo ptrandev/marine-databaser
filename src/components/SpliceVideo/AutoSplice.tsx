@@ -14,7 +14,7 @@ const DEFAULT_AUTO_SPLICE_SETTINGS : AutoSpliceSettings = {
 }
 
 const AutoSplice: FC = () => {
-  const { videoRef, selectedVideo } = useSpliceVideo()
+  const { videoRef, selectedVideo, setSplicePoints } = useSpliceVideo()
 
   const videoDuration = useMemo(() => {
     return videoRef?.duration || 0
@@ -29,7 +29,7 @@ const AutoSplice: FC = () => {
     })
 
     ipcRenderer.once('auto-spliced', (_, splicePoints) => {
-      console.log(splicePoints)
+      setSplicePoints(splicePoints)
     })
   }
 
@@ -137,13 +137,13 @@ const AutoSplice: FC = () => {
             />
           </Grid>
           <Grid item xs={12} md={6} lg={4}>
-            <InputLabel>Min Duration (s)</InputLabel>
+            <InputLabel>Min Silence Duration (s)</InputLabel>
             <Input
               type='number'
-              value={autoSpliceSettings.minAmplitude}
+              value={autoSpliceSettings.minDuration}
               onChange={(e) => setAutoSpliceSettings({
                 ...autoSpliceSettings,
-                minAmplitude: Number(e.target.value),
+                minDuration: Number(e.target.value),
               })}
               componentsProps={{
                 input: {

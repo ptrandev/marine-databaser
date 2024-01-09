@@ -9,6 +9,7 @@ export interface SpliceVideoContextValue {
   addSplicePoint: (currentTime: number) => void
   deleteSplicePoint: (splicePoint: [number, number]) => void
   modifySplicePoint: (splicePoint: [number, number], newSplicePoint: [number, number]) => void
+  setSplicePoints: (splicePoints: [number, number][]) => void
   numSplicePointsCompleted: number
   isSplicingVideo: boolean
   handleSpliceVideo: ({
@@ -196,8 +197,9 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       videoFramerate,
       videoRef,
       setVideoRef,
+      setSplicePoints,
     }
-  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint, modifySplicePoint, errorMessages])
+  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint, modifySplicePoint, errorMessages, videoFramerate, videoRef, setVideoRef, setSplicePoints])
 
   return (
     <SpliceVideoContext.Provider value={contextValue}>
