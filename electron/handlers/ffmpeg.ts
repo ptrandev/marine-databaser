@@ -315,8 +315,6 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
         const end = parseFloat(stderrLine.split('silence_end: ')[1]);
         splicePoints[splicePoints.length - 1].push(end);
 
-        console.log('auto-splice-progress', end / videoLength);
-
         // progress is the endpoint / video length
         event.reply('auto-spliced-progress', end / videoLength);
       }
