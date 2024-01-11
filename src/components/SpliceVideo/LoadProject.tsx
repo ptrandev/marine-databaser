@@ -2,8 +2,11 @@ import { ipcRenderer } from 'electron'
 import { FC, useState } from 'react'
 import { IconButton, Snackbar, Alert } from '@mui/material'
 import { Download } from '@mui/icons-material'
+import useSpliceVideo from '@/hooks/useSpliceVideo'
 
 const LoadProject: FC = () => {
+  const { updateSelectedVideo, updateSplicePoints } = useSpliceVideo()
+
   const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false)
   const [showErrorSnackbar, setShowErrorSnackbar] = useState(false)
 
@@ -12,6 +15,8 @@ const LoadProject: FC = () => {
 
     ipcRenderer.once('load-from-json-success', (_, data) => {
       setShowSuccessSnackbar(true)
+      updateSelectedVideo(data.selectedVideo)
+      updateSplicePoints(data.splicePoints)
     })
 
     ipcRenderer.once('load-from-json-error', () => {

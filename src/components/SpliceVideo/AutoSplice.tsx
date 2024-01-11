@@ -19,7 +19,7 @@ interface AutoSpliceModalProps extends Omit<ModalProps, 'children'> {
 }
 
 const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSettings }) => {
-  const { selectedVideo, setSplicePoints } = useSpliceVideo()
+  const { selectedVideo, updateSplicePoints } = useSpliceVideo()
 
   const [isDisabled, setIsDisabled] = useState(true)
   const [isSplicing, setIsSplicing] = useState(false)
@@ -35,7 +35,7 @@ const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSe
     })
 
     ipcRenderer.once('auto-spliced', (_, splicePoints) => {
-      setSplicePoints(splicePoints)
+      updateSplicePoints(splicePoints)
       setIsSplicing(false)
       onClose()
     })

@@ -31,7 +31,7 @@ const SaveProject: FC = () => {
 
   return (
     <>
-      <IconButton onClick={handleSave}>
+      <IconButton onClick={handleSave} disabled={!selectedVideo}>
         <Save />
       </IconButton>
       <Snackbar open={showSuccessSnackbar} autoHideDuration={6000} onClose={() => setShowSuccessSnackbar(false)}>
