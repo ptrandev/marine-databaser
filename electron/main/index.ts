@@ -150,6 +150,7 @@ import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpli
 import { handleListNotes, handleAddNote, handleUpdateNote, handleDeleteNote } from "../handlers/note";
 import { handleDatabaseExport } from "../handlers/export";
 import { handleDatabaseImport } from "../handlers/import";
+import { handleSaveToJSON, handleLoadFromJSON } from "../handlers/json";
 
 //
 // DIRECTORY
@@ -287,4 +288,14 @@ ipcMain.on("database-export", async (event) => {
 
 ipcMain.on("database-import", async (event) => {
   handleDatabaseImport(event);
+})
+
+// JSON
+
+ipcMain.on("save-to-json", async (event, arg) => {
+  handleSaveToJSON(event, arg);
+})
+
+ipcMain.on("load-from-json", async (event) => {
+  handleLoadFromJSON(event);
 })
