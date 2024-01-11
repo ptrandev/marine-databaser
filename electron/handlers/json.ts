@@ -5,6 +5,7 @@ const fs = require('fs').promises;
  * Saves a JSON file to the user's computer. Prompt the user where to save the file.
  * @param event The event that triggered this function.
  * @param arg.data The data to save.
+ * @param {string} [arg.filename] The filename to save the data as.
  * @returns
  */
 export const handleSaveToJSON = async (event, arg) => {
@@ -15,7 +16,7 @@ export const handleSaveToJSON = async (event, arg) => {
 
   const result = await dialog.showSaveDialog({
     title: 'Save to JSON',
-    defaultPath: 'data.json',
+    defaultPath: arg?.filename || 'data.json',
     filters: [{ name: 'JSON', extensions: ['json'] }]
   });
 

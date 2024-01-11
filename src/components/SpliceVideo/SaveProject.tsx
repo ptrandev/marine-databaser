@@ -18,6 +18,7 @@ const SaveProject: FC = () => {
 
     ipcRenderer.send('save-to-json', {
       data: data,
+      filename: 'project.json'
     })
 
     ipcRenderer.once('save-to-json-success', () => {
