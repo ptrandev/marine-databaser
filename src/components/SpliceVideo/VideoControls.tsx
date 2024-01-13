@@ -224,6 +224,13 @@ const VideoControls: FC = () => {
                 TimelinePlugin.create(),
               ]}
               onRedraw={(wavesurfer) => {
+                const activePlugins = wavesurfer.getActivePlugins()
+
+                // if there is an active plugin that contains colorMap, then we don't have to register the spectrogram plugin again
+                if (activePlugins.some((plugin) => (plugin as any).colorMap)) {
+                  return
+                }
+
                 wavesurfer.registerPlugin(SpectrogramPlugin.create({
                   labels: true,
                   frequencyMax,
