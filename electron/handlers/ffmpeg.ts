@@ -321,3 +321,30 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
     })
     .save(timestamp);
 }
+
+/**
+ * get the sample rate of an audio or video file
+ * @param {IpcMainEvent} event - the event to reply to
+ * @param {string} arg.audioPath - the path to the audio or video file to get the sample rate of
+ * @returns {Promise<void>} - a promise that resolves when the sample rate has been retrieved
+ */
+export const handleGetAudioSampleRate = async (event: IpcMainEvent, arg: { filePath: string }) => {
+  const { filePath } = arg;
+
+  ffmpeg.ffprobe(filePath, (err, metadata) => {
+    if (err) {
+      event.reply('failed-to-get-audio-sample-rate', err);
+      return;
+    }
+
+    // find first metadata.stream with codec_type audio; get sample_rate from that stream
+    const sampleRate = metadata.streams.find((stream: { codec_type: string }) => stream.codec_type === 'audio')?.sample_rate;
+
+    if (!sampleRate) {
+      event.reply('failed-to-get-audio-sample-rate', 'Failed to get sample rate of audio.');
+      return;
+    }
+
+    event.reply('got-audio-sample-rate', sampleRate);
+  });
+}
