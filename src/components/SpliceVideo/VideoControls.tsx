@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState, useMemo } from 'react'
+import { FC, useEffect, useState, useMemo } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Box, IconButton, Slider, Stack, Tooltip, Typography } from '@mui/material'
 import { FirstPage, LastPage, PlayArrow, SkipNext, SkipPrevious, Pause, Replay, Replay5, Forward5, Replay10, Forward10 } from '@mui/icons-material'
@@ -20,8 +20,6 @@ const VideoControls: FC = () => {
   const { selectedVideo, videoFramerate, setVideoRef } = useSpliceVideo()
 
   const video = document.getElementById('splice-video') as HTMLVideoElement
-
-  const spectrogramRef = useRef<HTMLDivElement>(null)
 
   const [videoState, setVideoState] = useState<'playing' | 'paused'>('paused')
   const [zoom, setZoom] = useState<number>(1)
@@ -218,6 +216,7 @@ const VideoControls: FC = () => {
               minPxPerSec={zoom}
               dragToSeek
               normalize
+              // @ts-ignore
               splitChannels
               sampleRate={audioSampleRate}
               plugins={[
