@@ -26,6 +26,7 @@ Here is a list of features that are currently implemented:
   - users can free seek to a specific time in the video
   - users can seek frame-by-frame, or by 1, 5, or 10 seconds
   - users can create splice points via timestamps or frame number
+  - users can use the audio waveform and spectrogram to help them find splice points
   - splices points are intelligently inserted by default so that one splice point starts as the
     previous one ends
   - videos are spliced in the same format as the original video, without re-encoding
@@ -54,6 +55,8 @@ The following screenshots demonstrate the current state of the application.
 ![Extract Audio](/public/extract-audio.png)
 
 ![Splice Video](/public/splice-video.png)
+
+![Splice Video Audio Waveform and Spectrogram](/public/splice-video-audio-waveform-and-spectrogram.png)
 
 
 ## 🛫 Quick start
