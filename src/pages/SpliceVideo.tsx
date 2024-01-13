@@ -6,7 +6,6 @@ import Progress from '@/components/SpliceVideo/Progress'
 import SplicePoints from '@/components/SpliceVideo/SplicePoints'
 import VideoControls from '@/components/SpliceVideo/VideoControls'
 import AutoSplice from '@/components/SpliceVideo/AutoSplice'
-import { Download } from '@mui/icons-material'
 import SaveProject from '@/components/SpliceVideo/SaveProject'
 import LoadProject from '@/components/SpliceVideo/LoadProject'
 

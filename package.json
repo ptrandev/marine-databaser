@@ -44,6 +44,7 @@
     "@fontsource/roboto": "^4.5.8",
     "@mui/icons-material": "^5.14.1",
     "@mui/material": "^5.14.1",
+    "@wavesurfer/react": "^1.0.4",
     "ffmpeg-static": "^5.1.0",
     "ffprobe-static": "^3.1.0",
     "fluent-ffmpeg": "^2.1.2",
@@ -52,7 +53,8 @@
     "react-router-dom": "^6.8.2",
     "react-virtuoso": "^4.1.0",
     "sequelize": "^6.29.1",
-    "sqlite3": "^5.1.4"
+    "sqlite3": "^5.1.4",
+    "wavesurfer.js": "^7.6.4"
   },
   "build": {
     "asarUnpack": [
