@@ -240,7 +240,7 @@ const VideoControls: FC = () => {
                 }))
               }}
             />
-            <Box>
+            <Box maxWidth='calc(100% - 32px)'>
               <Stack direction='row' alignItems='center' gap={2}>
                 <Typography variant='body2'>
                   Zoom
@@ -262,6 +262,9 @@ const VideoControls: FC = () => {
                   min={0}
                   max={audioSampleRate / 2}
                   valueLabelDisplay='auto'
+                  sx={{
+                    flex: 1,
+                  }}
                 />
               </Stack>
             </Box>
