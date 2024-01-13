@@ -4,13 +4,12 @@ import { Box, IconButton, Slider, Stack, Tooltip, Typography } from '@mui/materi
 import { FirstPage, LastPage, PlayArrow, SkipNext, SkipPrevious, Pause, Replay, Replay5, Forward5, Replay10, Forward10 } from '@mui/icons-material'
 import fs from 'fs'
 import WavesurferPlayer from '@wavesurfer/react'
-
+import SpectrogramPlugin from "wavesurfer.js/src/plugin/spectrogram"
 
 const VideoControls: FC = () => {
   const { selectedVideo, videoFramerate, setVideoRef } = useSpliceVideo()
 
   const video = document.getElementById('splice-video') as HTMLVideoElement
-  const waveformRef = useRef<HTMLDivElement>(null)
 
   const [videoState, setVideoState] = useState<'playing' | 'paused'>('paused')
   const [zoom, setZoom] = useState(1)
@@ -95,7 +94,6 @@ const VideoControls: FC = () => {
             src={videoUrl}
           />
           <Box>
-            <div ref={waveformRef} id='waveform' />
             <WavesurferPlayer
               height={100}
               media={video}
