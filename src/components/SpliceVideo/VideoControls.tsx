@@ -24,7 +24,6 @@ const VideoControls: FC = () => {
   const [videoState, setVideoState] = useState<'playing' | 'paused'>('paused')
   const [zoom, setZoom] = useState<number>(1)
   const [frequencyMax, setFrequencyMax] = useState<number>(22_050)
-
   const [audioSampleRate, setAudioSampleRate] = useState<number>(44_100)
 
   useEffect(() => {
@@ -219,24 +218,25 @@ const VideoControls: FC = () => {
               // @ts-ignore
               splitChannels
               sampleRate={audioSampleRate}
-              plugins={[
-                TimelinePlugin.create(),
-              ]}
+              frequencyMax={frequencyMax}
               onRedraw={(wavesurfer) => {
                 const activePlugins = wavesurfer.getActivePlugins()
 
-                // if there is an active plugin that contains colorMap, then we don't have to register the spectrogram plugin again
-                if (activePlugins.some((plugin) => (plugin as any).colorMap)) {
-                  return
+                // detect if timeline plugin is active
+                if (!activePlugins.some((plugin) => (plugin as any).timelineWrapper)) {
+                  wavesurfer.registerPlugin(TimelinePlugin.create())
                 }
 
-                wavesurfer.registerPlugin(SpectrogramPlugin.create({
-                  labels: true,
-                  frequencyMax,
-                  labelsBackground: '#00000066',
-                  colorMap: colors,
-                  splitChannels: false,
-                }))
+                // detect if spectrogram plugin is active
+                if (!activePlugins.some((plugin) => (plugin as any).colorMap)) {
+                  wavesurfer.registerPlugin(SpectrogramPlugin.create({
+                    labels: true,
+                    frequencyMax,
+                    labelsBackground: '#00000066',
+                    colorMap: colors,
+                    splitChannels: false,
+                  }))
+                }
               }}
             />
             <Box maxWidth='calc(100% - 32px)'>
