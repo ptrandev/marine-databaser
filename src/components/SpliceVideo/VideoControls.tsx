@@ -22,15 +22,20 @@ const VideoControls: FC = () => {
   const video = document.getElementById('splice-video') as HTMLVideoElement
 
   const [videoState, setVideoState] = useState<'playing' | 'paused'>('paused')
+
   const [zoom, setZoom] = useState<number>(1)
   const [frequencyMax, setFrequencyMax] = useState<number>(22_050)
-
   const [audioSampleRate, setAudioSampleRate] = useState<number>(44_100)
 
   useEffect(() => {
     if (!selectedVideo) {
       return
     }
+
+    // restore values to default
+    setZoom(1)
+    setFrequencyMax(22_050)
+    setAudioSampleRate(44_100)
 
     ipcRenderer.send('get-audio-sample-rate', {
       filePath: selectedVideo,
@@ -44,7 +49,6 @@ const VideoControls: FC = () => {
   useEffect(() => {
     setFrequencyMax(audioSampleRate / 2)
   }, [audioSampleRate])
-
 
   const videoUrl = useMemo(() => {
     if (!selectedVideo) {
