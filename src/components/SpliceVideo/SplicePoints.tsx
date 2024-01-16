@@ -114,37 +114,33 @@ const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
   }
 
   // handle setting startpoint; make sure it's not after the end point
-  const handleSetStartPoint = (splicePoint: [number, number]) => {
-    const [_, endPoint] = splicePoint
-
+  const handleSetStartPoint = () => {
     if (!videoRef) {
       return
     }
 
     const newStartPoint = videoRef.currentTime
 
-    if (newStartPoint > endPoint) {
+    if (newStartPoint > end) {
       return
     }
 
-    modifySplicePoint(splicePoint, [newStartPoint, endPoint])
+    handleStartSecondsChange(newStartPoint)
   }
 
   // handle setting endpoint; make sure it's not before the start point
-  const handleSetEndPoint = (splicePoint: [number, number]) => {
-    const [startPoint, _] = splicePoint
-
+  const handleSetEndPoint = () => {
     if (!videoRef) {
       return
     }
 
     const newEndPoint = videoRef.currentTime
 
-    if (newEndPoint < startPoint) {
+    if (newEndPoint < start) {
       return
     }
 
-    modifySplicePoint(splicePoint, [startPoint, newEndPoint])
+    handleEndSecondsChange(newEndPoint)
   }
 
   const convertSecondsToHoursMinutesSeconds = (seconds: number) => {
@@ -356,10 +352,10 @@ const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
             />
           </Box>
           <Stack>
-            <Button onClick={() => handleSetStartPoint([start, end])}>
+            <Button onClick={handleSetStartPoint}>
               Set to Current Time
             </Button>
-            <Button onClick={() => handleGoToSplicePoint(start)}>
+            <Button onClick={() => handleGoToSplicePoint(modifiedStart)}>
               Go to Time
             </Button>
           </Stack>
@@ -491,10 +487,10 @@ const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
             />
           </Box>
           <Stack>
-            <Button onClick={() => handleSetEndPoint([start, end])}>
+            <Button onClick={handleSetEndPoint}>
               Set to Current Time
             </Button>
-            <Button onClick={() => handleGoToSplicePoint(end)}>
+            <Button onClick={() => handleGoToSplicePoint(modifiedEnd)}>
               Go to Time
             </Button>
           </Stack>
