@@ -1,3 +1,4 @@
+import { convertSecondsToFrames } from '@/utils/video'
 import { ipcRenderer } from 'electron'
 import { FC, createContext, useMemo, useState } from 'react'
 import { useEffect } from 'react'
@@ -20,6 +21,8 @@ export interface SpliceVideoContextValue {
   errorMessages: string[]
   videoFramerate: number | null
   videoRef: HTMLVideoElement | null
+  videoDuration: number
+  videoTotalFrames: number
   setVideoRef: (video: HTMLVideoElement | null) => void
 }
 
@@ -41,6 +44,14 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const [videoFramerate, setVideoFramerate] = useState<number | null>(null)
 
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null)
+  
+  const videoDuration = useMemo(() => {
+    return videoRef?.duration || 0
+  }, [videoRef?.duration])
+
+  const videoTotalFrames = useMemo(() => {
+    return convertSecondsToFrames(videoDuration, videoFramerate!)
+  }, [videoDuration, videoFramerate])
 
   useEffect(() => {
     setVideoFramerate(null)
@@ -195,8 +206,10 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       videoRef,
       setVideoRef,
       updateSplicePoints,
+      videoDuration,
+      videoTotalFrames,
     }
-  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint, modifySplicePoint, errorMessages, videoFramerate, videoRef, setVideoRef, updateSplicePoints])
+  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint, modifySplicePoint, errorMessages, videoFramerate, videoRef, setVideoRef, updateSplicePoints, videoDuration, videoTotalFrames])
 
   return (
     <SpliceVideoContext.Provider value={contextValue}>
