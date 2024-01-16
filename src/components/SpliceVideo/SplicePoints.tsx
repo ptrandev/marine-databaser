@@ -3,7 +3,7 @@ import { Box, Button, IconButton, Input, InputLabel, Stack, Typography } from '@
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Add, Check, Delete, Restore } from '@mui/icons-material'
 import { Modal, ModalProps } from '../Modal'
-import { convertSecondsToFrames, convertFramesToSeconds } from '@/utils/video'
+import { convertSecondsToFrames, convertFramesToSeconds, convertHoursMinutesSecondsToSeconds, convertSecondsToHoursMinutesSeconds } from '@/utils/video'
 
 interface DeleteModalProps extends Omit<ModalProps, 'children'> { }
 
@@ -121,7 +121,7 @@ const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
 
     const newStartPoint = videoRef.currentTime
 
-    if (newStartPoint > end) {
+    if (newStartPoint > modifiedEnd) {
       return
     }
 
@@ -136,23 +136,11 @@ const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
 
     const newEndPoint = videoRef.currentTime
 
-    if (newEndPoint < start) {
+    if (newEndPoint < modifiedStart) {
       return
     }
 
     handleEndSecondsChange(newEndPoint)
-  }
-
-  const convertSecondsToHoursMinutesSeconds = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds - hours * 3600) / 60)
-    const secondsLeft = seconds - hours * 3600 - minutes * 60
-
-    return [hours, minutes, secondsLeft]
-  }
-
-  const convertHoursMinutesSecondsToSeconds = (hours: number, minutes: number, seconds: number) => {
-    return hours * 3600 + minutes * 60 + seconds
   }
 
   const verifyStartSeconds = (startSeconds: number, endSeconds: number) => {
@@ -186,6 +174,7 @@ const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
 
   const handleStartSecondsChange = (seconds: number) => {
     const [hours, minutes, secondsLeft] = convertSecondsToHoursMinutesSeconds(seconds)
+
     setModifiedStartHours(hours)
     setModifiedStartMinutes(minutes)
     setModifiedStartSeconds(secondsLeft)
@@ -196,16 +185,13 @@ const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
 
   const handleEndSecondsChange = (seconds: number) => {
     const [hours, minutes, secondsLeft] = convertSecondsToHoursMinutesSeconds(seconds)
+
     setModifiedEndHours(hours)
     setModifiedEndMinutes(minutes)
     setModifiedEndSeconds(secondsLeft)
 
     setModifiedEnd(seconds)
     setModifiedEndFrames(convertSecondsToFrames(seconds, videoFramerate!))
-  }
-
-  const handleModifySplicePoint = () => {
-    modifySplicePoint([start, end], [modifiedStart, modifiedEnd])
   }
 
   const handleResetSplicePoint = () => {
@@ -503,7 +489,7 @@ const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
         <IconButton onClick={handleResetSplicePoint} disabled={isModified}>
           <Restore />
         </IconButton>
-        <IconButton color='success' onClick={handleModifySplicePoint} disabled={isModified}>
+        <IconButton color='success' onClick={() => modifySplicePoint([start, end], [modifiedStart, modifiedEnd])} disabled={isModified}>
           <Check />
         </IconButton>
       </Stack>
