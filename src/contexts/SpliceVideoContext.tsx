@@ -23,7 +23,9 @@ export interface SpliceVideoContextValue {
   videoRef: HTMLVideoElement | null
   videoDuration: number
   videoTotalFrames: number
-  setVideoRef: (video: HTMLVideoElement | null) => void
+  updateVideoRef: (video: HTMLVideoElement | null) => void
+  isUnsavedSplicePoints: boolean
+  updateIsUnsavedSplicePoints: (isUnsavedSplicePoints: boolean) => void
 }
 
 const SpliceVideoContext = createContext<SpliceVideoContextValue>(undefined as any)
@@ -37,6 +39,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const [splicePoints, setSplicePoints] = useState<[number, number][]>([])
   const [numSplicePointsCompleted, setNumSplicePointsCompleted] = useState<number>(0)
   const [isSplicingVideo, setIsSplicingVideo] = useState<boolean>(false)
+  const [isUnsavedSplicePoints, setIsUnsavedSplicePoints] = useState<boolean>(false)
 
   const [errorMessages, setErrorMessages] = useState<string[]>([])
 
@@ -79,6 +82,14 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       ipcRenderer.removeAllListeners('get-video-framerate-failed')
     }
   }, [selectedVideo])
+
+  const updateIsUnsavedSplicePoints = (isUnsavedSplicePoints: boolean) => {
+    setIsUnsavedSplicePoints(isUnsavedSplicePoints)
+  }
+
+  const updateVideoRef = (video: HTMLVideoElement | null) => {
+    setVideoRef(video)
+  }
 
   const handleSpliceVideo = ({
     outputDirectory,
@@ -204,12 +215,14 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       errorMessages,
       videoFramerate,
       videoRef,
-      setVideoRef,
+      updateVideoRef,
       updateSplicePoints,
       videoDuration,
       videoTotalFrames,
+      isUnsavedSplicePoints,
+      updateIsUnsavedSplicePoints,
     }
-  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint, modifySplicePoint, errorMessages, videoFramerate, videoRef, setVideoRef, updateSplicePoints, videoDuration, videoTotalFrames])
+  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint, modifySplicePoint, errorMessages, videoFramerate, videoRef, updateVideoRef, updateSplicePoints, videoDuration, videoTotalFrames, isUnsavedSplicePoints, updateIsUnsavedSplicePoints])
 
   return (
     <SpliceVideoContext.Provider value={contextValue}>

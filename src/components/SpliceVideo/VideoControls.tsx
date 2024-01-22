@@ -17,7 +17,7 @@ const colors = colormap({
 })
 
 const VideoControls: FC = () => {
-  const { selectedVideo, videoFramerate, setVideoRef } = useSpliceVideo()
+  const { selectedVideo, videoFramerate, updateVideoRef } = useSpliceVideo()
 
   const video = document.getElementById('splice-video') as HTMLVideoElement
 
@@ -126,7 +126,7 @@ const VideoControls: FC = () => {
             controls
             key={selectedVideo}
             style={{ width: '100%', height: 'auto', maxHeight: '100%' }}
-            ref={setVideoRef}
+            ref={updateVideoRef}
             src={videoUrl}
           />
           <Box display='flex' justifyContent='center'>

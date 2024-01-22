@@ -88,8 +88,8 @@ const SplicePoints: FC = () => {
         }}
       >
         {
-          splicePoints && splicePoints.map(([start, end], i) => {
-            return <SplicePoint key={i} start={start} end={end} />
+          splicePoints && splicePoints.map(([start, end]) => {
+            return <SplicePoint key={`${start}-${end}`} start={start} end={end} />
           })
         }
       </Box>
@@ -103,7 +103,7 @@ interface SplicePointProps {
 }
 
 const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
-  const { videoRef, videoFramerate, modifySplicePoint, deleteSplicePoint, videoDuration, videoTotalFrames } = useSpliceVideo()
+  const { videoRef, videoFramerate, modifySplicePoint, deleteSplicePoint, videoDuration, videoTotalFrames, updateIsUnsavedSplicePoints } = useSpliceVideo()
 
   const handleGoToSplicePoint = (splicePoint: number) => {
     if (!videoRef) {
@@ -197,10 +197,18 @@ const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
   const handleResetSplicePoint = () => {
     handleStartSecondsChange(start)
     handleEndSecondsChange(end)
+    updateIsUnsavedSplicePoints(false)
+  }
+
+  const handleConfirmSplicePoint = () => {
+    modifySplicePoint([start, end], [modifiedStart, modifiedEnd])
+    updateIsUnsavedSplicePoints(false)
   }
 
   const isModified = useMemo(() => {
-    return start !== modifiedStart || end !== modifiedEnd
+    const _isModified = start !== modifiedStart || end !== modifiedEnd
+    updateIsUnsavedSplicePoints(_isModified)
+    return _isModified
   }, [start, end, modifiedStart, modifiedEnd])
 
   return (
@@ -486,10 +494,10 @@ const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
         <IconButton color='error' onClick={() => deleteSplicePoint([start, end])}>
           <Delete />
         </IconButton>
-        <IconButton onClick={handleResetSplicePoint} disabled={isModified}>
+        <IconButton onClick={handleResetSplicePoint} disabled={!isModified}>
           <Restore />
         </IconButton>
-        <IconButton color='success' onClick={() => modifySplicePoint([start, end], [modifiedStart, modifiedEnd])} disabled={isModified}>
+        <IconButton color='success' onClick={handleConfirmSplicePoint} disabled={!isModified}>
           <Check />
         </IconButton>
       </Stack>
