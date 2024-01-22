@@ -2,6 +2,7 @@ import { FC, useState, useEffect } from 'react'
 import WavesurferPlayer from '@wavesurfer/react'
 import SpectrogramPlugin from "wavesurfer.js/dist/plugins/spectrogram.js"
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.js'
+import RegionPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import { Box, Slider, Stack, Typography } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import colormap from 'colormap'
@@ -15,12 +16,31 @@ const colors = colormap({
 })
 
 const AudioVisualizers: FC = () => {
-  const { selectedVideo, videoRef } = useSpliceVideo()
+  const { selectedVideo, videoRef, splicePoints } = useSpliceVideo()
   
   const [zoom, setZoom] = useState<number>(1)
   const [frequencyMax, setFrequencyMax] = useState<number>(22_050)
   const [audioSampleRate, setAudioSampleRate] = useState<number>(44_100)
 
+  const [wsRegions, setWsRegions] = useState<RegionPlugin>()
+
+  useEffect(() => {
+    if (!wsRegions) {
+      return
+    }
+
+    wsRegions.clearRegions()
+
+    splicePoints.forEach(([start, end], i) => {
+      wsRegions.addRegion({
+        start: start,
+        end: end,
+        color: 'rgba(0, 0, 255, 0.1)',
+        drag: false,
+        resize: false,
+      })
+    })
+  }, [splicePoints, wsRegions])
 
   useEffect(() => {
     if (!selectedVideo) {
@@ -48,7 +68,7 @@ const AudioVisualizers: FC = () => {
   return (
     <Box>
       <WavesurferPlayer
-        height={100}
+        height={256}
         media={videoRef!}
         progressColor='#1976d2'
         minPxPerSec={zoom}
@@ -63,7 +83,10 @@ const AudioVisualizers: FC = () => {
 
           // detect if timeline plugin is active
           if (!activePlugins.some((plugin) => (plugin as any).timelineWrapper)) {
-            wavesurfer.registerPlugin(TimelinePlugin.create())
+            wavesurfer.registerPlugin(TimelinePlugin.create({
+              secondaryLabelOpacity: 1,
+              style: 'font-size: 12px'
+            }))
           }
 
           // detect if spectrogram plugin is active
@@ -75,6 +98,12 @@ const AudioVisualizers: FC = () => {
               colorMap: colors,
               splitChannels: false,
             }))
+          }
+
+          // detect if regions plugin is active
+          if (!activePlugins.some((plugin) => (plugin as any).regions)) {
+            const wsRegions = wavesurfer.registerPlugin(RegionPlugin.create())
+            setWsRegions(wsRegions)
           }
         }}
       />
