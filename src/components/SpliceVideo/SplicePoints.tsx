@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { Box, Button, IconButton, Input, InputLabel, Stack, Typography } from '@mui/material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Add, Check, Delete, Restore } from '@mui/icons-material'
@@ -172,6 +172,8 @@ const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
   const [modifiedStartFrames, setModifiedStartFrames] = useState(startFrames)
   const [modifiedEndFrames, setModifiedEndFrames] = useState(endFrames)
 
+  const [isModified, setIsModified] = useState<boolean>(false)
+
   const handleStartSecondsChange = (seconds: number) => {
     const [hours, minutes, secondsLeft] = convertSecondsToHoursMinutesSeconds(seconds)
 
@@ -197,22 +199,23 @@ const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
   const handleResetSplicePoint = () => {
     handleStartSecondsChange(start)
     handleEndSecondsChange(end)
-    removeUnsavedSplicePoint(`${start}-${end}`)
   }
 
   const handleConfirmSplicePoint = () => {
     modifySplicePoint([start, end], [modifiedStart, modifiedEnd])
-    removeUnsavedSplicePoint(`${start}-${end}`)
   }
 
-  const isModified = useMemo(() => {
+  useEffect(() => {
     const _isModified = start !== modifiedStart || end !== modifiedEnd
-    
+
     if (_isModified) {
-      addUnsavedSplicePoint(`${start}-${end}`)
+      addUnsavedSplicePoint([start, end])
+    } else {
+      removeUnsavedSplicePoint([start, end])
     }
-    
-    return _isModified
+
+    setIsModified(_isModified)
+
   }, [start, end, modifiedStart, modifiedEnd])
 
   return (

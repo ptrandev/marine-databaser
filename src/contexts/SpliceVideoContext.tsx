@@ -25,8 +25,8 @@ export interface SpliceVideoContextValue {
   videoTotalFrames: number
   updateVideoRef: (video: HTMLVideoElement | null) => void
   isUnsavedSplicePoints: boolean
-  addUnsavedSplicePoint: (splicePoint: string) => void
-  removeUnsavedSplicePoint: (splicePoint: string) => void
+  addUnsavedSplicePoint: (splicePoint: [number, number]) => void
+  removeUnsavedSplicePoint: (splicePoint: [number, number]) => void
 }
 
 const SpliceVideoContext = createContext<SpliceVideoContextValue>(undefined as any)
@@ -40,7 +40,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const [splicePoints, setSplicePoints] = useState<[number, number][]>([])
   const [numSplicePointsCompleted, setNumSplicePointsCompleted] = useState<number>(0)
   const [isSplicingVideo, setIsSplicingVideo] = useState<boolean>(false)
-  const [unsavedSplicePoints, setUnsavedSplicePoints] = useState<string[]>([])
+  const [unsavedSplicePoints, setUnsavedSplicePoints] = useState<[number, number][]>([])
 
   const [errorMessages, setErrorMessages] = useState<string[]>([])
 
@@ -84,13 +84,17 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     }
   }, [selectedVideo])
 
-  const addUnsavedSplicePoint = (splicePoint: string) => {
+  const addUnsavedSplicePoint = (splicePoint: [number, number]) => {
     setUnsavedSplicePoints((prev) => [...prev, splicePoint])
   }
 
-  const removeUnsavedSplicePoint = (splicePoint: string) => {
+  const removeUnsavedSplicePoint = (splicePoint: [number, number]) => {
     setUnsavedSplicePoints((prev) => prev.filter((splicePoint_) => splicePoint_ !== splicePoint))
   }
+
+  useEffect(() => {
+    console.log('unsavedSplicePoints', unsavedSplicePoints)
+  }, [unsavedSplicePoints])
 
   const isUnsavedSplicePoints = useMemo(() => {
     return unsavedSplicePoints.length > 0
@@ -143,6 +147,9 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
           return startA - startB || endA - endB
         })
     )
+
+    // ensure that unsavedSplicePoints doesn't contain any splice points that aren't in splicePoints
+    setUnsavedSplicePoints((prev) => prev.filter((splicePoint) => splicePoints.find(([start, end]) => start === splicePoint[0] && end === splicePoint[1])))
   }
 
   const addSplicePoint = (currentTime: number) => {
@@ -188,6 +195,9 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     // remember to compare values and not references
     // ensure this works with splicePoints that have the same start and end
     updateSplicePoints(splicePoints.filter(([start, end]) => start !== splicePoint[0] || end !== splicePoint[1]))
+
+    // remove from unsaved splice points if it exists
+    removeUnsavedSplicePoint(splicePoint)
   }
 
   const modifySplicePoint = (splicePoint: [number, number], newSplicePoint: [number, number]) => {
