@@ -25,7 +25,8 @@ export interface SpliceVideoContextValue {
   videoTotalFrames: number
   updateVideoRef: (video: HTMLVideoElement | null) => void
   isUnsavedSplicePoints: boolean
-  updateIsUnsavedSplicePoints: (isUnsavedSplicePoints: boolean) => void
+  addUnsavedSplicePoint: (splicePoint: string) => void
+  removeUnsavedSplicePoint: (splicePoint: string) => void
 }
 
 const SpliceVideoContext = createContext<SpliceVideoContextValue>(undefined as any)
@@ -39,7 +40,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const [splicePoints, setSplicePoints] = useState<[number, number][]>([])
   const [numSplicePointsCompleted, setNumSplicePointsCompleted] = useState<number>(0)
   const [isSplicingVideo, setIsSplicingVideo] = useState<boolean>(false)
-  const [isUnsavedSplicePoints, setIsUnsavedSplicePoints] = useState<boolean>(false)
+  const [unsavedSplicePoints, setUnsavedSplicePoints] = useState<string[]>([])
 
   const [errorMessages, setErrorMessages] = useState<string[]>([])
 
@@ -83,10 +84,18 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     }
   }, [selectedVideo])
 
-  const updateIsUnsavedSplicePoints = (isUnsavedSplicePoints: boolean) => {
-    setIsUnsavedSplicePoints(isUnsavedSplicePoints)
+  const addUnsavedSplicePoint = (splicePoint: string) => {
+    setUnsavedSplicePoints((prev) => [...prev, splicePoint])
   }
 
+  const removeUnsavedSplicePoint = (splicePoint: string) => {
+    setUnsavedSplicePoints((prev) => prev.filter((splicePoint_) => splicePoint_ !== splicePoint))
+  }
+
+  const isUnsavedSplicePoints = useMemo(() => {
+    return unsavedSplicePoints.length > 0
+  }, [unsavedSplicePoints])
+  
   const updateVideoRef = (video: HTMLVideoElement | null) => {
     setVideoRef(video)
   }
@@ -220,9 +229,10 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       videoDuration,
       videoTotalFrames,
       isUnsavedSplicePoints,
-      updateIsUnsavedSplicePoints,
+      addUnsavedSplicePoint,
+      removeUnsavedSplicePoint,
     }
-  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint, modifySplicePoint, errorMessages, videoFramerate, videoRef, updateVideoRef, updateSplicePoints, videoDuration, videoTotalFrames, isUnsavedSplicePoints, updateIsUnsavedSplicePoints])
+  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, addSplicePoint, modifySplicePoint, errorMessages, videoFramerate, videoRef, updateVideoRef, updateSplicePoints, videoDuration, videoTotalFrames, isUnsavedSplicePoints, addUnsavedSplicePoint, removeUnsavedSplicePoint])
 
   return (
     <SpliceVideoContext.Provider value={contextValue}>

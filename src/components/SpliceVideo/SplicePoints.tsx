@@ -103,7 +103,7 @@ interface SplicePointProps {
 }
 
 const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
-  const { videoRef, videoFramerate, modifySplicePoint, deleteSplicePoint, videoDuration, videoTotalFrames, updateIsUnsavedSplicePoints } = useSpliceVideo()
+  const { videoRef, videoFramerate, modifySplicePoint, deleteSplicePoint, videoDuration, videoTotalFrames, addUnsavedSplicePoint, removeUnsavedSplicePoint } = useSpliceVideo()
 
   const handleGoToSplicePoint = (splicePoint: number) => {
     if (!videoRef) {
@@ -197,17 +197,21 @@ const SplicePoint: FC<SplicePointProps> = ({ start, end }) => {
   const handleResetSplicePoint = () => {
     handleStartSecondsChange(start)
     handleEndSecondsChange(end)
-    updateIsUnsavedSplicePoints(false)
+    removeUnsavedSplicePoint(`${start}-${end}`)
   }
 
   const handleConfirmSplicePoint = () => {
     modifySplicePoint([start, end], [modifiedStart, modifiedEnd])
-    updateIsUnsavedSplicePoints(false)
+    removeUnsavedSplicePoint(`${start}-${end}`)
   }
 
   const isModified = useMemo(() => {
     const _isModified = start !== modifiedStart || end !== modifiedEnd
-    updateIsUnsavedSplicePoints(_isModified)
+    
+    if (_isModified) {
+      addUnsavedSplicePoint(`${start}-${end}`)
+    }
+    
     return _isModified
   }, [start, end, modifiedStart, modifiedEnd])
 
