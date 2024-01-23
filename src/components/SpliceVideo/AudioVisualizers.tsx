@@ -78,33 +78,22 @@ const AudioVisualizers: FC = () => {
         splitChannels
         sampleRate={audioSampleRate}
         frequencyMax={frequencyMax}
-        onRedraw={(wavesurfer) => {
-          const activePlugins = wavesurfer.getActivePlugins()
+        onDecode={(wavesurfer) => {
+          wavesurfer.registerPlugin(TimelinePlugin.create({
+            secondaryLabelOpacity: 1,
+            style: 'font-size: 12px'
+          }))
 
-          // detect if timeline plugin is active
-          if (!activePlugins.some((plugin) => (plugin as any).timelineWrapper)) {
-            wavesurfer.registerPlugin(TimelinePlugin.create({
-              secondaryLabelOpacity: 1,
-              style: 'font-size: 12px'
-            }))
-          }
+          wavesurfer.registerPlugin(SpectrogramPlugin.create({
+            labels: true,
+            frequencyMax,
+            labelsBackground: '#00000066',
+            colorMap: colors,
+            splitChannels: false,
+          }))
 
-          // detect if spectrogram plugin is active
-          if (!activePlugins.some((plugin) => (plugin as any).colorMap)) {
-            wavesurfer.registerPlugin(SpectrogramPlugin.create({
-              labels: true,
-              frequencyMax,
-              labelsBackground: '#00000066',
-              colorMap: colors,
-              splitChannels: false,
-            }))
-          }
-
-          // detect if regions plugin is active
-          if (!activePlugins.some((plugin) => (plugin as any).regions)) {
-            const wsRegions = wavesurfer.registerPlugin(RegionPlugin.create())
-            setWsRegions(wsRegions)
-          }
+          const wsRegions = wavesurfer.registerPlugin(RegionPlugin.create())
+          setWsRegions(wsRegions)
         }}
       />
       <Box maxWidth='calc(100% - 32px)'>
