@@ -3,7 +3,6 @@ import { ipcRenderer } from 'electron'
 import { FC, createContext, useMemo, useState } from 'react'
 import { useEffect } from 'react'
 
-
 interface AddEvent {
   type: 'add'
   splicePoint: [number, number]
@@ -106,6 +105,14 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     return unsavedSplicePoints.length > 0
   }, [unsavedSplicePoints])
 
+  const canUndo = useMemo(() => {
+    return eventHistory.length > 0
+  }, [eventHistory.length])
+
+  const canRedo = useMemo(() => {
+    return undoHistory.length > 0
+  }, [undoHistory.length])
+
   const addUnsavedSplicePoint = (splicePoint: [number, number]) => {
     setUnsavedSplicePoints((prev) => [...prev, splicePoint])
   }
@@ -206,7 +213,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
     // consume event from event history
     setEventHistory((prev) => prev.slice(0, prev.length - 1))
-    
+
     // add event to undo history
     setUndoHistory((prev) => [...prev, event])
   }
@@ -498,14 +505,6 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       setEventHistory((prev) => prev.slice(prev.length - MAXIMUM_EVENT_HISTORY_LENGTH))
     }
   }, [eventHistory.length])
-
-  const canUndo = useMemo(() => {
-    return eventHistory.length > 0
-  }, [eventHistory.length])
-
-  const canRedo = useMemo(() => {
-    return undoHistory.length > 0
-  }, [undoHistory.length])
 
   const contextValue = useMemo<SpliceVideoContextValue>(() => {
     return {
