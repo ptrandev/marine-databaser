@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from 'react'
 import { Box, Button, IconButton, Input, InputLabel, Stack, Typography } from '@mui/material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
-import { Add, Check, Delete, Restore } from '@mui/icons-material'
+import { Add, Check, Delete, Restore, Undo, Redo } from '@mui/icons-material'
 import { Modal, ModalProps } from '../Modal'
 import { convertSecondsToFrames, convertFramesToSeconds, convertHoursMinutesSecondsToSeconds, convertSecondsToHoursMinutesSeconds } from '@/utils/video'
 
@@ -40,16 +40,16 @@ const DeleteModal: FC<DeleteModalProps> = ({ open, onClose }) => {
 }
 
 const SplicePoints: FC = () => {
-  const { selectedVideo, splicePoints, addSplicePoint, videoRef } = useSpliceVideo()
+  const { selectedVideo, splicePoints, initSplicePoint, videoRef, undo, redo, canUndo, canRedo } = useSpliceVideo()
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
-  const handleAddSplicePoint = () => {
+  const handleInitSplicePoint = () => {
     if (!videoRef) {
       return
     }
 
-    addSplicePoint(videoRef.currentTime)
+    initSplicePoint(videoRef.currentTime)
   }
 
   return (
@@ -63,7 +63,7 @@ const SplicePoints: FC = () => {
         <Box>
           <Button
             variant='contained'
-            onClick={handleAddSplicePoint}
+            onClick={handleInitSplicePoint}
             disabled={!selectedVideo}
             startIcon={<Add />}
           >
@@ -71,6 +71,12 @@ const SplicePoints: FC = () => {
           </Button>
         </Box>
         <Box>
+          <IconButton onClick={undo} disabled={!canUndo || !selectedVideo}>
+            <Undo />
+          </IconButton>
+          <IconButton onClick={redo} disabled={!canRedo || !selectedVideo}>
+            <Redo />
+          </IconButton>
           <Button
             color='error'
             disabled={!selectedVideo || splicePoints?.length === 0}
