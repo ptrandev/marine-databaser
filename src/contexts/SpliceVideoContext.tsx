@@ -204,7 +204,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
         break
     }
 
-    // remove event from event history
+    // consume event from event history
     setEventHistory((prev) => prev.slice(0, prev.length - 1))
     
     // add event to undo history
