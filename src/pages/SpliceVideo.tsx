@@ -1,5 +1,5 @@
 import useSpliceVideo from '@/hooks/useSpliceVideo'
-import { Box, Button, Typography, Stack, Grid, IconButton } from '@mui/material'
+import { Box, Button, Typography, Stack, Grid } from '@mui/material'
 import { FC, useEffect } from 'react'
 import { ipcRenderer } from 'electron'
 import Progress from '@/components/SpliceVideo/Progress'
@@ -8,6 +8,7 @@ import VideoControls from '@/components/SpliceVideo/VideoControls'
 import AutoSplice from '@/components/SpliceVideo/AutoSplice'
 import SaveProject from '@/components/SpliceVideo/SaveProject'
 import LoadProject from '@/components/SpliceVideo/LoadProject'
+import AudioVisualizers from '@/components/SpliceVideo/AudioVisualizers'
 
 const SpliceVideo: FC = () => {
   const { updateSelectedVideo, selectedVideo } = useSpliceVideo()
@@ -15,6 +16,8 @@ const SpliceVideo: FC = () => {
   const handleSelectVideo = () => {
     ipcRenderer.send('select-splice-video-file')
     ipcRenderer.once('selected-splice-video-file', (_, path) => {
+      if (!path) return
+
       updateSelectedVideo(path)
     })
   }
@@ -32,14 +35,14 @@ const SpliceVideo: FC = () => {
           <Typography variant="h4">
             Splice Video
           </Typography>
-          <Stack direction='row' gap={1}>
+          <Stack direction='row'>
             <Box>
               <SaveProject />
             </Box>
             <Box>
               <LoadProject />
             </Box>
-            <Box>
+            <Box ml={1}>
               <Button onClick={handleSelectVideo} variant='contained'>
                 Select Video
               </Button>
@@ -57,6 +60,7 @@ const SpliceVideo: FC = () => {
               selectedVideo &&
               <Stack spacing={2}>
                 <VideoControls />
+                <AudioVisualizers />
                 <AutoSplice />
               </Stack>
             }
