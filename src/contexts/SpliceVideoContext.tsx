@@ -74,6 +74,8 @@ interface SpliceVideoProviderProps {
   children: React.ReactNode
 }
 
+const MAXIMUM_EVENT_HISTORY_LENGTH = 100
+
 export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) => {
   const [splicePoints, setSplicePoints] = useState<[number, number][]>([])
   const [unsavedSplicePoints, setUnsavedSplicePoints] = useState<[number, number][]>([])
@@ -485,18 +487,20 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     }
   }, [])
 
+  // only hold the last MAXIMUM_EVENT_HISTORY_LENGTH most recent events in the event history
   useEffect(() => {
-    console.log('eventHistory', eventHistory)
-    console.log('undoHistory', undoHistory)
-  }, [eventHistory, undoHistory])
+    if (eventHistory.length > MAXIMUM_EVENT_HISTORY_LENGTH) {
+      setEventHistory((prev) => prev.slice(prev.length - MAXIMUM_EVENT_HISTORY_LENGTH))
+    }
+  }, [eventHistory.length])
 
   const canUndo = useMemo(() => {
     return eventHistory.length > 0
-  }, [eventHistory])
+  }, [eventHistory.length])
 
   const canRedo = useMemo(() => {
     return undoHistory.length > 0
-  }, [undoHistory])
+  }, [undoHistory.length])
 
   const contextValue = useMemo<SpliceVideoContextValue>(() => {
     return {
