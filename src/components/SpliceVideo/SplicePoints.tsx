@@ -8,7 +8,7 @@ import { convertSecondsToFrames, convertFramesToSeconds, convertHoursMinutesSeco
 interface DeleteModalProps extends Omit<ModalProps, 'children'> { }
 
 const DeleteModal: FC<DeleteModalProps> = ({ open, onClose }) => {
-  const { updateSplicePoints } = useSpliceVideo()
+  const { deleteAllSplicePoints } = useSpliceVideo()
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -27,7 +27,7 @@ const DeleteModal: FC<DeleteModalProps> = ({ open, onClose }) => {
           </Box>
           <Box>
             <Button color='error' variant='contained' onClick={() => {
-              updateSplicePoints([])
+              deleteAllSplicePoints()
               onClose()
             }}>
               Delete All Splice Points

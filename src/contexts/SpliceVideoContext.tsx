@@ -3,35 +3,49 @@ import { ipcRenderer } from 'electron'
 import { FC, createContext, useMemo, useState } from 'react'
 import { useEffect } from 'react'
 
-interface EventBase {
-  type: 'add' | 'delete' | 'modify'
+
+interface AddEvent {
+  type: 'add'
   splicePoint: [number, number]
 }
 
-interface AddEvent extends EventBase {
-  type: 'add'
-}
-
-interface DeleteEvent extends EventBase {
+interface DeleteEvent {
   type: 'delete'
+  splicePoint: [number, number]
 }
 
-interface ModifyEvent extends EventBase {
+interface ModifyEvent {
   type: 'modify'
+  splicePoint: [number, number]
   newSplicePoint: [number, number]
 }
 
-type Event = AddEvent | DeleteEvent | ModifyEvent
+interface LoadEvent {
+  type: 'load'
+  splicePoints: [number, number][]
+}
 
+interface DeleteAllEvent {
+  type: 'deleteAll'
+  splicePoints: [number, number][]
+}
+
+type Event = AddEvent | DeleteEvent | ModifyEvent | LoadEvent | DeleteAllEvent
+
+interface HistoryOptions {
+  clearUndoHistory?: boolean
+  addToEventHistory?: boolean
+}
 
 export interface SpliceVideoContextValue {
   selectedVideo: string
   updateSelectedVideo: (video: string) => void
   splicePoints: [number, number][] // [start, end]
   initSplicePoint: (currentTime: number) => void
-  deleteSplicePoint: (splicePoint: [number, number]) => void
-  modifySplicePoint: (splicePoint: [number, number], newSplicePoint: [number, number]) => void
-  updateSplicePoints: (splicePoints: [number, number][]) => void
+  deleteSplicePoint: (splicePoint: [number, number], options?: HistoryOptions) => void
+  modifySplicePoint: (splicePoint: [number, number], newSplicePoint: [number, number], options?: HistoryOptions) => void
+  deleteAllSplicePoints: (options?: HistoryOptions) => void
+  loadSplicePoints: (splicePoints: [number, number][], options?: HistoryOptions) => void
   numSplicePointsCompleted: number
   isSplicingVideo: boolean
   handleSpliceVideo: ({
@@ -64,9 +78,10 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const [splicePoints, setSplicePoints] = useState<[number, number][]>([])
   const [unsavedSplicePoints, setUnsavedSplicePoints] = useState<[number, number][]>([])
 
-  // a running ledger of all splice point events
-  const [history, setHistory] = useState<Event[]>([])
-  const [historyIndex, setHistoryIndex] = useState<number>(-1)
+  // a stack of events that have occurred, used for undo
+  const [eventHistory, setEventHistory] = useState<Event[]>([])
+  // a stack of events that have been undone, used for redo
+  const [undoHistory, setUndoHistory] = useState<Event[]>([])
 
   const [numSplicePointsCompleted, setNumSplicePointsCompleted] = useState<number>(0)
   const [isSplicingVideo, setIsSplicingVideo] = useState<boolean>(false)
@@ -132,57 +147,88 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     setSplicePoints([])
   }
 
-  const addEventToHistory = (event: Event) => {
-    // remove future events when a new event is added
-    setHistory((prev) => prev.slice(0, historyIndex + 1))
+  const addEventToEventHistory = (event: Event, {
+    clearUndoHistory = true,
+    addToEventHistory = true,
+  }: HistoryOptions = {
+  }) => {
+    // if there are events in the undo history, clear them
+    if (clearUndoHistory && undoHistory.length > 0) {
+      setUndoHistory([])
+    }
 
-    // add new event to history
-    setHistory((prev) => [...prev, event])
-
-    // update history index
-    setHistoryIndex(history.length - 1)
+    if (addToEventHistory) {
+      setEventHistory((prev) => [...prev, event])
+    }
   }
 
   const undo = () => {
-    if (historyIndex > 0) {
-      // apply event to reverse the action
-      const event = history[historyIndex]
-
-      switch (event.type) {
-        case 'add':
-          deleteSplicePoint(event.splicePoint)
-          break
-        case 'delete':
-          initSplicePoint(event.splicePoint[0])
-          break
-        case 'modify':
-          modifySplicePoint(event.newSplicePoint, event.splicePoint)
-          break
-      }
+    if (eventHistory.length === 0) {
+      return
     }
 
-    setHistoryIndex((prev) => prev - 1)
+    const event = eventHistory[eventHistory.length - 1]
+
+    switch (event.type) {
+      case 'add':
+        deleteSplicePoint(event.splicePoint)
+        break
+      case 'delete':
+        addSplicePoint(event.splicePoint)
+        break
+      case 'modify':
+        modifySplicePoint(event.newSplicePoint, event.splicePoint)
+        break
+      case 'load':
+        deleteAllSplicePoints()
+        break
+      case 'deleteAll':
+        loadSplicePoints(event.splicePoints)
+        break
+    }
+
+    // remove event from event history
+    setEventHistory((prev) => prev.slice(0, prev.length - 1))
+    setUndoHistory((prev) => [...prev, event])
   }
 
   const redo = () => {
-    if (historyIndex < history.length - 1) {
-      // apply event to reverse the action
-      const event = history[historyIndex + 1]
-
-      switch (event.type) {
-        case 'add':
-          initSplicePoint(event.splicePoint[0])
-          break
-        case 'delete':
-          deleteSplicePoint(event.splicePoint)
-          break
-        case 'modify':
-          modifySplicePoint(event.splicePoint, event.newSplicePoint)
-          break
-      }
+    if (undoHistory.length === 0) {
+      return
     }
 
-    setHistoryIndex((prev) => prev + 1)
+    const event = undoHistory[undoHistory.length - 1]
+
+    switch (event.type) {
+      case 'add':
+        addSplicePoint(event.splicePoint, {
+          clearUndoHistory: false,
+        })
+        break
+      case 'delete':
+        deleteSplicePoint(event.splicePoint, {
+          clearUndoHistory: false,
+        })
+        break
+      case 'modify':
+        modifySplicePoint(event.splicePoint, event.newSplicePoint, {
+          clearUndoHistory: false,
+        })
+        break
+      case 'load':
+        loadSplicePoints(event.splicePoints, {
+          clearUndoHistory: false,
+        })
+        break
+      case 'deleteAll':
+        deleteAllSplicePoints({
+          clearUndoHistory: false,
+        })
+        break
+    }
+
+    // consume event from undo history
+    setUndoHistory((prev) => prev.slice(0, prev.length - 1))
   }
 
   const updateSplicePoints = (splicePoints: [number, number][]) => {
@@ -202,16 +248,41 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     setUnsavedSplicePoints((prev) => prev.filter((splicePoint) => splicePoints.find(([start, end]) => start === splicePoint[0] && end === splicePoint[1])))
   }
 
+  /**
+   * Manually add a splice point given a start and end time
+   * @param splicePoint in seconds
+   */
+  const addSplicePoint = (splicePoint: [number, number], {
+    clearUndoHistory = true,
+    addToEventHistory = true,
+  }: HistoryOptions = {
+  }) => {
+    // find splicePoint and replace with newSplicePoint
+    updateSplicePoints([...splicePoints, splicePoint])
+
+    addEventToEventHistory({
+      type: 'add',
+      splicePoint,
+    }, {
+      clearUndoHistory,
+      addToEventHistory,
+    })
+  }
+
+  /**
+   * Automatically determines where to initialize a splice point based on the current time
+   * @param currentTime in seconds
+  */
   const initSplicePoint = (currentTime: number) => {
     // first splice point...
     if (splicePoints.length === 0) {
       updateSplicePoints([[0, currentTime]])
 
-      addEventToHistory({
+      addEventToEventHistory({
         type: 'add',
         splicePoint: [0, currentTime],
       })
-  
+
       return
     }
 
@@ -222,7 +293,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     if (closestStart !== -1 && closestEnd !== -1) {
       updateSplicePoints([...splicePoints, [closestStart, currentTime]])
 
-      addEventToHistory({
+      addEventToEventHistory({
         type: 'add',
         splicePoint: [closestStart, currentTime],
       })
@@ -238,7 +309,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     if (nextStart !== -1 && nextEnd !== -1 && prevStart !== -1 && prevEnd !== -1) {
       updateSplicePoints([...splicePoints, [prevEnd, currentTime]])
 
-      addEventToHistory({
+      addEventToEventHistory({
         type: 'add',
         splicePoint: [prevEnd, currentTime],
       })
@@ -252,7 +323,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     if (currentTime < firstStart) {
       updateSplicePoints([[0, currentTime], ...splicePoints])
 
-      addEventToHistory({
+      addEventToEventHistory({
         type: 'add',
         splicePoint: [0, currentTime],
       })
@@ -264,13 +335,21 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     const [_, latestEnd] = splicePoints.sort((a, b) => a[1] - b[1])[splicePoints.length - 1]
     updateSplicePoints([...splicePoints, [latestEnd, currentTime]])
 
-    addEventToHistory({
+    addEventToEventHistory({
       type: 'add',
       splicePoint: [latestEnd, currentTime],
     })
   }
 
-  const deleteSplicePoint = (splicePoint: [number, number]) => {
+  /**
+   * Manually delete a splice point
+   * @param splicePoint in seconds
+   */
+  const deleteSplicePoint = (splicePoint: [number, number], {
+    clearUndoHistory = true,
+    addToEventHistory = true,
+  }: HistoryOptions = {
+  }) => {
     // remember to compare values and not references
     // ensure this works with splicePoints that have the same start and end
     updateSplicePoints(splicePoints.filter(([start, end]) => start !== splicePoint[0] || end !== splicePoint[1]))
@@ -278,21 +357,77 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     // remove from unsaved splice points if it exists
     removeUnsavedSplicePoint(splicePoint)
 
-    addEventToHistory({
+    addEventToEventHistory({
       type: 'delete',
       splicePoint,
+    }, {
+      clearUndoHistory,
+      addToEventHistory,
     })
   }
 
-  const modifySplicePoint = (splicePoint: [number, number], newSplicePoint: [number, number]) => {
+  /**
+   * Manually modify a splice point
+   * @param splicePoint in seconds
+   * @param newSplicePoint in seconds
+   */
+  const modifySplicePoint = (splicePoint: [number, number], newSplicePoint: [number, number], {
+    clearUndoHistory = true,
+    addToEventHistory = true,
+  }: HistoryOptions = {
+  }) => {
     // find splicePoint and replace with newSplicePoint
     updateSplicePoints(splicePoints.map((splicePoint_) => splicePoint_[0] === splicePoint[0] && splicePoint_[1] === splicePoint[1] ? newSplicePoint : splicePoint_))
-    
-    addEventToHistory({
+
+    addEventToEventHistory({
       type: 'modify',
       splicePoint,
       newSplicePoint,
+    }, {
+      clearUndoHistory,
+      addToEventHistory,
     })
+  }
+
+  /**
+   * Manually load splice points
+   * @param splicePoints in seconds
+   */
+  const loadSplicePoints = (splicePoints: [number, number][], {
+    clearUndoHistory = true,
+    addToEventHistory = true,
+  }: HistoryOptions = {
+  }) => {
+    updateSplicePoints(splicePoints)
+    setEventHistory([])
+    setUndoHistory([])
+
+    addEventToEventHistory({
+      type: 'load',
+      splicePoints,
+    }, {
+      clearUndoHistory,
+      addToEventHistory,
+    })
+  }
+
+  /**
+   * Manually delete all splice points
+   */
+  const deleteAllSplicePoints = ({
+    clearUndoHistory = true,
+    addToEventHistory = true,
+  }: HistoryOptions = {
+  }) => {
+    addEventToEventHistory({
+      type: 'deleteAll',
+      splicePoints,
+    }, {
+      clearUndoHistory,
+      addToEventHistory: false,
+    })
+
+    updateSplicePoints([])
   }
 
   // use electron to get the framerate of the video once it is selected
@@ -338,13 +473,18 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     }
   }, [])
 
+  useEffect(() => {
+    console.log('eventHistory', eventHistory)
+    console.log('undoHistory', undoHistory)
+  }, [eventHistory, undoHistory])
+
   const canUndo = useMemo(() => {
-    return historyIndex > 0
-  }, [historyIndex])
+    return eventHistory.length > 0
+  }, [eventHistory])
 
   const canRedo = useMemo(() => {
-    return historyIndex < history.length - 1 && history.length > 0
-  }, [historyIndex, history.length])
+    return undoHistory.length > 0
+  }, [undoHistory])
 
   const contextValue = useMemo<SpliceVideoContextValue>(() => {
     return {
@@ -354,6 +494,8 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       initSplicePoint,
       deleteSplicePoint,
       modifySplicePoint,
+      deleteAllSplicePoints,
+      loadSplicePoints,
       splicePoints,
       isSplicingVideo,
       handleSpliceVideo,
@@ -361,7 +503,6 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       videoFramerate,
       videoRef,
       updateVideoRef,
-      updateSplicePoints,
       videoDuration,
       videoTotalFrames,
       isUnsavedSplicePoints,
@@ -373,7 +514,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       canUndo,
       canRedo,
     }
-  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, initSplicePoint, modifySplicePoint, errorMessages, videoFramerate, videoRef, updateVideoRef, updateSplicePoints, videoDuration, videoTotalFrames, isUnsavedSplicePoints, addUnsavedSplicePoint, removeUnsavedSplicePoint, history, undo, redo, canUndo, canRedo])
+  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, deleteAllSplicePoints, loadSplicePoints, initSplicePoint, modifySplicePoint, errorMessages, videoFramerate, videoRef, updateVideoRef, videoDuration, videoTotalFrames, isUnsavedSplicePoints, addUnsavedSplicePoint, removeUnsavedSplicePoint, history, undo, redo, canUndo, canRedo])
 
   return (
     <SpliceVideoContext.Provider value={contextValue}>
