@@ -59,24 +59,27 @@ const SplicePoints: FC = () => {
           <DeleteModal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} />
         )
       }
-      <Stack direction='row' justifyContent='space-between' alignItems='center' mb={4}>
+      <Stack direction='row' flexWrap='wrap' justifyContent='space-between' alignItems='center' mb={4}>
         <Box>
           <Button
             variant='contained'
             onClick={handleInitSplicePoint}
             disabled={!selectedVideo}
             startIcon={<Add />}
+            style={{
+              marginRight: 8
+            }}
           >
             Add Splice Point
           </Button>
-        </Box>
-        <Box>
           <IconButton onClick={undo} disabled={!canUndo || !selectedVideo}>
             <Undo />
           </IconButton>
           <IconButton onClick={redo} disabled={!canRedo || !selectedVideo}>
             <Redo />
           </IconButton>
+        </Box>
+        <Box>
           <Button
             color='error'
             disabled={!selectedVideo || splicePoints?.length === 0}

@@ -175,32 +175,37 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       case 'add':
         deleteSplicePoint(event.splicePoint, {
           clearUndoHistory: false,
+          addToEventHistory: false,
         })
         break
       case 'delete':
         addSplicePoint(event.splicePoint, {
           clearUndoHistory: false,
+          addToEventHistory: false,
         })
         break
       case 'modify':
         modifySplicePoint(event.newSplicePoint, event.splicePoint, {
           clearUndoHistory: false,
+          addToEventHistory: false,
         })
         break
       case 'load':
         deleteAllSplicePoints({
           clearUndoHistory: false,
+          addToEventHistory: false,
         })
         break
       case 'deleteAll':
         loadSplicePoints(event.splicePoints, {
           clearUndoHistory: false,
+          addToEventHistory: false,
         })
         break
     }
 
     // remove event from event history
-    setEventHistory((prev) => prev.slice(0, prev.length - 2))
+    setEventHistory((prev) => prev.slice(0, prev.length - 1))
     
     // add event to undo history
     setUndoHistory((prev) => [...prev, event])

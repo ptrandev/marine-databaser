@@ -35,14 +35,14 @@ const SpliceVideo: FC = () => {
           <Typography variant="h4">
             Splice Video
           </Typography>
-          <Stack direction='row' gap={1}>
+          <Stack direction='row'>
             <Box>
               <SaveProject />
             </Box>
             <Box>
               <LoadProject />
             </Box>
-            <Box>
+            <Box ml={1}>
               <Button onClick={handleSelectVideo} variant='contained'>
                 Select Video
               </Button>
