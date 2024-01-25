@@ -425,8 +425,14 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   }: HistoryOptions = {
     }) => {
     updateSplicePoints(splicePoints)
-    setEventHistory([])
-    setUndoHistory([])
+
+    if (clearUndoHistory) {
+      setUndoHistory([])
+    }
+
+    if (addToEventHistory) {
+      setEventHistory([])
+    }
 
     addEventToEventHistory({
       type: 'load',
@@ -450,7 +456,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       splicePoints,
     }, {
       clearUndoHistory,
-      addToEventHistory: false,
+      addToEventHistory,
     })
 
     updateSplicePoints([])
