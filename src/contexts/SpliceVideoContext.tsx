@@ -151,7 +151,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     clearUndoHistory = true,
     addToEventHistory = true,
   }: HistoryOptions = {
-  }) => {
+    }) => {
     // if there are events in the undo history, clear them
     if (clearUndoHistory && undoHistory.length > 0) {
       setUndoHistory([])
@@ -171,24 +171,36 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
     switch (event.type) {
       case 'add':
-        deleteSplicePoint(event.splicePoint)
+        deleteSplicePoint(event.splicePoint, {
+          clearUndoHistory: false,
+        })
         break
       case 'delete':
-        addSplicePoint(event.splicePoint)
+        addSplicePoint(event.splicePoint, {
+          clearUndoHistory: false,
+        })
         break
       case 'modify':
-        modifySplicePoint(event.newSplicePoint, event.splicePoint)
+        modifySplicePoint(event.newSplicePoint, event.splicePoint, {
+          clearUndoHistory: false,
+        })
         break
       case 'load':
-        deleteAllSplicePoints()
+        deleteAllSplicePoints({
+          clearUndoHistory: false,
+        })
         break
       case 'deleteAll':
-        loadSplicePoints(event.splicePoints)
+        loadSplicePoints(event.splicePoints, {
+          clearUndoHistory: false,
+        })
         break
     }
 
     // remove event from event history
-    setEventHistory((prev) => prev.slice(0, prev.length - 1))
+    setEventHistory((prev) => prev.slice(0, prev.length - 2))
+    
+    // add event to undo history
     setUndoHistory((prev) => [...prev, event])
   }
 
@@ -256,7 +268,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     clearUndoHistory = true,
     addToEventHistory = true,
   }: HistoryOptions = {
-  }) => {
+    }) => {
     // find splicePoint and replace with newSplicePoint
     updateSplicePoints([...splicePoints, splicePoint])
 
@@ -349,7 +361,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     clearUndoHistory = true,
     addToEventHistory = true,
   }: HistoryOptions = {
-  }) => {
+    }) => {
     // remember to compare values and not references
     // ensure this works with splicePoints that have the same start and end
     updateSplicePoints(splicePoints.filter(([start, end]) => start !== splicePoint[0] || end !== splicePoint[1]))
@@ -375,7 +387,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     clearUndoHistory = true,
     addToEventHistory = true,
   }: HistoryOptions = {
-  }) => {
+    }) => {
     // find splicePoint and replace with newSplicePoint
     updateSplicePoints(splicePoints.map((splicePoint_) => splicePoint_[0] === splicePoint[0] && splicePoint_[1] === splicePoint[1] ? newSplicePoint : splicePoint_))
 
@@ -397,7 +409,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     clearUndoHistory = true,
     addToEventHistory = true,
   }: HistoryOptions = {
-  }) => {
+    }) => {
     updateSplicePoints(splicePoints)
     setEventHistory([])
     setUndoHistory([])
@@ -418,7 +430,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     clearUndoHistory = true,
     addToEventHistory = true,
   }: HistoryOptions = {
-  }) => {
+    }) => {
     addEventToEventHistory({
       type: 'deleteAll',
       splicePoints,
