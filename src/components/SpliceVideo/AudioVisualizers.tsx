@@ -112,64 +112,72 @@ const AudioVisualizers: FC = () => {
           <Delete />
         </IconButton>
       </Stack>
-      <WavesurferPlayer
-        height={256}
-        media={videoRef!}
-        progressColor='#1976d2'
-        minPxPerSec={zoom}
-        dragToSeek
-        normalize
-        // @ts-ignore
-        splitChannels
-        sampleRate={audioSampleRate}
-        frequencyMax={frequencyMax}
-        onDecode={(wavesurfer) => {
-          wavesurfer.registerPlugin(TimelinePlugin.create({
-            secondaryLabelOpacity: 1,
-            style: 'font-size: 12px'
-          }))
-
-          wavesurfer.registerPlugin(SpectrogramPlugin.create({
-            labels: true,
-            frequencyMax,
-            labelsBackground: '#00000066',
-            colorMap: colors,
-            splitChannels: false,
-          }))
-
-          const wsRegions = wavesurfer.registerPlugin(RegionPlugin.create())
-          setWsRegions(wsRegions)
+      <Box
+        sx={{
+          height: 'calc(100vh - 64px - 128px - 96px)',
+          overflowY: 'auto',
+          pb: 8,
         }}
-      />
-      <Box maxWidth='calc(100% - 32px)'>
-        <Stack direction='row' alignItems='center' gap={2}>
-          <Typography variant='body2'>
-            Zoom
-          </Typography>
-          <Slider
-            value={zoom}
-            onChange={(_, value) => setZoom(value as number)}
-            min={1}
-            max={5000}
-            disabled={!selectedVideo}
-          />
-        </Stack>
-        <Stack direction='row' alignItems='center' gap={2}>
-          <Typography variant='body2' noWrap>
-            Max Frequency (Hz)
-          </Typography>
-          <Slider
-            value={frequencyMax}
-            onChange={(_, value) => setFrequencyMax(value as number)}
-            min={0}
-            max={audioSampleRate / 2}
-            valueLabelDisplay='auto'
-            sx={{
-              flex: 1,
-            }}
-            disabled={!selectedVideo}
-          />
-        </Stack>
+      >
+        <WavesurferPlayer
+          height={256}
+          media={videoRef!}
+          progressColor='#1976d2'
+          minPxPerSec={zoom}
+          dragToSeek
+          normalize
+          // @ts-ignore
+          splitChannels
+          sampleRate={audioSampleRate}
+          frequencyMax={frequencyMax}
+          onDecode={(wavesurfer) => {
+            wavesurfer.registerPlugin(TimelinePlugin.create({
+              secondaryLabelOpacity: 1,
+              style: 'font-size: 12px'
+            }))
+
+            wavesurfer.registerPlugin(SpectrogramPlugin.create({
+              labels: true,
+              frequencyMax,
+              labelsBackground: '#00000066',
+              colorMap: colors,
+              splitChannels: false,
+            }))
+
+            const wsRegions = wavesurfer.registerPlugin(RegionPlugin.create())
+            setWsRegions(wsRegions)
+          }}
+        />
+        <Box maxWidth='calc(100% - 32px)'>
+          <Stack direction='row' alignItems='center' gap={2}>
+            <Typography variant='body2'>
+              Zoom
+            </Typography>
+            <Slider
+              value={zoom}
+              onChange={(_, value) => setZoom(value as number)}
+              min={1}
+              max={5000}
+              disabled={!selectedVideo}
+            />
+          </Stack>
+          <Stack direction='row' alignItems='center' gap={2}>
+            <Typography variant='body2' noWrap>
+              Max Frequency (Hz)
+            </Typography>
+            <Slider
+              value={frequencyMax}
+              onChange={(_, value) => setFrequencyMax(value as number)}
+              min={0}
+              max={audioSampleRate / 2}
+              valueLabelDisplay='auto'
+              sx={{
+                flex: 1,
+              }}
+              disabled={!selectedVideo}
+            />
+          </Stack>
+        </Box>
       </Box>
     </Box>
   )
