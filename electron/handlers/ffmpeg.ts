@@ -66,6 +66,8 @@ const extractAudio = async ({
  * @param {number} startTime - the time to start the splice at
  * @param {number} endTime - the time to end the splice at
  * @param {string} name - the name to give the spliced video
+ * @param {string} outputDirectory - the directory to save the spliced video to
+ * @param {string} videoBasename - the base name of the video
  * @returns {Promise<void>} - a promise that resolves when the video has been spliced
  */
 const spliceVideo = async ({
@@ -74,12 +76,14 @@ const spliceVideo = async ({
   endTime,
   name,
   outputDirectory,
+  videoBasename,
 }: {
   inputPath: string;
   startTime: number;
   endTime: number;
   name: string;
   outputDirectory?: string;
+  videoBasename: string;
 }): Promise<void> => {
   return new Promise<void>((resolve, reject) => {
     if (!outputDirectory) {
@@ -90,7 +94,7 @@ const spliceVideo = async ({
       .setStartTime(startTime)
       .setDuration(endTime - startTime)
       .outputOptions('-c', 'copy')
-      .save(`${outputDirectory}/${path.basename(inputPath).replace(/\.[^/.]+$/, "")}-${name}${path.extname(inputPath)}`)
+      .save(`${outputDirectory}/${videoBasename}-${name}${path.extname(inputPath)}`)
       .on('end', () => {
         return resolve();
       })
@@ -213,14 +217,22 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
  * @param {string} arg.videoPath - the path to the video to splice
  * @param {SpliceRegion[]} arg.spliceRegions - the points to splice the video at
  * @param {string} arg.outputDirectory - the directory to save the spliced videos to
+ * @param {string} arg.videoBasename - the base name of the video
  * @returns {Promise<void>} - a promise that resolves when the video has been spliced
  */
-export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, spliceRegions: SpliceRegion[], outputDirectory?: string }): Promise<void> => {
-  const { videoPath, spliceRegions, outputDirectory } = arg;
+export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, spliceRegions: SpliceRegion[], outputDirectory?: string, videoBasename: string }): Promise<void> => {
+  const { videoPath, spliceRegions, outputDirectory, videoBasename } = arg;
 
   // for each splice region, splice the video; ensure this happens synchronously
   for (const spliceRegion of spliceRegions) {
-    await spliceVideo({ inputPath: videoPath, startTime: spliceRegion.start, endTime: spliceRegion.end, name: spliceRegion.name, outputDirectory }).catch((err) => {
+    await spliceVideo({ 
+      inputPath: videoPath,
+      startTime: spliceRegion.start,
+      endTime: spliceRegion.end,
+      name: spliceRegion.name,
+      outputDirectory,
+      videoBasename,
+    }).catch((err) => {
       event.reply('splice-point-video-failed', err.message);
     });
 

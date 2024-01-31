@@ -2,6 +2,7 @@ import { ipcRenderer } from 'electron'
 import { FC, createContext, useMemo, useState } from 'react'
 import { useEffect } from 'react'
 import { SpliceRegion } from '../../shared/types'
+import path from 'path'
 
 interface AddEvent {
   type: 'add'
@@ -39,6 +40,8 @@ interface HistoryOptions {
 export interface SpliceVideoContextValue {
   selectedVideo: string
   updateSelectedVideo: (video: string) => void
+  videoBasename: string
+  updateVideoBasename: (basename: string) => void
   spliceRegions: SpliceRegion[]
   initSpliceRegion: (currentTime: number) => void
   deleteSpliceRegion: (spliceRegion: SpliceRegion, options?: HistoryOptions) => void
@@ -83,6 +86,8 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const [isSplicingVideo, setIsSplicingVideo] = useState<boolean>(false)
 
   const [selectedVideo, setSelectedVideo] = useState<string>('')
+  const [videoBasename, setVideoBasename] = useState<string>('')
+
   const [videoFramerate, setVideoFramerate] = useState<number | null>(null)
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null)
 
@@ -122,12 +127,17 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       videoPath: selectedVideo,
       spliceRegions,
       outputDirectory,
+      videoBasename,
     })
 
     ipcRenderer.once('spliced-video', () => {
       setIsSplicingVideo(false)
       setNumSpliceRegionsCompleted(0)
     })
+  }
+
+  const updateVideoBasename = (basename: string) => {
+    setVideoBasename(basename)
   }
 
   const updateSelectedVideo = (video: string) => {
@@ -430,10 +440,16 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     }
   }, [eventHistory.length])
 
+  useEffect(() => {
+    setVideoBasename(path.basename(selectedVideo).replace(/\.[^/.]+$/, ""))
+  }, [selectedVideo])
+
   const contextValue = useMemo<SpliceVideoContextValue>(() => {
     return {
       selectedVideo,
       updateSelectedVideo,
+      videoBasename,
+      updateVideoBasename,
       numSpliceRegionsCompleted,
       initSpliceRegion,
       deleteSpliceRegion,
@@ -454,7 +470,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       canUndo,
       canRedo,
     }
-  }, [selectedVideo, numSpliceRegionsCompleted, updateSelectedVideo, spliceRegions, isSplicingVideo, handleSpliceVideo, deleteSpliceRegion, deleteAllSpliceRegions, loadSpliceRegions, initSpliceRegion, modifySpliceRegion, errorMessages, videoFramerate, videoRef, updateVideoRef, videoDuration, history, undo, redo, canUndo, canRedo])
+  }, [selectedVideo, numSpliceRegionsCompleted, updateSelectedVideo, videoBasename, updateVideoBasename, spliceRegions, isSplicingVideo, handleSpliceVideo, deleteSpliceRegion, deleteAllSpliceRegions, loadSpliceRegions, initSpliceRegion, modifySpliceRegion, errorMessages, videoFramerate, videoRef, updateVideoRef, videoDuration, history, undo, redo, canUndo, canRedo])
 
   return (
     <SpliceVideoContext.Provider value={contextValue}>

@@ -1,11 +1,14 @@
-import { FC, useState } from 'react'
+import { FC, useState, useEffect } from 'react'
 import { Modal, ModalProps } from '../Modal'
 import { Typography, Snackbar, Alert, TextField, Stack, Checkbox, Grid, Button } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
+import path from 'path'
 
 
 const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
+  const { selectedVideo, spliceRegions, videoBasename, updateVideoBasename } = useSpliceVideo()
+
   const [outputDirectory, setOutputDirectory] = useState('')
   const [useSameDirectory, setUseSameDirectory] = useState(true)
 
@@ -28,31 +31,43 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
           Splice Video Options
         </Typography>
         <Grid container my={2} mt={useSameDirectory ? 0 : 2} spacing={2}>
-            <Grid item xs={12}>
-              {
-                !useSameDirectory && (
-                  <TextField
-                    fullWidth
-                    label="Output Directory"
-                    variant="outlined"
-                    value={outputDirectory}
-                    disabled={useSameDirectory}
-                    onClick={handleSelectOutputDirectory}
-                    inputProps={{
-                      readOnly: true
-                    }}
-                  />
-                )}
-              <Stack direction="row" alignItems="center" mt={1}>
-                <Checkbox
-                  checked={useSameDirectory}
-                  onChange={() => setUseSameDirectory(!useSameDirectory)}
+          <Grid item xs={12}>
+            {
+              !useSameDirectory && (
+                <TextField
+                  fullWidth
+                  label="Output Directory"
+                  variant="outlined"
+                  value={outputDirectory}
+                  disabled={useSameDirectory}
+                  onClick={handleSelectOutputDirectory}
+                  inputProps={{
+                    readOnly: true
+                  }}
                 />
-                <Typography variant="body1">
-                  Use same directory as source file
-                </Typography>
-              </Stack>
-            </Grid>
+              )}
+            <Stack direction="row" alignItems="center" mt={1}>
+              <Checkbox
+                checked={useSameDirectory}
+                onChange={() => setUseSameDirectory(!useSameDirectory)}
+              />
+              <Typography variant="body1">
+                Use same directory as source file
+              </Typography>
+            </Stack>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label='Output File Name'
+              variant="outlined"
+              value={videoBasename}
+              onChange={(e) => updateVideoBasename(e.target.value)}
+            />
+            <Typography variant='caption'>
+              <b>File Name Preview:</b> {videoBasename}-{spliceRegions[0]?.name}{path.extname(selectedVideo)}
+            </Typography>
+          </Grid>
         </Grid>
         <Grid container justifyContent="flex-end">
           <Grid item>
