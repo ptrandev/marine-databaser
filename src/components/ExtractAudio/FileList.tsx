@@ -9,6 +9,16 @@ const FileList: FC = () => {
 
   return (
     <List>
+      <ListItem
+        sx={{
+          mb: 2,
+        }}
+        secondaryAction={
+          <IconButton color='error' onClick={() => deleteSelectedFiles(selectedFiles)} disabled={isExtractingAudio || selectedFiles.length === 0}>
+            <Delete />
+          </IconButton>
+        }
+      />
       <Virtuoso
         style={{ height: 'calc(100vh - 64px - 128px - 32px)' }}
         data={selectedFiles}
