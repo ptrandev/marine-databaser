@@ -55,12 +55,8 @@ export interface SpliceVideoContextValue {
   errorMessages: string[]
   videoFramerate: number | null
   videoRef: HTMLVideoElement | null
-  videoDuration: number // in seconds, decimal
-  videoTotalFrames: number
   updateVideoRef: (video: HTMLVideoElement | null) => void
-  isUnsavedSplicePoints: boolean
-  addUnsavedSplicePoint: (spliceRegion: [number, number]) => void
-  removeUnsavedSplicePoint: (spliceRegion: [number, number]) => void
+  videoDuration: number // in seconds, decimal
   undo: () => void
   redo: () => void
   canUndo: boolean
@@ -77,7 +73,6 @@ const MAXIMUM_EVENT_HISTORY_LENGTH = 100
 
 export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) => {
   const [spliceRegions, setSplicePoints] = useState<[number, number][]>([])
-  const [unsavedSplicePoints, setUnsavedSplicePoints] = useState<[number, number][]>([])
 
   // a stack of events that have occurred, used for undo
   const [eventHistory, setEventHistory] = useState<Event[]>([])
@@ -97,14 +92,6 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     return videoRef?.duration || 0
   }, [videoRef?.duration])
 
-  const videoTotalFrames = useMemo(() => {
-    return convertSecondsToFrames(videoDuration, videoFramerate!)
-  }, [videoDuration, videoFramerate])
-
-  const isUnsavedSplicePoints = useMemo(() => {
-    return unsavedSplicePoints.length > 0
-  }, [unsavedSplicePoints])
-
   const canUndo = useMemo(() => {
     return eventHistory.length > 0
   }, [eventHistory.length])
@@ -112,14 +99,6 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const canRedo = useMemo(() => {
     return undoHistory.length > 0
   }, [undoHistory.length])
-
-  const addUnsavedSplicePoint = (spliceRegion: [number, number]) => {
-    setUnsavedSplicePoints((prev) => [...prev, spliceRegion])
-  }
-
-  const removeUnsavedSplicePoint = (spliceRegion: [number, number]) => {
-    setUnsavedSplicePoints((prev) => prev.filter((splicePoint_) => splicePoint_ !== spliceRegion))
-  }
 
   const updateVideoRef = (video: HTMLVideoElement | null) => {
     setVideoRef(video)
@@ -269,9 +248,6 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
           return startA - startB || endA - endB
         })
     )
-
-    // ensure that unsavedSplicePoints doesn't contain any splice regions that aren't in spliceRegions
-    setUnsavedSplicePoints((prev) => prev.filter((spliceRegion) => spliceRegions.find(([start, end]) => start === spliceRegion[0] && end === spliceRegion[1])))
   }
 
   /**
@@ -379,9 +355,6 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     // remember to compare values and not references
     // ensure this works with spliceRegions that have the same start and end
     updateSplicePoints(spliceRegions.filter(([start, end]) => start !== spliceRegion[0] || end !== spliceRegion[1]))
-
-    // remove from unsaved splice regions if it exists
-    removeUnsavedSplicePoint(spliceRegion)
 
     addEventToEventHistory({
       type: 'delete',
@@ -530,17 +503,13 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       videoRef,
       updateVideoRef,
       videoDuration,
-      videoTotalFrames,
-      isUnsavedSplicePoints,
-      addUnsavedSplicePoint,
-      removeUnsavedSplicePoint,
       history,
       undo,
       redo,
       canUndo,
       canRedo,
     }
-  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, spliceRegions, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, deleteAllSplicePoints, loadSplicePoints, initSplicePoint, modifySplicePoint, errorMessages, videoFramerate, videoRef, updateVideoRef, videoDuration, videoTotalFrames, isUnsavedSplicePoints, addUnsavedSplicePoint, removeUnsavedSplicePoint, history, undo, redo, canUndo, canRedo])
+  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, spliceRegions, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, deleteAllSplicePoints, loadSplicePoints, initSplicePoint, modifySplicePoint, errorMessages, videoFramerate, videoRef, updateVideoRef, videoDuration, history, undo, redo, canUndo, canRedo])
 
   return (
     <SpliceVideoContext.Provider value={contextValue}>
