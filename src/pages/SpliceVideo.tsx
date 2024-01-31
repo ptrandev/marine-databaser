@@ -60,13 +60,13 @@ const SpliceVideo: FC = () => {
               selectedVideo &&
               <Stack spacing={2}>
                 <VideoControls />
-                <AudioVisualizers />
                 <AutoSplice />
               </Stack>
             }
           </Grid>
           <Grid item xs={12} md={6}>
             <SplicePoints />
+            <AudioVisualizers />
           </Grid>
         </Grid>
       </Box>

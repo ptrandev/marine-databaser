@@ -18,12 +18,13 @@ const colors = colormap({
 
 const AudioVisualizers: FC = () => {
   const { selectedVideo, videoRef, splicePoints, modifySplicePoint, deleteSplicePoint } = useSpliceVideo()
-  
+
   const [zoom, setZoom] = useState<number>(1)
   const [frequencyMax, setFrequencyMax] = useState<number>(22_050)
   const [audioSampleRate, setAudioSampleRate] = useState<number>(44_100)
 
   const [wsRegions, setWsRegions] = useState<RegionPlugin>()
+  const [selectedRegion, setSelectedRegion] = useState<[number, number]>()
 
   useEffect(() => {
     if (!wsRegions) {
@@ -33,14 +34,6 @@ const AudioVisualizers: FC = () => {
     wsRegions.clearRegions()
 
     splicePoints.forEach(([start, end], i) => {
-      const deleteButton = document.createElement('div')
-      deleteButton.innerHTML = `<button style="background: none; border: none; cursor: pointer;" title="Delete"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg></button>`
-      
-      deleteButton.onclick = (e) => {
-        deleteSplicePoint([start, end])
-        e.stopPropagation()
-      }
-
       const region = wsRegions.addRegion({
         start: start,
         end: end,
@@ -48,15 +41,31 @@ const AudioVisualizers: FC = () => {
         drag: true,
         resize: true,
         id: `${start} ${end}`,
-        content: deleteButton,
       })
 
       region.on('update-end', () => {
         const [start, end] = region.id.split(' ').map(Number)
         modifySplicePoint([start, end], [region.start, region.end])
       })
+
+      region.on('click', () => {
+        setSelectedRegion([region.start, region.end])
+      })
     })
   }, [splicePoints, wsRegions])
+
+  useEffect(() => {
+    // if selectedRegion is not in splicePoints, deselect it
+    if (!selectedRegion) {
+      return
+    }
+
+    const [start, end] = selectedRegion
+
+    if (!splicePoints.some(([s, e]) => s === start && e === end)) {
+      setSelectedRegion(undefined)
+    }
+  }, [selectedRegion, splicePoints])
 
   useEffect(() => {
     if (!selectedVideo) {
@@ -83,6 +92,14 @@ const AudioVisualizers: FC = () => {
 
   return (
     <Box>
+      <Stack direction='row' alignItems='center' justifyContent='space-between' mb={2}>
+        <Typography>
+          Selected Splice Region: {selectedRegion ? `${selectedRegion[0]} - ${selectedRegion[1]}` : 'None'}
+        </Typography>
+        <IconButton onClick={() => deleteSplicePoint(selectedRegion!)} disabled={!selectedRegion} color='error'>
+          <Delete/>
+        </IconButton>
+      </Stack>
       <WavesurferPlayer
         height={256}
         media={videoRef!}
