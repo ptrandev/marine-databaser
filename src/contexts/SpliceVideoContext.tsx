@@ -1,4 +1,3 @@
-import { convertSecondsToFrames } from '@/utils/video'
 import { ipcRenderer } from 'electron'
 import { FC, createContext, useMemo, useState } from 'react'
 import { useEffect } from 'react'
