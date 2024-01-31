@@ -90,7 +90,7 @@ const spliceVideo = async ({
       .setStartTime(startTime)
       .setDuration(endTime - startTime)
       .outputOptions('-c', 'copy')
-      .save(`${outputDirectory}/${path.basename(inputPath).replace(/\.[^/.]+$/, "")}-${name}.${path.extname(inputPath)}`)
+      .save(`${outputDirectory}/${path.basename(inputPath).replace(/\.[^/.]+$/, "")}-${name}${path.extname(inputPath)}`)
       .on('end', () => {
         return resolve();
       })
