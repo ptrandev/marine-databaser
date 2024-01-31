@@ -37,6 +37,9 @@ const VideoControls: FC = () => {
     return () => {
       videoRef.removeEventListener('play', handlePlay)
       videoRef.removeEventListener('pause', handlePause)
+
+      // Revoke the object URL to prevent memory leaks
+      URL.revokeObjectURL(videoUrl!)
     }
   }, [videoRef])
 
