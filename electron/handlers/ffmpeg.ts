@@ -36,7 +36,7 @@ const extractAudio = async ({
   fileFormat?: AudioFileFormat;
   inputPath: string;
   outputDirectory?: string;
-}) => {
+}): Promise<void> => {
   return new Promise<void>((resolve, reject) => {
     const date = new Date();
 
@@ -65,19 +65,22 @@ const extractAudio = async ({
  * @param {string} inputPath - the path to the video to splice
  * @param {number} startTime - the time to start the splice at
  * @param {number} endTime - the time to end the splice at
+ * @param {string} name - the name to give the spliced video
  * @returns {Promise<void>} - a promise that resolves when the video has been spliced
  */
 const spliceVideo = async ({
   inputPath,
   startTime,
   endTime,
+  name,
   outputDirectory,
 }: {
   inputPath: string;
   startTime: number;
   endTime: number;
+  name: string;
   outputDirectory?: string;
-}) => {
+}): Promise<void> => {
   return new Promise<void>((resolve, reject) => {
     if (!outputDirectory) {
       outputDirectory = path.dirname(inputPath);
@@ -87,7 +90,7 @@ const spliceVideo = async ({
       .setStartTime(startTime)
       .setDuration(endTime - startTime)
       .outputOptions('-c', 'copy')
-      .save(`${outputDirectory}/${path.basename(inputPath).replace(/\.[^/.]+$/, "")}-${startTime}-${endTime}.${path.extname(inputPath)}`)
+      .save(`${outputDirectory}/${path.basename(inputPath).replace(/\.[^/.]+$/, "")}-${name}.${path.extname(inputPath)}`)
       .on('end', () => {
         return resolve();
       })
@@ -103,7 +106,7 @@ const spliceVideo = async ({
  * @param {string} videoPath - the path to the video to get the length of
  * @returns {Promise<number>} - a promise that resolves with the length of the video
  */
-const getVideoLength = (videoPath: string) => {
+const getVideoLength = (videoPath: string): Promise<number> => {
   return new Promise<number>((resolve, reject) => {
     ffmpeg.ffprobe(videoPath, (err, metadata) => {
       if (err) {
@@ -123,8 +126,8 @@ const getVideoLength = (videoPath: string) => {
  * @param {number} audioLength - the length of the audio
  * @returns {SpliceRegion[]} - a list of timestamps containing noise
  */
-const findNoiseTimeStamps = (silenceTimestamps: SpliceRegion[], audioLength: number) => {
-  let noiseTimestamps : SpliceRegion[] = [];
+const findNoiseTimeStamps = (silenceTimestamps: SpliceRegion[], audioLength: number): SpliceRegion[] => {
+  let noiseTimestamps: SpliceRegion[] = [];
 
   // If the list of silence timestamps is empty, the whole audio contains noise
   if (silenceTimestamps.length === 0) {
@@ -181,7 +184,7 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
   files: number[] | string[],
   fileFormat: AudioFileFormat,
   outputDirectory: string
-}) => {
+}): Promise<void> => {
   if (arg.files.length === 0) return;
 
   // if typeof files is string
@@ -212,12 +215,12 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
  * @param {string} arg.outputDirectory - the directory to save the spliced videos to
  * @returns {Promise<void>} - a promise that resolves when the video has been spliced
  */
-export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, spliceRegions: SpliceRegion[], outputDirectory?: string }) => {
+export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, spliceRegions: SpliceRegion[], outputDirectory?: string }): Promise<void> => {
   const { videoPath, spliceRegions, outputDirectory } = arg;
 
   // for each splice region, splice the video; ensure this happens synchronously
   for (const spliceRegion of spliceRegions) {
-    await spliceVideo({ inputPath: videoPath, startTime: spliceRegion.start, endTime: spliceRegion.end, outputDirectory }).catch((err) => {
+    await spliceVideo({ inputPath: videoPath, startTime: spliceRegion.start, endTime: spliceRegion.end, name: spliceRegion.name, outputDirectory }).catch((err) => {
       event.reply('splice-point-video-failed', err.message);
     });
 
@@ -233,7 +236,7 @@ export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: s
  * @param {IpcMainEvent} event - the event to reply to
  * @returns {Promise<void>} - a promise that resolves when the audio has been extracted
  */
-export const handleSelectExtractAudioFiles = async (win: BrowserWindow, event: IpcMainEvent) => {
+export const handleSelectExtractAudioFiles = async (win: BrowserWindow, event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog(win, {
     properties: ["openFile", "multiSelections"],
     filters: [
@@ -250,7 +253,7 @@ export const handleSelectExtractAudioFiles = async (win: BrowserWindow, event: I
  * @param {IpcMainEvent} event - the event to reply to
  * @returns {Promise<void>} - a promise that resolves when the audio has been extracted
  */
-export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: IpcMainEvent) => {
+export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog(win, {
     properties: ["openFile"],
     filters: [
@@ -267,7 +270,7 @@ export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: Ipc
  * @param {string} arg.videoPath - the path to the video to get the framerate of
  * @returns {Promise<void>} - a promise that resolves when the framerate has been retrieved
  */
-export const handleGetVideoFramerate = async (event: IpcMainEvent, arg: { videoPath: string }) => {
+export const handleGetVideoFramerate = async (event: IpcMainEvent, arg: { videoPath: string }): Promise<void> => {
   ffmpeg.ffprobe(arg.videoPath, (err, metadata) => {
     if (err) {
       event.reply('failed-to-get-video-framerate', err);
@@ -286,8 +289,8 @@ export const handleGetVideoFramerate = async (event: IpcMainEvent, arg: { videoP
   });
 }
 
-export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: string, autoSpliceSettings: AutoSpliceSettings, outputDirectory?: string }) => {
-  let spliceRegions : SpliceRegion[] = [];
+export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: string, autoSpliceSettings: AutoSpliceSettings, outputDirectory?: string }): Promise<void> => {
+  let spliceRegions: SpliceRegion[] = [];
 
   const { minFrequency, maxFrequency, minAmplitude, minDuration } = arg.autoSpliceSettings;
   const { videoPath } = arg;
@@ -351,7 +354,7 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
  * @param {string} arg.audioPath - the path to the audio or video file to get the sample rate of
  * @returns {Promise<void>} - a promise that resolves when the sample rate has been retrieved
  */
-export const handleGetAudioSampleRate = async (event: IpcMainEvent, arg: { filePath: string }) => {
+export const handleGetAudioSampleRate = async (event: IpcMainEvent, arg: { filePath: string }): Promise<void> => {
   const { filePath } = arg;
 
   ffmpeg.ffprobe(filePath, (err, metadata) => {
