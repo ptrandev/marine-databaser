@@ -8,6 +8,7 @@ import { ipcRenderer } from 'electron'
 import colormap from 'colormap'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Delete } from '@mui/icons-material'
+import { SpliceRegion } from '@/types/splice'
 
 const colors = colormap({
   colormap: 'hot',
@@ -24,7 +25,7 @@ const AudioVisualizers: FC = () => {
   const [audioSampleRate, setAudioSampleRate] = useState<number>(44_100)
 
   const [wsRegions, setWsRegions] = useState<RegionPlugin>()
-  const [selectedRegion, setSelectedRegion] = useState<[number, number]>()
+  const [selectedRegion, setSelectedRegion] = useState<SpliceRegion>()
 
   useEffect(() => {
     if (!wsRegions) {
@@ -33,23 +34,34 @@ const AudioVisualizers: FC = () => {
 
     wsRegions.clearRegions()
 
-    spliceRegions.forEach(([start, end], i) => {
+    spliceRegions.forEach((spliceRegion, i) => {
       const region = wsRegions.addRegion({
-        start: start,
-        end: end,
+        start: spliceRegion.start,
+        end: spliceRegion.end,
         color: 'rgba(0, 0, 255, 0.1)',
         drag: true,
         resize: true,
-        id: `${start} ${end}`,
+        id: spliceRegion.name,
       })
 
       region.on('update-end', () => {
-        const [start, end] = region.id.split(' ').map(Number)
-        modifySpliceRegion([start, end], [region.start, region.end])
+        modifySpliceRegion({
+          name: spliceRegion.name,
+          start: spliceRegion.start,
+          end: spliceRegion.end,
+        }, {
+          name: region.id,
+          start: region.start,
+          end: region.end,
+        })
       })
 
       region.on('click', () => {
-        setSelectedRegion([region.start, region.end])
+        setSelectedRegion({
+          start: region.start,
+          end: region.end,
+          name: region.id,
+        })
       })
     })
   }, [spliceRegions, wsRegions])
@@ -60,9 +72,9 @@ const AudioVisualizers: FC = () => {
       return
     }
 
-    const [start, end] = selectedRegion
+    const { start, end, name } = selectedRegion
 
-    if (!spliceRegions.some(([s, e]) => s === start && e === end)) {
+    if (!spliceRegions.find(region => region.name === name && region.start === start && region.end === end)) {
       setSelectedRegion(undefined)
     }
   }, [selectedRegion, spliceRegions])
@@ -94,10 +106,10 @@ const AudioVisualizers: FC = () => {
     <Box>
       <Stack direction='row' alignItems='center' justifyContent='space-between' mb={2}>
         <Typography>
-          Selected Splice Region: {selectedRegion ? `${selectedRegion[0]} - ${selectedRegion[1]}` : 'None'}
+          Selected Splice Region: {selectedRegion ? selectedRegion.name : 'None'}
         </Typography>
         <IconButton onClick={() => deleteSpliceRegion(selectedRegion!)} disabled={!selectedRegion} color='error'>
-          <Delete/>
+          <Delete />
         </IconButton>
       </Stack>
       <WavesurferPlayer
