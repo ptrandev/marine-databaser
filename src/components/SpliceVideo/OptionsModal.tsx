@@ -60,6 +60,11 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
               handleSpliceVideo({
                 outputDirectory: useSameDirectory ? undefined : outputDirectory
               })
+
+              ipcRenderer.once('spliced-video', () => {
+                setShowSuccessSnackbar(true)
+              })
+
               onClose()
             }}>
               Splice Video
