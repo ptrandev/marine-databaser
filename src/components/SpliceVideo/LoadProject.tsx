@@ -5,7 +5,7 @@ import { Download } from '@mui/icons-material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 
 const LoadProject: FC = () => {
-  const { updateSelectedVideo, loadSplicePoints } = useSpliceVideo()
+  const { updateSelectedVideo, loadSpliceRegions } = useSpliceVideo()
 
   const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false)
   const [showErrorSnackbar, setShowErrorSnackbar] = useState(false)
@@ -16,7 +16,7 @@ const LoadProject: FC = () => {
     ipcRenderer.once('load-from-json-success', (_, data) => {
       setShowSuccessSnackbar(true)
       updateSelectedVideo(data.selectedVideo)
-      loadSplicePoints(data.spliceRegions)
+      loadSpliceRegions(data.spliceRegions)
     })
 
     ipcRenderer.once('load-from-json-error', () => {

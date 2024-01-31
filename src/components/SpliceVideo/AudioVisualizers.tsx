@@ -17,7 +17,7 @@ const colors = colormap({
 })
 
 const AudioVisualizers: FC = () => {
-  const { selectedVideo, videoRef, spliceRegions, modifySplicePoint, deleteSplicePoint } = useSpliceVideo()
+  const { selectedVideo, videoRef, spliceRegions, modifySpliceRegion, deleteSpliceRegion } = useSpliceVideo()
 
   const [zoom, setZoom] = useState<number>(1)
   const [frequencyMax, setFrequencyMax] = useState<number>(22_050)
@@ -45,7 +45,7 @@ const AudioVisualizers: FC = () => {
 
       region.on('update-end', () => {
         const [start, end] = region.id.split(' ').map(Number)
-        modifySplicePoint([start, end], [region.start, region.end])
+        modifySpliceRegion([start, end], [region.start, region.end])
       })
 
       region.on('click', () => {
@@ -96,7 +96,7 @@ const AudioVisualizers: FC = () => {
         <Typography>
           Selected Splice Region: {selectedRegion ? `${selectedRegion[0]} - ${selectedRegion[1]}` : 'None'}
         </Typography>
-        <IconButton onClick={() => deleteSplicePoint(selectedRegion!)} disabled={!selectedRegion} color='error'>
+        <IconButton onClick={() => deleteSpliceRegion(selectedRegion!)} disabled={!selectedRegion} color='error'>
           <Delete/>
         </IconButton>
       </Stack>

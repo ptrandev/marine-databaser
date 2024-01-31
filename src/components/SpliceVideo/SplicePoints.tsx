@@ -7,7 +7,7 @@ import { Modal, ModalProps } from '../Modal'
 interface DeleteModalProps extends Omit<ModalProps, 'children'> { }
 
 const DeleteModal: FC<DeleteModalProps> = ({ open, onClose }) => {
-  const { deleteAllSplicePoints } = useSpliceVideo()
+  const { deleteAllSpliceRegions } = useSpliceVideo()
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -26,7 +26,7 @@ const DeleteModal: FC<DeleteModalProps> = ({ open, onClose }) => {
           </Box>
           <Box>
             <Button color='error' variant='contained' onClick={() => {
-              deleteAllSplicePoints()
+              deleteAllSpliceRegions()
               onClose()
             }}>
               Delete All Splice Regions
@@ -38,17 +38,17 @@ const DeleteModal: FC<DeleteModalProps> = ({ open, onClose }) => {
   )
 }
 
-const SplicePoints: FC = () => {
-  const { selectedVideo, spliceRegions, initSplicePoint, videoRef, undo, redo, canUndo, canRedo } = useSpliceVideo()
+const SpliceRegions: FC = () => {
+  const { selectedVideo, spliceRegions, initSpliceRegion, videoRef, undo, redo, canUndo, canRedo } = useSpliceVideo()
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
-  const handleInitSplicePoint = () => {
+  const handleInitSpliceRegion = () => {
     if (!videoRef) {
       return
     }
 
-    initSplicePoint(videoRef.currentTime)
+    initSpliceRegion(videoRef.currentTime)
   }
 
   return (
@@ -62,7 +62,7 @@ const SplicePoints: FC = () => {
         <Box>
           <Button
             variant='contained'
-            onClick={handleInitSplicePoint}
+            onClick={handleInitSpliceRegion}
             disabled={!selectedVideo}
             startIcon={<Add />}
             style={{
@@ -93,4 +93,4 @@ const SplicePoints: FC = () => {
   )
 }
 
-export default SplicePoints
+export default SpliceRegions

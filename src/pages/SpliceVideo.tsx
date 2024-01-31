@@ -3,7 +3,7 @@ import { Box, Button, Typography, Stack, Grid } from '@mui/material'
 import { FC, useEffect } from 'react'
 import { ipcRenderer } from 'electron'
 import Progress from '@/components/SpliceVideo/Progress'
-import SplicePoints from '@/components/SpliceVideo/SplicePoints'
+import SpliceRegions from '@/components/SpliceVideo/SpliceRegions'
 import VideoControls from '@/components/SpliceVideo/VideoControls'
 import AutoSplice from '@/components/SpliceVideo/AutoSplice'
 import SaveProject from '@/components/SpliceVideo/SaveProject'
@@ -65,7 +65,7 @@ const SpliceVideo: FC = () => {
             }
           </Grid>
           <Grid item xs={12} md={6}>
-            <SplicePoints />
+            <SpliceRegions />
             <AudioVisualizers />
           </Grid>
         </Grid>
