@@ -39,7 +39,7 @@ const DeleteModal: FC<DeleteModalProps> = ({ open, onClose }) => {
 }
 
 const SpliceRegions: FC = () => {
-  const { selectedVideo, spliceRegions, initSpliceRegion, videoRef, undo, redo, canUndo, canRedo } = useSpliceVideo()
+  const { selectedVideo, spliceRegions, initSpliceRegion, videoRef, undo, redo, canUndo, canRedo, videoDuration } = useSpliceVideo()
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
@@ -63,7 +63,7 @@ const SpliceRegions: FC = () => {
           <Button
             variant='contained'
             onClick={handleInitSpliceRegion}
-            disabled={!selectedVideo}
+            disabled={!selectedVideo || !videoDuration}
             startIcon={<Add />}
             style={{
               marginRight: 8

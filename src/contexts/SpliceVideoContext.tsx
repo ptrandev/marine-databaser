@@ -272,10 +272,13 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
    * @param currentTime in seconds
   */
   const initSpliceRegion = (currentTime: number) => {
+    const regionTime = [currentTime, currentTime + 0.5 > videoDuration ? currentTime - 0.5 : currentTime + 0.5]
+    regionTime.sort((a, b) => a - b)
+
     addSpliceRegion({
       name: `${Date.now()}`, // use a unique name
-      start: currentTime + 0.5 > videoDuration ? videoDuration - 0.5 : currentTime,
-      end: currentTime + 0.5 > videoDuration ? videoDuration : currentTime + 0.5,
+      start: regionTime[0],
+      end: regionTime[1]
     })
   }
 
