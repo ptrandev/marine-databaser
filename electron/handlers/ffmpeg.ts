@@ -1,7 +1,7 @@
 import { dialog, BrowserWindow, IpcMainEvent } from 'electron';
 import mime from 'mime-types';
 import path from 'path';
-import { AudioFileFormat, AutoSpliceSettings } from '../../shared/types';
+import { AudioFileFormat, AutoSpliceSettings, SpliceRegion } from '../../shared/types';
 import fs from 'fs';
 
 const ffmpeg = require('fluent-ffmpeg');
@@ -119,37 +119,53 @@ const getVideoLength = (videoPath: string) => {
 
 /**
  * Using a list of silence timestamps, find the timestamps containing noise
- * @param {[number, number][]} silenceTimestamps - the list of silence timestamps
+ * @param {SpliceRegion[]} silenceTimestamps - the list of silence timestamps
  * @param {number} audioLength - the length of the audio
- * @returns {[number, number][]} - a list of timestamps containing noise
+ * @returns {SpliceRegion[]} - a list of timestamps containing noise
  */
-const findNoiseTimeStamps = (silenceTimestamps: [number, number][], audioLength: number) => {
-  let noiseTimestamps = [];
+const findNoiseTimeStamps = (silenceTimestamps: SpliceRegion[], audioLength: number) => {
+  let noiseTimestamps : SpliceRegion[] = [];
 
   // If the list of silence timestamps is empty, the whole audio contains noise
   if (silenceTimestamps.length === 0) {
-    noiseTimestamps.push([0, audioLength]);
+    noiseTimestamps.push({
+      name: `${Date.now()}`,
+      start: 0,
+      end: audioLength
+    });
     return noiseTimestamps;
   }
 
   // Check for noise before the first silence timestamp
   if (silenceTimestamps[0][0] > 0) {
-    noiseTimestamps.push([0, silenceTimestamps[0][0]]);
+    noiseTimestamps.push({
+      name: `${Date.now()}`,
+      start: 0,
+      end: silenceTimestamps[0].start,
+    });
   }
 
   // Check for noise between silence timestamps
   for (let i = 1; i < silenceTimestamps.length; i++) {
-    let start = silenceTimestamps[i - 1][1];
-    let end = silenceTimestamps[i][0];
+    let start = silenceTimestamps[i - 1].end;
+    let end = silenceTimestamps[i].start;
 
     if (end > start) {
-      noiseTimestamps.push([start, end]);
+      noiseTimestamps.push({
+        name: `${Date.now()}`,
+        start,
+        end,
+      });
     }
   }
 
   // Check for noise after the last silence timestamp
-  if (silenceTimestamps[silenceTimestamps.length - 1][1] < audioLength) {
-    noiseTimestamps.push([silenceTimestamps[silenceTimestamps.length - 1][1], audioLength]);
+  if (silenceTimestamps[silenceTimestamps.length - 1].end < audioLength) {
+    noiseTimestamps.push({
+      name: `${Date.now()}`,
+      start: silenceTimestamps[silenceTimestamps.length - 1].end,
+      end: audioLength,
+    });
   }
 
   return noiseTimestamps;
@@ -192,16 +208,16 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
  * splice a video
  * @param {IpcMainEvent} event - the event to reply to
  * @param {string} arg.videoPath - the path to the video to splice
- * @param {[number, number][]} arg.spliceRegions - the points to splice the video at
+ * @param {SpliceRegion[]} arg.spliceRegions - the points to splice the video at
  * @param {string} arg.outputDirectory - the directory to save the spliced videos to
  * @returns {Promise<void>} - a promise that resolves when the video has been spliced
  */
-export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, spliceRegions: [number, number][], outputDirectory?: string }) => {
+export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, spliceRegions: SpliceRegion[], outputDirectory?: string }) => {
   const { videoPath, spliceRegions, outputDirectory } = arg;
 
   // for each splice region, splice the video; ensure this happens synchronously
   for (const spliceRegion of spliceRegions) {
-    await spliceVideo({ inputPath: videoPath, startTime: spliceRegion[0], endTime: spliceRegion[1], outputDirectory }).catch((err) => {
+    await spliceVideo({ inputPath: videoPath, startTime: spliceRegion.start, endTime: spliceRegion.end, outputDirectory }).catch((err) => {
       event.reply('splice-point-video-failed', err.message);
     });
 
@@ -271,7 +287,7 @@ export const handleGetVideoFramerate = async (event: IpcMainEvent, arg: { videoP
 }
 
 export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: string, autoSpliceSettings: AutoSpliceSettings, outputDirectory?: string }) => {
-  let spliceRegions = [];
+  let spliceRegions : SpliceRegion[] = [];
 
   const { minFrequency, maxFrequency, minAmplitude, minDuration } = arg.autoSpliceSettings;
   const { videoPath } = arg;
@@ -308,12 +324,19 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
     .on('stderr', (stderrLine) => {
       if (stderrLine.includes('silence_start')) {
         const start = parseFloat(stderrLine.split('silence_start: ')[1]);
-        spliceRegions.push([start]);
+        spliceRegions.push({
+          name: `${Date.now()}`,
+          start,
+          end: 0,
+        });
       }
 
       if (stderrLine.includes('silence_end')) {
         const end = parseFloat(stderrLine.split('silence_end: ')[1]);
-        spliceRegions[spliceRegions.length - 1].push(end);
+        spliceRegions[spliceRegions.length - 1] = {
+          ...spliceRegions[spliceRegions.length - 1],
+          end,
+        };
 
         // progress is the endpoint / video length
         event.reply('auto-spliced-progress', end / videoLength);
