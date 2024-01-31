@@ -5,7 +5,7 @@ import { Save } from '@mui/icons-material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 
 const SaveProject: FC = () => {
-  const { splicePoints, selectedVideo } = useSpliceVideo()
+  const { spliceRegions, selectedVideo } = useSpliceVideo()
 
   const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false)
   const [showErrorSnackbar, setShowErrorSnackbar] = useState(false)
@@ -13,7 +13,7 @@ const SaveProject: FC = () => {
   const handleSave = () => {
     const data = {
       selectedVideo,
-      splicePoints
+      spliceRegions
     }
 
     ipcRenderer.send('save-to-json', {

@@ -16,7 +16,7 @@ const LoadProject: FC = () => {
     ipcRenderer.once('load-from-json-success', (_, data) => {
       setShowSuccessSnackbar(true)
       updateSelectedVideo(data.selectedVideo)
-      loadSplicePoints(data.splicePoints)
+      loadSplicePoints(data.spliceRegions)
     })
 
     ipcRenderer.once('load-from-json-error', () => {

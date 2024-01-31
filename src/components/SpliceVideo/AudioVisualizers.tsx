@@ -17,7 +17,7 @@ const colors = colormap({
 })
 
 const AudioVisualizers: FC = () => {
-  const { selectedVideo, videoRef, splicePoints, modifySplicePoint, deleteSplicePoint } = useSpliceVideo()
+  const { selectedVideo, videoRef, spliceRegions, modifySplicePoint, deleteSplicePoint } = useSpliceVideo()
 
   const [zoom, setZoom] = useState<number>(1)
   const [frequencyMax, setFrequencyMax] = useState<number>(22_050)
@@ -33,7 +33,7 @@ const AudioVisualizers: FC = () => {
 
     wsRegions.clearRegions()
 
-    splicePoints.forEach(([start, end], i) => {
+    spliceRegions.forEach(([start, end], i) => {
       const region = wsRegions.addRegion({
         start: start,
         end: end,
@@ -52,20 +52,20 @@ const AudioVisualizers: FC = () => {
         setSelectedRegion([region.start, region.end])
       })
     })
-  }, [splicePoints, wsRegions])
+  }, [spliceRegions, wsRegions])
 
   useEffect(() => {
-    // if selectedRegion is not in splicePoints, deselect it
+    // if selectedRegion is not in spliceRegions, deselect it
     if (!selectedRegion) {
       return
     }
 
     const [start, end] = selectedRegion
 
-    if (!splicePoints.some(([s, e]) => s === start && e === end)) {
+    if (!spliceRegions.some(([s, e]) => s === start && e === end)) {
       setSelectedRegion(undefined)
     }
-  }, [selectedRegion, splicePoints])
+  }, [selectedRegion, spliceRegions])
 
   useEffect(() => {
     if (!selectedVideo) {
@@ -139,6 +139,7 @@ const AudioVisualizers: FC = () => {
             onChange={(_, value) => setZoom(value as number)}
             min={1}
             max={5000}
+            disabled={!selectedVideo}
           />
         </Stack>
         <Stack direction='row' alignItems='center' gap={2}>
@@ -154,6 +155,7 @@ const AudioVisualizers: FC = () => {
             sx={{
               flex: 1,
             }}
+            disabled={!selectedVideo}
           />
         </Stack>
       </Box>

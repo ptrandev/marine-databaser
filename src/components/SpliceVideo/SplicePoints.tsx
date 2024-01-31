@@ -13,10 +13,10 @@ const DeleteModal: FC<DeleteModalProps> = ({ open, onClose }) => {
     <Modal open={open} onClose={onClose}>
       <Box>
         <Typography variant='h5' mb={2}>
-          Delete All Splice Points?
+          Delete All Splice Regions?
         </Typography>
         <Typography variant='body1' mb={2}>
-          Are you sure you want to delete all splice points? This action cannot be undone.
+          Are you sure you want to delete all splice regions? This action cannot be undone.
         </Typography>
         <Stack direction='row' justifyContent='flex-end' spacing={2}>
           <Box>
@@ -29,7 +29,7 @@ const DeleteModal: FC<DeleteModalProps> = ({ open, onClose }) => {
               deleteAllSplicePoints()
               onClose()
             }}>
-              Delete All Splice Points
+              Delete All Splice Regions
             </Button>
           </Box>
         </Stack>
@@ -39,7 +39,7 @@ const DeleteModal: FC<DeleteModalProps> = ({ open, onClose }) => {
 }
 
 const SplicePoints: FC = () => {
-  const { selectedVideo, splicePoints, initSplicePoint, videoRef, undo, redo, canUndo, canRedo } = useSpliceVideo()
+  const { selectedVideo, spliceRegions, initSplicePoint, videoRef, undo, redo, canUndo, canRedo } = useSpliceVideo()
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
@@ -69,7 +69,7 @@ const SplicePoints: FC = () => {
               marginRight: 8
             }}
           >
-            Add Splice Point
+            Add Splice Region
           </Button>
           <IconButton onClick={undo} disabled={!canUndo || !selectedVideo}>
             <Undo />
@@ -81,11 +81,11 @@ const SplicePoints: FC = () => {
         <Box>
           <Button
             color='error'
-            disabled={!selectedVideo || splicePoints?.length === 0}
+            disabled={!selectedVideo || spliceRegions?.length === 0}
             endIcon={<Delete />}
             onClick={() => setDeleteModalOpen(true)}
           >
-            Delete All Splice Points
+            Delete All Splice Regions
           </Button>
         </Box>
       </Stack>

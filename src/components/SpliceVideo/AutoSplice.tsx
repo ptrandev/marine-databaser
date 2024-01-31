@@ -34,8 +34,8 @@ const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSe
       autoSpliceSettings,
     })
 
-    ipcRenderer.once('auto-spliced', (_, splicePoints) => {
-      loadSplicePoints(splicePoints)
+    ipcRenderer.once('auto-spliced', (_, spliceRegions) => {
+      loadSplicePoints(spliceRegions)
       setIsSplicing(false)
       onClose()
     })
@@ -68,9 +68,9 @@ const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSe
         Are you sure you want to auto splice?
       </Typography>
       <Typography my={2}>
-        This will automatically find all parts of the video containing audio within the specified frequency range and amplitude range. if a silence is detected for longer than the specified duration, it will be considered a splice point.
+        This will automatically find all parts of the video containing audio within the specified frequency range and amplitude range. if a silence is detected for longer than the specified duration, it will be considered a splice region.
         <br /> <br />
-        This will override any existing splice points. This action cannot be undone.
+        This will override any existing splice regions. This action cannot be undone.
         <br /> <br />
         The confirm button will be enabled after 2 seconds to prevent accidental splicing.
       </Typography>

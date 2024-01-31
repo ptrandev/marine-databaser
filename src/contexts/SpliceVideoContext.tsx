@@ -5,28 +5,28 @@ import { useEffect } from 'react'
 
 interface AddEvent {
   type: 'add'
-  splicePoint: [number, number]
+  spliceRegion: [number, number]
 }
 
 interface DeleteEvent {
   type: 'delete'
-  splicePoint: [number, number]
+  spliceRegion: [number, number]
 }
 
 interface ModifyEvent {
   type: 'modify'
-  splicePoint: [number, number]
+  spliceRegion: [number, number]
   newSplicePoint: [number, number]
 }
 
 interface LoadEvent {
   type: 'load'
-  splicePoints: [number, number][]
+  spliceRegions: [number, number][]
 }
 
 interface DeleteAllEvent {
   type: 'deleteAll'
-  splicePoints: [number, number][]
+  spliceRegions: [number, number][]
 }
 
 type Event = AddEvent | DeleteEvent | ModifyEvent | LoadEvent | DeleteAllEvent
@@ -39,12 +39,12 @@ interface HistoryOptions {
 export interface SpliceVideoContextValue {
   selectedVideo: string
   updateSelectedVideo: (video: string) => void
-  splicePoints: [number, number][] // [start, end]
+  spliceRegions: [number, number][] // [start, end]
   initSplicePoint: (currentTime: number) => void
-  deleteSplicePoint: (splicePoint: [number, number], options?: HistoryOptions) => void
-  modifySplicePoint: (splicePoint: [number, number], newSplicePoint: [number, number], options?: HistoryOptions) => void
+  deleteSplicePoint: (spliceRegion: [number, number], options?: HistoryOptions) => void
+  modifySplicePoint: (spliceRegion: [number, number], newSplicePoint: [number, number], options?: HistoryOptions) => void
   deleteAllSplicePoints: (options?: HistoryOptions) => void
-  loadSplicePoints: (splicePoints: [number, number][], options?: HistoryOptions) => void
+  loadSplicePoints: (spliceRegions: [number, number][], options?: HistoryOptions) => void
   numSplicePointsCompleted: number
   isSplicingVideo: boolean
   handleSpliceVideo: ({
@@ -59,8 +59,8 @@ export interface SpliceVideoContextValue {
   videoTotalFrames: number
   updateVideoRef: (video: HTMLVideoElement | null) => void
   isUnsavedSplicePoints: boolean
-  addUnsavedSplicePoint: (splicePoint: [number, number]) => void
-  removeUnsavedSplicePoint: (splicePoint: [number, number]) => void
+  addUnsavedSplicePoint: (spliceRegion: [number, number]) => void
+  removeUnsavedSplicePoint: (spliceRegion: [number, number]) => void
   undo: () => void
   redo: () => void
   canUndo: boolean
@@ -76,7 +76,7 @@ interface SpliceVideoProviderProps {
 const MAXIMUM_EVENT_HISTORY_LENGTH = 100
 
 export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) => {
-  const [splicePoints, setSplicePoints] = useState<[number, number][]>([])
+  const [spliceRegions, setSplicePoints] = useState<[number, number][]>([])
   const [unsavedSplicePoints, setUnsavedSplicePoints] = useState<[number, number][]>([])
 
   // a stack of events that have occurred, used for undo
@@ -113,12 +113,12 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     return undoHistory.length > 0
   }, [undoHistory.length])
 
-  const addUnsavedSplicePoint = (splicePoint: [number, number]) => {
-    setUnsavedSplicePoints((prev) => [...prev, splicePoint])
+  const addUnsavedSplicePoint = (spliceRegion: [number, number]) => {
+    setUnsavedSplicePoints((prev) => [...prev, spliceRegion])
   }
 
-  const removeUnsavedSplicePoint = (splicePoint: [number, number]) => {
-    setUnsavedSplicePoints((prev) => prev.filter((splicePoint_) => splicePoint_ !== splicePoint))
+  const removeUnsavedSplicePoint = (spliceRegion: [number, number]) => {
+    setUnsavedSplicePoints((prev) => prev.filter((splicePoint_) => splicePoint_ !== spliceRegion))
   }
 
   const updateVideoRef = (video: HTMLVideoElement | null) => {
@@ -141,7 +141,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
     ipcRenderer.send('splice-video', {
       videoPath: selectedVideo,
-      splicePoints,
+      spliceRegions,
       outputDirectory,
     })
 
@@ -180,19 +180,19 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
     switch (event.type) {
       case 'add':
-        deleteSplicePoint(event.splicePoint, {
+        deleteSplicePoint(event.spliceRegion, {
           clearUndoHistory: false,
           addToEventHistory: false,
         })
         break
       case 'delete':
-        addSplicePoint(event.splicePoint, {
+        addSplicePoint(event.spliceRegion, {
           clearUndoHistory: false,
           addToEventHistory: false,
         })
         break
       case 'modify':
-        modifySplicePoint(event.newSplicePoint, event.splicePoint, {
+        modifySplicePoint(event.newSplicePoint, event.spliceRegion, {
           clearUndoHistory: false,
           addToEventHistory: false,
         })
@@ -204,7 +204,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
         })
         break
       case 'deleteAll':
-        loadSplicePoints(event.splicePoints, {
+        loadSplicePoints(event.spliceRegions, {
           clearUndoHistory: false,
           addToEventHistory: false,
         })
@@ -227,22 +227,22 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
     switch (event.type) {
       case 'add':
-        addSplicePoint(event.splicePoint, {
+        addSplicePoint(event.spliceRegion, {
           clearUndoHistory: false,
         })
         break
       case 'delete':
-        deleteSplicePoint(event.splicePoint, {
+        deleteSplicePoint(event.spliceRegion, {
           clearUndoHistory: false,
         })
         break
       case 'modify':
-        modifySplicePoint(event.splicePoint, event.newSplicePoint, {
+        modifySplicePoint(event.spliceRegion, event.newSplicePoint, {
           clearUndoHistory: false,
         })
         break
       case 'load':
-        loadSplicePoints(event.splicePoints, {
+        loadSplicePoints(event.spliceRegions, {
           clearUndoHistory: false,
         })
         break
@@ -257,12 +257,12 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     setUndoHistory((prev) => prev.slice(0, prev.length - 1))
   }
 
-  const updateSplicePoints = (splicePoints: [number, number][]) => {
+  const updateSplicePoints = (spliceRegions: [number, number][]) => {
     // remove duplicates (remember to compare values and not references)
     // sort by start time but use end time as a tiebreaker
     setSplicePoints(
-      splicePoints
-        .filter((splicePoint, index, self) => self.findIndex(([start, end]) => start === splicePoint[0] && end === splicePoint[1]) === index)
+      spliceRegions
+        .filter((spliceRegion, index, self) => self.findIndex(([start, end]) => start === spliceRegion[0] && end === spliceRegion[1]) === index)
         .sort((a, b) => {
           const [startA, endA] = a
           const [startB, endB] = b
@@ -270,25 +270,25 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
         })
     )
 
-    // ensure that unsavedSplicePoints doesn't contain any splice points that aren't in splicePoints
-    setUnsavedSplicePoints((prev) => prev.filter((splicePoint) => splicePoints.find(([start, end]) => start === splicePoint[0] && end === splicePoint[1])))
+    // ensure that unsavedSplicePoints doesn't contain any splice regions that aren't in spliceRegions
+    setUnsavedSplicePoints((prev) => prev.filter((spliceRegion) => spliceRegions.find(([start, end]) => start === spliceRegion[0] && end === spliceRegion[1])))
   }
 
   /**
-   * Manually add a splice point given a start and end time
-   * @param splicePoint in seconds
+   * Manually add a splice region given a start and end time
+   * @param spliceRegion in seconds
    */
-  const addSplicePoint = (splicePoint: [number, number], {
+  const addSplicePoint = (spliceRegion: [number, number], {
     clearUndoHistory = true,
     addToEventHistory = true,
   }: HistoryOptions = {
     }) => {
-    // find splicePoint and replace with newSplicePoint
-    updateSplicePoints([...splicePoints, splicePoint])
+    // find spliceRegion and replace with newSplicePoint
+    updateSplicePoints([...spliceRegions, spliceRegion])
 
     addEventToEventHistory({
       type: 'add',
-      splicePoint,
+      spliceRegion,
     }, {
       clearUndoHistory,
       addToEventHistory,
@@ -296,96 +296,96 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   }
 
   /**
-   * Automatically determines where to initialize a splice point based on the current time
+   * Automatically determines where to initialize a splice region based on the current time
    * @param currentTime in seconds
   */
   const initSplicePoint = (currentTime: number) => {
-    // first splice point...
-    if (splicePoints.length === 0) {
+    // first splice region...
+    if (spliceRegions.length === 0) {
       updateSplicePoints([[0, currentTime]])
 
       addEventToEventHistory({
         type: 'add',
-        splicePoint: [0, currentTime],
+        spliceRegion: [0, currentTime],
       })
 
       return
     }
 
-    // check if the current time is in the middle of a splice point
+    // check if the current time is in the middle of a splice region
     // if so, the start is the closest start to the current time and the end is the current time
-    const [closestStart, closestEnd] = splicePoints.find(([start, end]) => start < currentTime && currentTime < end) || [-1, -1]
+    const [closestStart, closestEnd] = spliceRegions.find(([start, end]) => start < currentTime && currentTime < end) || [-1, -1]
 
     if (closestStart !== -1 && closestEnd !== -1) {
-      updateSplicePoints([...splicePoints, [closestStart, currentTime]])
+      updateSplicePoints([...spliceRegions, [closestStart, currentTime]])
 
       addEventToEventHistory({
         type: 'add',
-        splicePoint: [closestStart, currentTime],
+        spliceRegion: [closestStart, currentTime],
       })
 
       return
     }
 
-    // check if the current time is after an existing splice point but before the next splice point
+    // check if the current time is after an existing splice region but before the next splice region
     // if so, the start is the closest end to the current time and the end is the current time
-    const [nextStart, nextEnd] = splicePoints.find(([start, end]) => currentTime < start) || [-1, -1]
-    const [prevStart, prevEnd] = splicePoints.find(([start, end]) => end < currentTime) || [-1, -1]
+    const [nextStart, nextEnd] = spliceRegions.find(([start, end]) => currentTime < start) || [-1, -1]
+    const [prevStart, prevEnd] = spliceRegions.find(([start, end]) => end < currentTime) || [-1, -1]
 
     if (nextStart !== -1 && nextEnd !== -1 && prevStart !== -1 && prevEnd !== -1) {
-      updateSplicePoints([...splicePoints, [prevEnd, currentTime]])
+      updateSplicePoints([...spliceRegions, [prevEnd, currentTime]])
 
       addEventToEventHistory({
         type: 'add',
-        splicePoint: [prevEnd, currentTime],
+        spliceRegion: [prevEnd, currentTime],
       })
 
       return
     }
 
-    // check if the current time is before an existing splice point
+    // check if the current time is before an existing splice region
     // if so, the start is 0 and the end is the current time
-    const [firstStart,] = splicePoints[0]
+    const [firstStart,] = spliceRegions[0]
     if (currentTime < firstStart) {
-      updateSplicePoints([[0, currentTime], ...splicePoints])
+      updateSplicePoints([[0, currentTime], ...spliceRegions])
 
       addEventToEventHistory({
         type: 'add',
-        splicePoint: [0, currentTime],
+        spliceRegion: [0, currentTime],
       })
 
       return
     }
 
-    // else get the latest end splice point and add a new splice point with the start being the latest end and the end being the current time
-    const [_, latestEnd] = splicePoints.sort((a, b) => a[1] - b[1])[splicePoints.length - 1]
-    updateSplicePoints([...splicePoints, [latestEnd, currentTime]])
+    // else get the latest end splice region and add a new splice region with the start being the latest end and the end being the current time
+    const [_, latestEnd] = spliceRegions.sort((a, b) => a[1] - b[1])[spliceRegions.length - 1]
+    updateSplicePoints([...spliceRegions, [latestEnd, currentTime]])
 
     addEventToEventHistory({
       type: 'add',
-      splicePoint: [latestEnd, currentTime],
+      spliceRegion: [latestEnd, currentTime],
     })
   }
 
   /**
-   * Manually delete a splice point
-   * @param splicePoint in seconds
+   * Manually delete a splice region
+   * @param spliceRegion in seconds
    */
-  const deleteSplicePoint = (splicePoint: [number, number], {
+  const deleteSplicePoint = (spliceRegion: [number, number], {
     clearUndoHistory = true,
     addToEventHistory = true,
   }: HistoryOptions = {
     }) => {
     // remember to compare values and not references
-    // ensure this works with splicePoints that have the same start and end
-    updateSplicePoints(splicePoints.filter(([start, end]) => start !== splicePoint[0] || end !== splicePoint[1]))
+    // ensure this works with spliceRegions that have the same start and end
+    updateSplicePoints(spliceRegions.filter(([start, end]) => start !== spliceRegion[0] || end !== spliceRegion[1]))
 
-    // remove from unsaved splice points if it exists
-    removeUnsavedSplicePoint(splicePoint)
+    // remove from unsaved splice regions if it exists
+    removeUnsavedSplicePoint(spliceRegion)
 
     addEventToEventHistory({
       type: 'delete',
-      splicePoint,
+      spliceRegion,
     }, {
       clearUndoHistory,
       addToEventHistory,
@@ -393,21 +393,21 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   }
 
   /**
-   * Manually modify a splice point
-   * @param splicePoint in seconds
+   * Manually modify a splice region
+   * @param spliceRegion in seconds
    * @param newSplicePoint in seconds
    */
-  const modifySplicePoint = (splicePoint: [number, number], newSplicePoint: [number, number], {
+  const modifySplicePoint = (spliceRegion: [number, number], newSplicePoint: [number, number], {
     clearUndoHistory = true,
     addToEventHistory = true,
   }: HistoryOptions = {
     }) => {
-    // find splicePoint and replace with newSplicePoint
-    updateSplicePoints(splicePoints.map((splicePoint_) => splicePoint_[0] === splicePoint[0] && splicePoint_[1] === splicePoint[1] ? newSplicePoint : splicePoint_))
+    // find spliceRegion and replace with newSplicePoint
+    updateSplicePoints(spliceRegions.map((splicePoint_) => splicePoint_[0] === spliceRegion[0] && splicePoint_[1] === spliceRegion[1] ? newSplicePoint : splicePoint_))
 
     addEventToEventHistory({
       type: 'modify',
-      splicePoint,
+      spliceRegion,
       newSplicePoint,
     }, {
       clearUndoHistory,
@@ -416,15 +416,15 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   }
 
   /**
-   * Manually load splice points
-   * @param splicePoints in seconds
+   * Manually load splice regions
+   * @param spliceRegions in seconds
    */
-  const loadSplicePoints = (splicePoints: [number, number][], {
+  const loadSplicePoints = (spliceRegions: [number, number][], {
     clearUndoHistory = true,
     addToEventHistory = true,
   }: HistoryOptions = {
     }) => {
-    updateSplicePoints(splicePoints)
+    updateSplicePoints(spliceRegions)
 
     if (clearUndoHistory) {
       setUndoHistory([])
@@ -436,7 +436,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
     addEventToEventHistory({
       type: 'load',
-      splicePoints,
+      spliceRegions,
     }, {
       clearUndoHistory,
       addToEventHistory,
@@ -444,7 +444,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   }
 
   /**
-   * Manually delete all splice points
+   * Manually delete all splice regions
    */
   const deleteAllSplicePoints = ({
     clearUndoHistory = true,
@@ -453,7 +453,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     }) => {
     addEventToEventHistory({
       type: 'deleteAll',
-      splicePoints,
+      spliceRegions,
     }, {
       clearUndoHistory,
       addToEventHistory,
@@ -522,7 +522,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       modifySplicePoint,
       deleteAllSplicePoints,
       loadSplicePoints,
-      splicePoints,
+      spliceRegions,
       isSplicingVideo,
       handleSpliceVideo,
       errorMessages,
@@ -540,7 +540,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       canUndo,
       canRedo,
     }
-  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, splicePoints, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, deleteAllSplicePoints, loadSplicePoints, initSplicePoint, modifySplicePoint, errorMessages, videoFramerate, videoRef, updateVideoRef, videoDuration, videoTotalFrames, isUnsavedSplicePoints, addUnsavedSplicePoint, removeUnsavedSplicePoint, history, undo, redo, canUndo, canRedo])
+  }, [selectedVideo, numSplicePointsCompleted, updateSelectedVideo, spliceRegions, isSplicingVideo, handleSpliceVideo, deleteSplicePoint, deleteAllSplicePoints, loadSplicePoints, initSplicePoint, modifySplicePoint, errorMessages, videoFramerate, videoRef, updateVideoRef, videoDuration, videoTotalFrames, isUnsavedSplicePoints, addUnsavedSplicePoint, removeUnsavedSplicePoint, history, undo, redo, canUndo, canRedo])
 
   return (
     <SpliceVideoContext.Provider value={contextValue}>

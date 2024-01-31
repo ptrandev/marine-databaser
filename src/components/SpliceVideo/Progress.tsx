@@ -5,7 +5,7 @@ import ProgressComponent from '../Progress'
 import { Snackbar, Alert } from '@mui/material'
 
 const Progress: FC = () => {
-  const { splicePoints, numSplicePointsCompleted, isSplicingVideo, isUnsavedSplicePoints } = useSpliceVideo()
+  const { spliceRegions, numSplicePointsCompleted, isSplicingVideo, isUnsavedSplicePoints } = useSpliceVideo()
 
   const [optionsModalOpen, setOptionsModalOpen] = useState(false)
 
@@ -22,11 +22,11 @@ const Progress: FC = () => {
 
   return (
     <>
-      <ProgressComponent numCompleted={numSplicePointsCompleted} totalToComplete={splicePoints.length} isProcessing={isSplicingVideo} onProcess={handleProcess} processText='Splice Video' />
+      <ProgressComponent numCompleted={numSplicePointsCompleted} totalToComplete={spliceRegions.length} isProcessing={isSplicingVideo} onProcess={handleProcess} processText='Splice Video' />
       <OptionsModal open={optionsModalOpen} onClose={() => setOptionsModalOpen(false)} />
       <Snackbar open={showSnackbar} onClose={() => setShowSnackbar(false)}>
         <Alert onClose={() => setShowSnackbar(false)} severity='warning' sx={{ width: '100%' }}>
-          Ensure that all splice points have been confirmed. Click the checkmark icon next to each splice point to confirm or the clock icon to revert the splice point to its original values.
+          Ensure that all splice regions have been confirmed. Click the checkmark icon next to each splice region to confirm or the clock icon to revert the splice region to its original values.
         </Alert>
       </Snackbar>
     </>

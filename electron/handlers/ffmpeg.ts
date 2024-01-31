@@ -192,16 +192,16 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
  * splice a video
  * @param {IpcMainEvent} event - the event to reply to
  * @param {string} arg.videoPath - the path to the video to splice
- * @param {[number, number][]} arg.splicePoints - the points to splice the video at
+ * @param {[number, number][]} arg.spliceRegions - the points to splice the video at
  * @param {string} arg.outputDirectory - the directory to save the spliced videos to
  * @returns {Promise<void>} - a promise that resolves when the video has been spliced
  */
-export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, splicePoints: [number, number][], outputDirectory?: string }) => {
-  const { videoPath, splicePoints, outputDirectory } = arg;
+export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, spliceRegions: [number, number][], outputDirectory?: string }) => {
+  const { videoPath, spliceRegions, outputDirectory } = arg;
 
-  // for each splice point, splice the video; ensure this happens synchronously
-  for (const splicePoint of splicePoints) {
-    await spliceVideo({ inputPath: videoPath, startTime: splicePoint[0], endTime: splicePoint[1], outputDirectory }).catch((err) => {
+  // for each splice region, splice the video; ensure this happens synchronously
+  for (const spliceRegion of spliceRegions) {
+    await spliceVideo({ inputPath: videoPath, startTime: spliceRegion[0], endTime: spliceRegion[1], outputDirectory }).catch((err) => {
       event.reply('splice-point-video-failed', err.message);
     });
 
@@ -271,7 +271,7 @@ export const handleGetVideoFramerate = async (event: IpcMainEvent, arg: { videoP
 }
 
 export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: string, autoSpliceSettings: AutoSpliceSettings, outputDirectory?: string }) => {
-  let splicePoints = [];
+  let spliceRegions = [];
 
   const { minFrequency, maxFrequency, minAmplitude, minDuration } = arg.autoSpliceSettings;
   const { videoPath } = arg;
@@ -296,7 +296,7 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
     .audioFilter(`highpass=f=${minFrequency},lowpass=f=${maxFrequency}`)
     .audioFilters(`silencedetect=n=${minAmplitude}dB:d=${minDuration}`)
     .on('end', async () => {
-      const noiseTimestamps = findNoiseTimeStamps(splicePoints, videoLength);
+      const noiseTimestamps = findNoiseTimeStamps(spliceRegions, videoLength);
 
       fs.unlinkSync(timestamp);
       event.reply('auto-spliced', noiseTimestamps);
@@ -308,12 +308,12 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
     .on('stderr', (stderrLine) => {
       if (stderrLine.includes('silence_start')) {
         const start = parseFloat(stderrLine.split('silence_start: ')[1]);
-        splicePoints.push([start]);
+        spliceRegions.push([start]);
       }
 
       if (stderrLine.includes('silence_end')) {
         const end = parseFloat(stderrLine.split('silence_end: ')[1]);
-        splicePoints[splicePoints.length - 1].push(end);
+        spliceRegions[spliceRegions.length - 1].push(end);
 
         // progress is the endpoint / video length
         event.reply('auto-spliced-progress', end / videoLength);

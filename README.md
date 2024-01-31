@@ -25,9 +25,9 @@ Here is a list of features that are currently implemented:
   into an arbitrary number of smaller clips in a matter of seconds
   - users can free seek to a specific time in the video
   - users can seek frame-by-frame, or by 1, 5, or 10 seconds
-  - users can create splice points via timestamps or frame number
-  - users can use the audio waveform and spectrogram to help them find splice points
-  - splices points are intelligently inserted by default so that one splice point starts as the
+  - users can create splice regions via timestamps or frame number
+  - users can use the audio waveform and spectrogram to help them find splice regions
+  - splices points are intelligently inserted by default so that one splice region starts as the
     previous one ends
   - videos are spliced in the same format as the original video, without re-encoding
 - Audio extraction from videos facilitated by FFMPEG
