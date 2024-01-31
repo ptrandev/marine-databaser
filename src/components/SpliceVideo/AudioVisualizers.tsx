@@ -7,8 +7,9 @@ import { Box, IconButton, Slider, Stack, Typography } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import colormap from 'colormap'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
-import { Delete } from '@mui/icons-material'
-import { SpliceRegion } from '@/types/splice'
+import { Delete, PlayArrow } from '@mui/icons-material'
+import { SpliceRegion } from '../../../shared/types'
+import SingleRegion from 'wavesurfer.js'
 
 const colors = colormap({
   colormap: 'hot',
@@ -26,6 +27,8 @@ const AudioVisualizers: FC = () => {
 
   const [wsRegions, setWsRegions] = useState<RegionPlugin>()
   const [selectedRegion, setSelectedRegion] = useState<SpliceRegion>()
+
+  const [regions, setRegions] = useState<SingleRegion[]>([])
 
   useEffect(() => {
     if (!wsRegions) {
@@ -108,15 +111,30 @@ const AudioVisualizers: FC = () => {
         <Typography>
           Selected Splice Region: {selectedRegion ? selectedRegion.name : 'None'}
         </Typography>
-        <IconButton onClick={() => deleteSpliceRegion(selectedRegion!)} disabled={!selectedRegion} color='error'>
-          <Delete />
-        </IconButton>
+        <Box>
+          <IconButton onClick={() => {
+            // find selectedRegion in region
+            const region = regions.find(region => region.id === selectedRegion?.name)
+
+            if (region) {
+              region.play()
+            }
+
+            console.log(regions)
+          }
+          } disabled={!selectedVideo} color='primary'>
+            <PlayArrow />
+          </IconButton>
+          <IconButton onClick={() => deleteSpliceRegion(selectedRegion!)} disabled={!selectedRegion} color='error'>
+            <Delete />
+          </IconButton>
+        </Box>
       </Stack>
       <Box
         sx={{
-          height: 'calc(100vh - 64px - 128px - 96px)',
+          height: 'calc(100vh - 64px - 128px - 80px)',
           overflowY: 'auto',
-          pb: 8,
+          pb: 12,
         }}
       >
         <WavesurferPlayer

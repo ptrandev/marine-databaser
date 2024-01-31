@@ -3,3 +3,4 @@ export * from "./FileWithMetadata";
 export * from "./MimeTypes";
 export * from "./AutoSplice";
 export * from "./Audio";
+export * from "./SpliceRegion";

@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron'
 import { FC, createContext, useMemo, useState } from 'react'
 import { useEffect } from 'react'
-import { SpliceRegion } from '@/types/splice'
+import { SpliceRegion } from '../../shared/types'
 
 interface AddEvent {
   type: 'add'
