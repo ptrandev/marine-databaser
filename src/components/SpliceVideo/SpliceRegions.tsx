@@ -63,7 +63,7 @@ const SpliceRegions: FC = () => {
           <Button
             variant='contained'
             onClick={handleInitSpliceRegion}
-            disabled={!selectedVideo || !videoDuration}
+            disabled={!selectedVideo && !videoDuration}
             startIcon={<Add />}
             style={{
               marginRight: 8
