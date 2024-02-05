@@ -2,14 +2,13 @@ import { FC, useState, useEffect } from 'react'
 import WavesurferPlayer from '@wavesurfer/react'
 import SpectrogramPlugin from "wavesurfer.js/dist/plugins/spectrogram.js"
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.js'
-import RegionPlugin from 'wavesurfer.js/dist/plugins/regions.js'
+import RegionPlugin, { Region } from 'wavesurfer.js/dist/plugins/regions.js'
 import { Box, IconButton, Slider, Stack, Typography } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import colormap from 'colormap'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
-import { Delete, PlayArrow } from '@mui/icons-material'
+import { Delete, Loop, PlayArrow, Pause } from '@mui/icons-material'
 import { SpliceRegion } from '../../../shared/types'
-import SingleRegion from 'wavesurfer.js'
 
 const colors = colormap({
   colormap: 'hot',
@@ -28,7 +27,10 @@ const AudioVisualizers: FC = () => {
   const [wsRegions, setWsRegions] = useState<RegionPlugin>()
   const [selectedRegion, setSelectedRegion] = useState<SpliceRegion>()
 
-  const [regions, setRegions] = useState<SingleRegion[]>([])
+  const [regions, setRegions] = useState<Region[]>([])
+  const [activeRegion, setActiveRegion] = useState<Region>()
+  const [isLoop, setIsLoop] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
 
   useEffect(() => {
     if (!wsRegions) {
@@ -36,6 +38,7 @@ const AudioVisualizers: FC = () => {
     }
 
     wsRegions.clearRegions()
+    setRegions([])
 
     spliceRegions.forEach((spliceRegion, i) => {
       const region = wsRegions.addRegion({
@@ -66,8 +69,31 @@ const AudioVisualizers: FC = () => {
           name: region.id,
         })
       })
+
+      setRegions(regions => [...regions, region])
     })
   }, [spliceRegions, wsRegions])
+
+  useEffect(() => {
+    wsRegions?.on('region-out', (region: Region) => {
+      console.log('region-out', region, activeRegion)
+
+      if (activeRegion?.id === region.id) {
+        console.log('activeRegion === region')
+
+        if (isLoop) {
+          region.play()
+          console.log('looping')
+        } else {
+          setActiveRegion(undefined)
+        }
+      }
+    })
+
+    return () => {
+      wsRegions?.unAll()
+    }
+  }, [wsRegions, isLoop, activeRegion])
 
   useEffect(() => {
     // if selectedRegion is not in spliceRegions, deselect it
@@ -117,13 +143,28 @@ const AudioVisualizers: FC = () => {
             const region = regions.find(region => region.id === selectedRegion?.name)
 
             if (region) {
-              region.play()
+              if (isPlaying) {
+                videoRef?.pause()
+                setIsPlaying(false)
+                setActiveRegion(undefined)
+              } else {
+                region.play()
+                setIsPlaying(true)
+                setActiveRegion(region)
+              }
             }
-
-            console.log(regions)
           }
-          } disabled={!selectedVideo} color='primary'>
-            <PlayArrow />
+          }
+            disabled={!selectedRegion}
+          >
+            { isPlaying ? <Pause /> : <PlayArrow /> }
+          </IconButton>
+          <IconButton
+            onClick={() => setIsLoop(!isLoop)}
+            disabled={!selectedRegion}
+            color={isLoop ? 'primary' : 'default'}
+          >
+            <Loop />
           </IconButton>
           <IconButton onClick={() => deleteSpliceRegion(selectedRegion!)} disabled={!selectedRegion} color='error'>
             <Delete />
