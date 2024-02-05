@@ -65,7 +65,7 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
               onChange={(e) => updateVideoBasename(e.target.value)}
             />
             <Typography variant='caption'>
-              <b>File Name Preview:</b> {videoBasename}-{spliceRegions[0]?.name}{path.extname(selectedVideo)}
+              <b>File Name Preview:</b> {videoBasename}{spliceRegions[0]?.name}{path.extname(selectedVideo)}
             </Typography>
           </Grid>
         </Grid>
