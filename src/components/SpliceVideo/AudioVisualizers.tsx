@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react'
+import { FC, useState, useEffect, useCallback } from 'react'
 import WavesurferPlayer from '@wavesurfer/react'
 import SpectrogramPlugin from "wavesurfer.js/dist/plugins/spectrogram.js"
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.js'
@@ -7,7 +7,7 @@ import { Box, IconButton, Slider, Stack, Typography } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import colormap from 'colormap'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
-import { Delete, Loop, PlayArrow, Pause } from '@mui/icons-material'
+import { Delete, Loop, PlayArrow, Pause, Edit } from '@mui/icons-material'
 import { SpliceRegion } from '../../../shared/types'
 
 const colors = colormap({
@@ -31,6 +31,23 @@ const AudioVisualizers: FC = () => {
   const [activeRegion, setActiveRegion] = useState<Region>()
   const [isLoop, setIsLoop] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
+
+  const handlePlayPause = () => {
+    // find selectedRegion in region
+    const region = regions.find(region => region.id === selectedRegion?.name)
+
+    if (region) {
+      if (isPlaying) {
+        videoRef?.pause()
+        setIsPlaying(false)
+        setActiveRegion(undefined)
+      } else {
+        region.play()
+        setIsPlaying(true)
+        setActiveRegion(region)
+      }
+    }
+  }
 
   useEffect(() => {
     if (!wsRegions) {
@@ -62,28 +79,12 @@ const AudioVisualizers: FC = () => {
         })
       })
 
-      region.on('click', (e) => {
-        e.stopPropagation()
-
-        if (videoRef) {
-          videoRef.currentTime = region.start
-        }
-
-        setSelectedRegion({
-          start: region.start,
-          end: region.end,
-          name: region.id,
-        })
-      })
-
       setRegions(regions => [...regions, region])
     })
-  }, [spliceRegions, wsRegions, videoRef])
+  }, [spliceRegions, wsRegions])
 
   useEffect(() => {
     wsRegions?.on('region-out', (region: Region) => {
-      console.log('region-out', region, activeRegion)
-
       if (activeRegion?.id === region.id) {
         if (isLoop) {
           region.play()
@@ -93,10 +94,39 @@ const AudioVisualizers: FC = () => {
       }
     })
 
+    wsRegions?.on('region-clicked', (region: Region, e: MouseEvent) => {
+      e.stopPropagation()
+
+      if (videoRef) {
+        videoRef.currentTime = region.start
+      }
+
+      setSelectedRegion({
+        start: region.start,
+        end: region.end,
+        name: region.id,
+      })
+
+      // for each region...
+      regions.forEach(region => {
+        // set the color of the region
+        // @ts-ignore
+        region.setOptions({
+          color: 'rgba(0, 0, 255, 0.1)',
+        })
+      })
+
+      // set the color of the selected region
+      // @ts-ignore
+      region.setOptions({
+        color: 'rgba(0, 0, 255, 0.5)',
+      })
+    })
+
     return () => {
       wsRegions?.unAll()
     }
-  }, [wsRegions, isLoop, activeRegion])
+  }, [wsRegions, isLoop, activeRegion, videoRef, regions])
 
   useEffect(() => {
     // if selectedRegion is not in spliceRegions, deselect it
@@ -134,33 +164,37 @@ const AudioVisualizers: FC = () => {
     setFrequencyMax(audioSampleRate / 2)
   }, [audioSampleRate])
 
+  const handleInteraction = useCallback(() => {
+    videoRef?.pause()
+    setIsPlaying(false)
+
+    setSelectedRegion(undefined)
+    setActiveRegion(undefined)
+
+    regions.forEach(region => {
+      // @ts-ignore
+      region.setOptions({
+        color: 'rgba(0, 0, 255, 0.1)',
+      })
+    })
+  }, [videoRef, regions])
+
   return (
     <Box>
       <Stack direction='row' alignItems='center' justifyContent='space-between' mb={2}>
-        <Typography>
-          Selected Splice Region: {selectedRegion ? selectedRegion.name : 'None'}
-        </Typography>
+        <Stack direction='row' alignItems='center' spacing={1}>
+          <Typography>
+            <b>Selected Splice Region:</b> {selectedRegion ? selectedRegion.name : 'None'}
+          </Typography>
+          <IconButton size='small'>
+            <Edit />
+          </IconButton>
+        </Stack>
         <Box>
-          <IconButton onClick={() => {
-            // find selectedRegion in region
-            const region = regions.find(region => region.id === selectedRegion?.name)
-
-            if (region) {
-              if (isPlaying) {
-                videoRef?.pause()
-                setIsPlaying(false)
-                setActiveRegion(undefined)
-              } else {
-                region.play()
-                setIsPlaying(true)
-                setActiveRegion(region)
-              }
-            }
-          }
-          }
+          <IconButton onClick={handlePlayPause}
             disabled={!selectedRegion}
           >
-            { isPlaying ? <Pause /> : <PlayArrow /> }
+            {isPlaying ? <Pause /> : <PlayArrow />}
           </IconButton>
           <IconButton
             onClick={() => setIsLoop(!isLoop)}
@@ -206,17 +240,10 @@ const AudioVisualizers: FC = () => {
               splitChannels: false,
             }))
 
-            wavesurfer.on('interaction', () => {
-              videoRef?.pause()
-              setIsPlaying(false)
-
-              setSelectedRegion(undefined)
-              setActiveRegion(undefined)
-            })
-
             const wsRegions = wavesurfer.registerPlugin(RegionPlugin.create())
             setWsRegions(wsRegions)
           }}
+          onInteraction={handleInteraction}
         />
         <Box maxWidth='calc(100% - 32px)'>
           <Stack direction='row' alignItems='center' gap={2}>
