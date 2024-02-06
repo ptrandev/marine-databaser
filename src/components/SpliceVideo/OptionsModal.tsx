@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react'
+import { FC, useState } from 'react'
 import { Modal, ModalProps } from '../Modal'
 import { Typography, Snackbar, Alert, TextField, Stack, Checkbox, Grid, Button } from '@mui/material'
 import { ipcRenderer } from 'electron'
