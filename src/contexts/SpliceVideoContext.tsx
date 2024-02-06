@@ -89,13 +89,10 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const [videoBasename, setVideoBasename] = useState<string>('')
 
   const [videoFramerate, setVideoFramerate] = useState<number | null>(null)
+  const [videoDuration, setVideoDuration] = useState<number | null>(null)
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null)
 
   const [errorMessages, setErrorMessages] = useState<string[]>([])
-
-  const videoDuration = useMemo(() => {
-    return videoRef?.duration || 0
-  }, [videoRef?.duration])
 
   const canUndo = useMemo(() => {
     return eventHistory.length > 0
@@ -393,6 +390,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   // use electron to get the framerate of the video once it is selected
   useEffect(() => {
     setVideoFramerate(null)
+    setVideoDuration(null)
 
     if (!selectedVideo) {
       return
@@ -412,9 +410,23 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       setErrorMessages((prev) => [...prev, errorMessage])
     })
 
+    ipcRenderer.send('get-video-duration', {
+      videoPath: selectedVideo,
+    })
+
+    ipcRenderer.once('got-video-duration', (_, duration) => {
+      setVideoDuration(duration)
+    })
+
+    ipcRenderer.once('get-video-duration-failed', (_, errorMessage) => {
+      setErrorMessages((prev) => [...prev, errorMessage])
+    })
+
     return () => {
       ipcRenderer.removeAllListeners('got-video-framerate')
       ipcRenderer.removeAllListeners('get-video-framerate-failed')
+      ipcRenderer.removeAllListeners('got-video-duration')
+      ipcRenderer.removeAllListeners('get-video-duration-failed')
     }
   }, [selectedVideo])
 
