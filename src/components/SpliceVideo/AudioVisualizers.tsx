@@ -196,9 +196,11 @@ const AudioVisualizers: FC = () => {
                 <Typography>
                   <b>Selected Splice Region:</b> {selectedRegion.name}
                 </Typography>
-                <IconButton size='small' onClick={() => setEditNameModalOpen(true)}>
-                  <Edit />
-                </IconButton>
+                <Box>
+                  <IconButton size='small' onClick={() => setEditNameModalOpen(true)}>
+                    <Edit fontSize='small' />
+                  </IconButton>
+                </Box>
               </>
             }
           </Stack>
