@@ -10,12 +10,15 @@ import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Delete, Loop, PlayArrow, Pause, Edit } from '@mui/icons-material'
 import { SpliceRegion } from '../../../shared/types'
 
-const colors = colormap({
+const COLORS = colormap({
   colormap: 'hot',
   nshades: 256,
   format: 'float',
   alpha: 1,
 })
+
+const REGION_COLOR = 'rgba(0, 0, 255, 0.1)'
+const SELECTED_REGION_COLOR = 'rgba(0, 0, 255, 0.25)'
 
 const AudioVisualizers: FC = () => {
   const { selectedVideo, videoRef, spliceRegions, modifySpliceRegion, deleteSpliceRegion } = useSpliceVideo()
@@ -61,7 +64,7 @@ const AudioVisualizers: FC = () => {
       const region = wsRegions.addRegion({
         start: spliceRegion.start,
         end: spliceRegion.end,
-        color: 'rgba(0, 0, 255, 0.1)',
+        color: REGION_COLOR,
         drag: true,
         resize: true,
         id: spliceRegion.name,
@@ -112,14 +115,14 @@ const AudioVisualizers: FC = () => {
         // set the color of the region
         // @ts-ignore
         region.setOptions({
-          color: 'rgba(0, 0, 255, 0.1)',
+          color: REGION_COLOR,
         })
       })
 
       // set the color of the selected region
       // @ts-ignore
       region.setOptions({
-        color: 'rgba(0, 0, 255, 0.5)',
+        color: SELECTED_REGION_COLOR,
       })
     })
 
@@ -174,7 +177,7 @@ const AudioVisualizers: FC = () => {
     regions.forEach(region => {
       // @ts-ignore
       region.setOptions({
-        color: 'rgba(0, 0, 255, 0.1)',
+        color: REGION_COLOR,
       })
     })
   }, [videoRef, regions])
@@ -186,7 +189,7 @@ const AudioVisualizers: FC = () => {
           <Typography>
             <b>Selected Splice Region:</b> {selectedRegion ? selectedRegion.name : 'None'}
           </Typography>
-          <IconButton size='small'>
+          <IconButton size='small' disabled={!selectedRegion}>
             <Edit />
           </IconButton>
         </Stack>
@@ -236,7 +239,7 @@ const AudioVisualizers: FC = () => {
               labels: true,
               frequencyMax,
               labelsBackground: '#00000066',
-              colorMap: colors,
+              colorMap: COLORS,
               splitChannels: false,
             }))
 
