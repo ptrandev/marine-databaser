@@ -59,7 +59,7 @@ export interface SpliceVideoContextValue {
   videoFramerate: number | null
   videoRef: HTMLVideoElement | null
   updateVideoRef: (video: HTMLVideoElement | null) => void
-  videoDuration: number // in seconds, decimal
+  videoDuration: number | null // in seconds, decimal
   undo: () => void
   redo: () => void
   canUndo: boolean
@@ -279,7 +279,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
    * @param currentTime in seconds
   */
   const initSpliceRegion = (currentTime: number) => {
-    const regionTime = [currentTime, currentTime + 0.5 > videoDuration ? currentTime - 0.5 : currentTime + 0.5]
+    const regionTime = [currentTime, currentTime + 0.5 > videoDuration! ? currentTime - 0.5 : currentTime + 0.5]
     regionTime.sort((a, b) => a - b)
 
     addSpliceRegion({
