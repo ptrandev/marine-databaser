@@ -62,7 +62,13 @@ const AudioVisualizers: FC = () => {
         })
       })
 
-      region.on('click', () => {
+      region.on('click', (e) => {
+        e.stopPropagation()
+
+        if (videoRef) {
+          videoRef.currentTime = region.start
+        }
+
         setSelectedRegion({
           start: region.start,
           end: region.end,
@@ -72,18 +78,15 @@ const AudioVisualizers: FC = () => {
 
       setRegions(regions => [...regions, region])
     })
-  }, [spliceRegions, wsRegions])
+  }, [spliceRegions, wsRegions, videoRef])
 
   useEffect(() => {
     wsRegions?.on('region-out', (region: Region) => {
       console.log('region-out', region, activeRegion)
 
       if (activeRegion?.id === region.id) {
-        console.log('activeRegion === region')
-
         if (isLoop) {
           region.play()
-          console.log('looping')
         } else {
           setActiveRegion(undefined)
         }
@@ -202,6 +205,14 @@ const AudioVisualizers: FC = () => {
               colorMap: colors,
               splitChannels: false,
             }))
+
+            wavesurfer.on('interaction', () => {
+              videoRef?.pause()
+              setIsPlaying(false)
+
+              setSelectedRegion(undefined)
+              setActiveRegion(undefined)
+            })
 
             const wsRegions = wavesurfer.registerPlugin(RegionPlugin.create())
             setWsRegions(wsRegions)
