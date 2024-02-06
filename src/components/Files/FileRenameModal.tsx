@@ -52,7 +52,9 @@ const FileRenameModal: FC<FileRenameModalProps> = ({ open, onClose, file, setFil
           <Box display='flex' alignItems='center'>
             <Button type='submit' sx={{
               whiteSpace: 'nowrap',
-            }}>
+            }}
+            variant='contained'
+            >
               Rename File
             </Button>
           </Box>

@@ -85,7 +85,9 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
           <Box display='flex' alignItems='center'>
             <Button type='submit' sx={{
               whiteSpace: 'nowrap',
-            }}>
+            }}
+              variant='contained'
+            >
               Add Tag
             </Button>
           </Box>

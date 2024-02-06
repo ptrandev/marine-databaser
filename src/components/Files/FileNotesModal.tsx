@@ -57,16 +57,17 @@ const FileNotesModal: FC<FileNotesModalProps> = ({ open, onClose, file }) => {
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Stack spacing={2} mt={3}>
+      <Stack mt={3}>
         <Box
           display='flex'
           flexDirection='column'
-          gap={1}
+          gap={2}
           component='form'
           onSubmit={e => {
             e.preventDefault()
             handleAddNote()
-          }}>
+          }}
+        >
           <TextField
             label="Add Note"
             variant="outlined"
@@ -102,11 +103,6 @@ interface NoteProps {
 const Note: FC<NoteProps> = ({ note, handleDeleteNote, handleUpdateNote }) => {
   const [edited, setEdited] = useState<boolean>(false)
   const [_note, _setNote] = useState<string>(note.note)
-
-
-  useEffect(() => {
-    console.log(_note)
-  }, [_note])
 
   return (
     <ListItem key={note.id}>
