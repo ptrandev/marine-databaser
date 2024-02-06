@@ -127,10 +127,12 @@ const getVideoDuration = (videoPath: string): Promise<number> => {
 /**
  * A thin wrapper around getVideoDuration to handle the event reply
  * @param {IpcMainEvent} event - the event to reply to
- * @param {string} videoPath - the path to the video to get the length of
+ * @param {string} arg.videoPath - the path to the video to get the duration of
  */
-export const handleGetVideoDuration = (event: IpcMainEvent, videoPath: string): void => {
-  getVideoDuration(videoPath).then((duration) => {
+export const handleGetVideoDuration = (event: IpcMainEvent, arg: {
+  videoPath: string
+}): void => {
+  getVideoDuration(arg.videoPath).then((duration) => {
     event.reply('got-video-duration', duration);
   }).catch((err) => {
     event.reply('get-video-duration-failed', err);
