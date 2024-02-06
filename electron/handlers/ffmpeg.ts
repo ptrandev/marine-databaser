@@ -110,7 +110,7 @@ const spliceVideo = async ({
  * @param {string} videoPath - the path to the video to get the length of
  * @returns {Promise<number>} - a promise that resolves with the length of the video
  */
-const getVideoLength = (videoPath: string): Promise<number> => {
+const getVideoDuration = (videoPath: string): Promise<number> => {
   return new Promise<number>((resolve, reject) => {
     ffmpeg.ffprobe(videoPath, (err, metadata) => {
       if (err) {
@@ -121,6 +121,19 @@ const getVideoLength = (videoPath: string): Promise<number> => {
 
       resolve(duration);
     });
+  });
+}
+
+/**
+ * A thin wrapper around getVideoDuration to handle the event reply
+ * @param {IpcMainEvent} event - the event to reply to
+ * @param {string} videoPath - the path to the video to get the length of
+ */
+export const handleGetVideoDuration = (event: IpcMainEvent, videoPath: string): void => {
+  getVideoDuration(videoPath).then((duration) => {
+    event.reply('got-video-duration', duration);
+  }).catch((err) => {
+    event.reply('get-video-duration-failed', err);
   });
 }
 
@@ -313,7 +326,7 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
 
   const outputDirectory = arg.outputDirectory;
 
-  const videoLength = await getVideoLength(videoPath);
+  const videoDuration = await getVideoDuration(videoPath);
 
   // use a timestamp as the temporary file name
   const timestamp = new Date().getTime().toString(16) + '.wav';
@@ -327,7 +340,7 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
     .audioFilter(`highpass=f=${minFrequency},lowpass=f=${maxFrequency}`)
     .audioFilters(`silencedetect=n=${minAmplitude}dB:d=${minDuration}`)
     .on('end', async () => {
-      const noiseTimestamps = findNoiseTimeStamps(spliceRegions, videoLength);
+      const noiseTimestamps = findNoiseTimeStamps(spliceRegions, videoDuration);
 
       fs.unlinkSync(timestamp);
       event.reply('auto-spliced', noiseTimestamps);
