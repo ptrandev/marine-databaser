@@ -1,5 +1,5 @@
 import { Box, Typography, Button, Input, InputLabel, Stack, Grid, LinearProgress, CircularProgress, Snackbar, Alert } from '@mui/material'
-import { FC, useMemo, useState, useEffect } from 'react'
+import { FC, useState, useEffect } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { AutoSpliceSettings } from '../../../shared/types'
 import { ipcRenderer } from 'electron'
@@ -102,11 +102,7 @@ const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSe
 }
 
 const AutoSplice: FC = () => {
-  const { videoRef } = useSpliceVideo()
-
-  const videoDuration = useMemo(() => {
-    return videoRef?.duration || 0
-  }, [videoRef?.duration])
+  const { videoDuration } = useSpliceVideo()
 
   const [autoSpliceSettings, setAutoSpliceSettings] = useState(DEFAULT_AUTO_SPLICE_SETTINGS)
 
