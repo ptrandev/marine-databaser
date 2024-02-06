@@ -96,17 +96,15 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
             </Stack>
           </Grid>
         </Grid>
-        <Grid container justifyContent='flex-end'>
-          <Button variant='contained' onClick={() => {
-            handleExtractAudio({
-              fileFormat,
-              outputDirectory: useSameDirectory ? undefined : outputDirectory
-            })
-            onClose()
-          }} disabled={isExtractingAudio || selectedFiles.length === 0 || (!useSameDirectory && !outputDirectory)}>
-            Extract Audio
-          </Button>
-        </Grid>
+        <Button fullWidth variant='contained' onClick={() => {
+          handleExtractAudio({
+            fileFormat,
+            outputDirectory: useSameDirectory ? undefined : outputDirectory
+          })
+          onClose()
+        }} disabled={isExtractingAudio || selectedFiles.length === 0 || (!useSameDirectory && !outputDirectory)}>
+          Extract Audio
+        </Button>
       </Modal>
       <Snackbar
         open={showSuccessSnackbar}
