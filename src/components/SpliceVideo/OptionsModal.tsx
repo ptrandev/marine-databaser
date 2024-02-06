@@ -32,6 +32,18 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
         </Typography>
         <Grid container my={2} mt={useSameDirectory ? 0 : 2} spacing={2}>
           <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label='Output File Name'
+              variant="outlined"
+              value={videoBasename}
+              onChange={(e) => updateVideoBasename(e.target.value)}
+            />
+            <Typography variant='caption'>
+              <b>File Name Preview:</b> {videoBasename}{spliceRegions[0]?.name}{path.extname(selectedVideo)}
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
             {
               !useSameDirectory && (
                 <TextField
@@ -46,7 +58,7 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
                   }}
                 />
               )}
-            <Stack direction="row" alignItems="center" mt={1}>
+            <Stack direction="row" alignItems="center" mt={useSameDirectory ? 0 : 1}>
               <Checkbox
                 checked={useSameDirectory}
                 onChange={() => setUseSameDirectory(!useSameDirectory)}
@@ -56,36 +68,20 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
               </Typography>
             </Stack>
           </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label='Output File Name'
-              variant="outlined"
-              value={videoBasename}
-              onChange={(e) => updateVideoBasename(e.target.value)}
-            />
-            <Typography variant='caption'>
-              <b>File Name Preview:</b> {videoBasename}{spliceRegions[0]?.name}{path.extname(selectedVideo)}
-            </Typography>
-          </Grid>
         </Grid>
-        <Grid container justifyContent="flex-end">
-          <Grid item>
-            <Button variant="contained" color="primary" onClick={() => {
-              handleSpliceVideo({
-                outputDirectory: useSameDirectory ? undefined : outputDirectory
-              })
+        <Button fullWidth variant="contained" color="primary" onClick={() => {
+          handleSpliceVideo({
+            outputDirectory: useSameDirectory ? undefined : outputDirectory
+          })
 
-              ipcRenderer.once('spliced-video', () => {
-                setShowSuccessSnackbar(true)
-              })
+          ipcRenderer.once('spliced-video', () => {
+            setShowSuccessSnackbar(true)
+          })
 
-              onClose()
-            }}>
-              Splice Video
-            </Button>
-          </Grid>
-        </Grid>
+          onClose()
+        }}>
+          Splice Video
+        </Button>
       </Modal>
       <Snackbar
         open={showSuccessSnackbar}
