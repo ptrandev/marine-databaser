@@ -1,9 +1,10 @@
 import { FC, useState, useEffect } from 'react'
 import { Modal, ModalProps } from '../Modal'
-import { Typography, Button, MenuItem, Grid, TextField, Checkbox, Stack, Snackbar, Alert } from '@mui/material'
+import { Typography, Button, MenuItem, Grid, TextField, Checkbox, Stack } from '@mui/material'
 import useExtractAudio from '@/hooks/useExtractAudio'
 import { ipcRenderer } from 'electron'
 import { AudioFileFormat } from '../../../shared/types'
+import { enqueueSnackbar } from 'notistack'
 
 const fileFormats: {
   value: AudioFileFormat
@@ -31,8 +32,6 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
 
   const { handleExtractAudio, isExtractingAudio, selectedFiles } = useExtractAudio()
 
-  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false)
-
   const handleSelectOutputDirectory = () => {
     ipcRenderer.send('select-directory')
 
@@ -43,7 +42,8 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
 
   useEffect(() => {
     ipcRenderer.on('bulk-extract-audio', () => {
-      setShowSuccessSnackbar(true)
+      enqueueSnackbar('Audio successfully extracted!', { variant: 'success' })
+
       setOutputDirectory('')
       setUseSameDirectory(true)
       setFileFormat('pcm_s16le')
@@ -106,15 +106,6 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
           Extract Audio
         </Button>
       </Modal>
-      <Snackbar
-        open={showSuccessSnackbar}
-        autoHideDuration={3000}
-        onClose={() => setShowSuccessSnackbar(false)}
-      >
-        <Alert severity='success' onClose={() => setShowSuccessSnackbar(false)}>
-          Audio successfully extracted!
-        </Alert>
-      </Snackbar>
     </>
   )
 }

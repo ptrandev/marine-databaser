@@ -1,17 +1,13 @@
 import { FC } from 'react'
 import { ipcRenderer } from 'electron'
-import { Box, Typography, Button, Snackbar } from '@mui/material'
+import { Box, Typography, Button } from '@mui/material'
 import { FileUpload } from '@mui/icons-material'
 import { useState } from 'react'
-import { Alert } from '@mui/material'
+import { enqueueSnackbar } from 'notistack'
 
 
 const Export: FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
-
-  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false)
-  const [showErrorSnackbar, setShowErrorSnackbar] = useState(false)
-  const [showCancelSnackbar, setShowCancelSnackbar] = useState(false)
 
   const handleDatabaseExport = () => {
     setIsLoading(true)
@@ -19,17 +15,17 @@ const Export: FC = () => {
     ipcRenderer.send('database-export')
 
     ipcRenderer.once('database-export-canceled', () => {
-      setShowCancelSnackbar(true)
+      enqueueSnackbar('Database export canceled.', { variant: 'warning' })
       setIsLoading(false)
     })
 
     ipcRenderer.once('database-export-error', () => {
-      setShowErrorSnackbar(true)
+      enqueueSnackbar('An error occurred while exporting the database.', { variant: 'error' })
       setIsLoading(false)
     })
 
     ipcRenderer.once('database-export-success', () => {
-      setShowSuccessSnackbar(true)
+      enqueueSnackbar('Database exported successfully.', { variant: 'success' })
       setIsLoading(false)
     })
   }
@@ -50,24 +46,6 @@ const Export: FC = () => {
           Export
         </Button>
       </Box>
-
-      <Snackbar open={showSuccessSnackbar} autoHideDuration={6000} onClose={() => setShowSuccessSnackbar(false)}>
-        <Alert severity="success" onClose={() => setShowSuccessSnackbar(false)}>
-          Database exported successfully.
-        </Alert>
-      </Snackbar>
-
-      <Snackbar open={showErrorSnackbar} autoHideDuration={6000} onClose={() => setShowErrorSnackbar(false)}>
-        <Alert severity="error" onClose={() => setShowErrorSnackbar(false)}>
-          An error occurred while exporting the database.
-        </Alert>
-      </Snackbar>
-
-      <Snackbar open={showCancelSnackbar} autoHideDuration={6000} onClose={() => setShowCancelSnackbar(false)}>
-        <Alert severity="warning" onClose={() => setShowCancelSnackbar(false)}>
-          Database export canceled.
-        </Alert>
-      </Snackbar>
     </>
   )
 }

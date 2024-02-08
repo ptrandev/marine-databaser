@@ -1,9 +1,10 @@
-import { Box, Typography, Button, Input, InputLabel, Stack, Grid, LinearProgress, CircularProgress, Snackbar, Alert } from '@mui/material'
+import { Box, Typography, Button, Input, InputLabel, Stack, Grid, LinearProgress, CircularProgress } from '@mui/material'
 import { FC, useState, useEffect } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { AutoSpliceSettings } from '../../../shared/types'
 import { ipcRenderer } from 'electron'
 import { Modal, ModalProps } from '../Modal'
+import { enqueueSnackbar } from 'notistack'
 
 const DEFAULT_AUTO_SPLICE_SETTINGS: AutoSpliceSettings = {
   startSeconds: 0,
@@ -108,18 +109,16 @@ const AutoSplice: FC = () => {
 
   const [confirmModalOpen, setConfirmModalOpen] = useState(false)
 
-  const [snackbarMessage, setSnackbarMessage] = useState('')
-
   useEffect(() => {
     setAutoSpliceSettings({
       ...autoSpliceSettings,
-      endSeconds: videoDuration,
+      endSeconds: videoDuration!,
     })
   }, [videoDuration])
 
   useEffect(() => {
     ipcRenderer.on('auto-splice-failed', (_, error) => {
-      setSnackbarMessage(error)
+      enqueueSnackbar(error, { variant: 'error' })
     })
 
     return () => {
@@ -259,19 +258,6 @@ const AutoSplice: FC = () => {
             onClose={() => setConfirmModalOpen(false)}
             autoSpliceSettings={autoSpliceSettings}
           />
-        )
-      }
-      {
-        snackbarMessage && (
-          <Snackbar
-            open={!!snackbarMessage}
-            autoHideDuration={6000}
-            onClose={() => setSnackbarMessage('')}
-          >
-            <Alert severity='error' onClose={() => setSnackbarMessage('')}>
-              {snackbarMessage}
-            </Alert>
-          </Snackbar>
         )
       }
     </>
