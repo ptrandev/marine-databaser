@@ -135,7 +135,7 @@ export const handleGetVideoDuration = (event: IpcMainEvent, arg: {
   getVideoDuration(arg.videoPath).then((duration) => {
     event.reply('got-video-duration', duration);
   }).catch((err) => {
-    event.reply('get-video-duration-failed', err);
+    event.reply('get-video-duration-error', err.message);
   });
 }
 
@@ -217,7 +217,7 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
   // for each file, extract the audio
   for (const file of files) {
     await extractAudio({ inputPath: file, fileFormat: arg.fileFormat, outputDirectory: arg.outputDirectory }).catch((err) => {
-      event.reply('extracted-audio-failed', err.message);
+      event.reply('extracted-audio-error', err.message);
     });
 
     event.reply('extracted-audio')
@@ -248,7 +248,7 @@ export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: s
       outputDirectory,
       videoBasename,
     }).catch((err) => {
-      event.reply('splice-point-video-failed', err.message);
+      event.reply('splice-point-video-error', err.message);
     });
 
     event.reply('spliced-point-video');
@@ -300,7 +300,7 @@ export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: Ipc
 export const handleGetVideoFramerate = async (event: IpcMainEvent, arg: { videoPath: string }): Promise<void> => {
   ffmpeg.ffprobe(arg.videoPath, (err, metadata) => {
     if (err) {
-      event.reply('failed-to-get-video-framerate', err);
+      event.reply('failed-to-get-video-framerate', err.message);
       return;
     }
 
@@ -348,7 +348,7 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
       event.reply('auto-spliced', noiseTimestamps);
     })
     .on('error', (err) => {
-      event.reply('auto-splice-failed', err.message);
+      event.reply('auto-splice-error', err.message);
       fs.unlinkSync(timestamp);
     })
     .on('stderr', (stderrLine) => {
@@ -369,7 +369,7 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
         };
 
         // progress is the endpoint / video length
-        event.reply('auto-spliced-progress', end / videoLength);
+        event.reply('auto-spliced-progress', end / videoDuration);
       }
     })
     .save(timestamp);
@@ -386,7 +386,7 @@ export const handleGetAudioSampleRate = async (event: IpcMainEvent, arg: { fileP
 
   ffmpeg.ffprobe(filePath, (err, metadata) => {
     if (err) {
-      event.reply('failed-to-get-audio-sample-rate', err);
+      event.reply('failed-to-get-audio-sample-rate', err.message);
       return;
     }
 

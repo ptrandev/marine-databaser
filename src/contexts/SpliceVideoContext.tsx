@@ -3,6 +3,7 @@ import { FC, createContext, useMemo, useState } from 'react'
 import { useEffect } from 'react'
 import { SpliceRegion } from '../../shared/types'
 import path from 'path'
+import { enqueueSnackbar } from 'notistack'
 
 interface AddEvent {
   type: 'add'
@@ -55,7 +56,6 @@ export interface SpliceVideoContextValue {
   }: {
     outputDirectory?: string
   }) => void
-  errorMessages: string[]
   videoFramerate: number | null
   videoRef: HTMLVideoElement | null
   updateVideoRef: (video: HTMLVideoElement | null) => void
@@ -91,8 +91,6 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const [videoFramerate, setVideoFramerate] = useState<number | null>(null)
   const [videoDuration, setVideoDuration] = useState<number | null>(null)
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null)
-
-  const [errorMessages, setErrorMessages] = useState<string[]>([])
 
   const canUndo = useMemo(() => {
     return eventHistory.length > 0
@@ -406,8 +404,8 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       setVideoFramerate(framerate)
     })
 
-    ipcRenderer.once('get-video-framerate-failed', (_, errorMessage) => {
-      setErrorMessages((prev) => [...prev, errorMessage])
+    ipcRenderer.once('get-video-framerate-error', (_, errMessage) => {
+      enqueueSnackbar(`Error getting video framerate: ${errMessage}`, { variant: 'error' })
     })
 
     ipcRenderer.send('get-video-duration', {
@@ -418,15 +416,15 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       setVideoDuration(duration)
     })
 
-    ipcRenderer.once('get-video-duration-failed', (_, errorMessage) => {
-      setErrorMessages((prev) => [...prev, errorMessage])
+    ipcRenderer.once('get-video-duration-error', (_, errMessage) => {
+      enqueueSnackbar(`Error getting video duration: ${errMessage}`, { variant: 'error' })
     })
 
     return () => {
       ipcRenderer.removeAllListeners('got-video-framerate')
-      ipcRenderer.removeAllListeners('get-video-framerate-failed')
+      ipcRenderer.removeAllListeners('get-video-framerate-error')
       ipcRenderer.removeAllListeners('got-video-duration')
-      ipcRenderer.removeAllListeners('get-video-duration-failed')
+      ipcRenderer.removeAllListeners('get-video-duration-error')
     }
   }, [selectedVideo])
 
@@ -435,13 +433,13 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       setNumSpliceRegionsCompleted((prev) => prev + 1)
     })
 
-    ipcRenderer.on('splice-point-video-failed', (_, err) => {
-      setErrorMessages((prev) => [...prev, err])
+    ipcRenderer.on('splice-point-video-error', (_, errMessage) => {
+      enqueueSnackbar(`Error splicing video: ${errMessage}`, { variant: 'error' })
     });
 
     return () => {
       ipcRenderer.removeAllListeners('spliced-point-video')
-      ipcRenderer.removeAllListeners('splice-point-video-failed')
+      ipcRenderer.removeAllListeners('splice-point-video-error')
     }
   }, [])
 
@@ -471,7 +469,6 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       spliceRegions,
       isSplicingVideo,
       handleSpliceVideo,
-      errorMessages,
       videoFramerate,
       videoRef,
       updateVideoRef,
@@ -482,7 +479,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       canUndo,
       canRedo,
     }
-  }, [selectedVideo, numSpliceRegionsCompleted, updateSelectedVideo, videoBasename, updateVideoBasename, spliceRegions, isSplicingVideo, handleSpliceVideo, deleteSpliceRegion, deleteAllSpliceRegions, loadSpliceRegions, initSpliceRegion, modifySpliceRegion, errorMessages, videoFramerate, videoRef, updateVideoRef, videoDuration, history, undo, redo, canUndo, canRedo])
+  }, [selectedVideo, numSpliceRegionsCompleted, updateSelectedVideo, videoBasename, updateVideoBasename, spliceRegions, isSplicingVideo, handleSpliceVideo, deleteSpliceRegion, deleteAllSpliceRegions, loadSpliceRegions, initSpliceRegion, modifySpliceRegion, videoFramerate, videoRef, updateVideoRef, videoDuration, history, undo, redo, canUndo, canRedo])
 
   return (
     <SpliceVideoContext.Provider value={contextValue}>

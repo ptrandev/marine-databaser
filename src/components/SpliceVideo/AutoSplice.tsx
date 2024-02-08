@@ -46,7 +46,7 @@ const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSe
       setSplicingProgress(progress * 100)
     })
 
-    ipcRenderer.once('auto-splice-failed', () => {
+    ipcRenderer.once('auto-splice-error', () => {
       setIsSplicing(false)
       onClose()
     })
@@ -117,14 +117,14 @@ const AutoSplice: FC = () => {
   }, [videoDuration])
 
   useEffect(() => {
-    ipcRenderer.on('auto-splice-failed', (_, error) => {
-      enqueueSnackbar(error, { variant: 'error' })
+    ipcRenderer.on('auto-splice-error', (_, errMessage) => {
+      enqueueSnackbar(errMessage, { variant: 'error' })
     })
 
     return () => {
       ipcRenderer.removeAllListeners('auto-spliced')
       ipcRenderer.removeAllListeners('auto-spliced-progress')
-      ipcRenderer.removeAllListeners('auto-splice-failed')
+      ipcRenderer.removeAllListeners('auto-splice-error')
     }
   }, [])
 
@@ -166,7 +166,7 @@ const AutoSplice: FC = () => {
                 componentsProps={{
                   input: {
                     min: autoSpliceSettings.startSeconds,
-                    max: videoDuration,
+                    max: videoDuration!,
                   }
                 }}
                 fullWidth
@@ -237,7 +237,7 @@ const AutoSplice: FC = () => {
                 componentsProps={{
                   input: {
                     min: 0,
-                    max: videoDuration,
+                    max: videoDuration!,
                   }
                 }}
                 fullWidth

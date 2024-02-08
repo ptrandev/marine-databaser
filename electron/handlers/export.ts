@@ -18,8 +18,7 @@ export const handleDatabaseExport = async (event: IpcMainEvent) => {
 
   // our database is stored in a sqlite file, so we can just copy it
   await fs.copyFile(DATABASE_PATH, result.filePath).catch((err: Error) => {
-    console.error(err);
-    event.reply("database-export-error");
+    event.reply("database-export-error", err.message);
     return;
   });
 
