@@ -17,5 +17,10 @@
         "electron"
     ],
     "rules": {
+    },
+    "settings": {    
+        "react": {
+            "version": "detect"
+        }
     }
 }
