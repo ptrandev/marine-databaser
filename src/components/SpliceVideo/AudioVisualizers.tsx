@@ -3,7 +3,7 @@ import WavesurferPlayer from '@wavesurfer/react'
 import SpectrogramPlugin from 'wavesurfer.js/dist/plugins/spectrogram.js'
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.js'
 import RegionPlugin, { type Region } from 'wavesurfer.js/dist/plugins/regions.js'
-import { Box, IconButton, Slider, Stack, Typography, TextField, Button, Grid } from '@mui/material'
+import { Box, IconButton, Slider, Stack, Typography, TextField, Button } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import colormap from 'colormap'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
@@ -38,7 +38,7 @@ const AudioVisualizers: FC = () => {
 
   const [editNameModalOpen, setEditNameModalOpen] = useState(false)
 
-  const handlePlayPause = () => {
+  const handlePlayPause = (): void => {
     // find selectedRegion in region
     const region = regions.find(region => region.id === selectedRegion?.name)
 
@@ -52,6 +52,12 @@ const AudioVisualizers: FC = () => {
         setIsPlaying(true)
         setActiveRegion(region)
       }
+    }
+  }
+
+  const handleDeleteSelectedRegion = (): void => {
+    if (selectedRegion) {
+      deleteSpliceRegion(selectedRegion)
     }
   }
 
@@ -116,14 +122,14 @@ const AudioVisualizers: FC = () => {
       // for each region...
       regions.forEach(region => {
         // set the color of the region
-        // @ts-expect-error
+        // @ts-expect-error - no types for setOptions
         region.setOptions({
           color: REGION_COLOR
         })
       })
 
       // set the color of the selected region
-      // @ts-expect-error
+      // @ts-expect-error - no types for setOptions
       region.setOptions({
         color: SELECTED_REGION_COLOR
       })
@@ -161,7 +167,7 @@ const AudioVisualizers: FC = () => {
       filePath: selectedVideo
     })
 
-    ipcRenderer.once('got-audio-sample-rate', (_, sampleRate) => {
+    ipcRenderer.once('got-audio-sample-rate', (_, sampleRate: number) => {
       setAudioSampleRate(sampleRate)
     })
   }, [selectedVideo])
@@ -178,7 +184,7 @@ const AudioVisualizers: FC = () => {
     setActiveRegion(undefined)
 
     regions.forEach(region => {
-      // @ts-expect-error
+      // @ts-expect-error - no types for setOptions
       region.setOptions({
         color: REGION_COLOR
       })
@@ -217,7 +223,7 @@ const AudioVisualizers: FC = () => {
             >
               <Loop />
             </IconButton>
-            <IconButton onClick={() => { deleteSpliceRegion(selectedRegion) }} disabled={!selectedRegion} color='error'>
+            <IconButton onClick={handleDeleteSelectedRegion} disabled={!selectedRegion} color='error'>
               <Delete />
             </IconButton>
           </Box>
@@ -231,12 +237,12 @@ const AudioVisualizers: FC = () => {
         >
           <WavesurferPlayer
             height={256}
-            media={videoRef!}
+            media={videoRef ?? undefined}
             progressColor='#1976d2'
             minPxPerSec={zoom}
             dragToSeek
             normalize
-            // @ts-expect-error
+            // @ts-expect-error - no types for
             splitChannels
             sampleRate={audioSampleRate}
             frequencyMax={frequencyMax}
@@ -316,10 +322,10 @@ const EditNameModal: FC<EditNameModalProps> = ({
 }) => {
   const { spliceRegions, modifySpliceRegion } = useSpliceVideo()
 
-  const [name, setName] = useState<string>(spliceRegion.name)
+  const [name, setName] = useState<string>(spliceRegion?.name as string ?? '')
   const [helperText, setHelperText] = useState<string>('')
 
-  const handleChangeName = () => {
+  const handleChangeName = (): void => {
     // if name is not unique, return
     if (spliceRegions.find(region => region.name === name)) {
       setHelperText('Name must be unique')

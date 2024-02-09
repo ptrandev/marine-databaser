@@ -32,10 +32,10 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
 
   const { handleExtractAudio, isExtractingAudio, selectedFiles } = useExtractAudio()
 
-  const handleSelectOutputDirectory = () => {
+  const handleSelectOutputDirectory = (): void => {
     ipcRenderer.send('select-directory')
 
-    ipcRenderer.once('selected-directory', (_, directory) => {
+    ipcRenderer.once('selected-directory', (_, directory: string) => {
       setOutputDirectory(directory)
     })
   }

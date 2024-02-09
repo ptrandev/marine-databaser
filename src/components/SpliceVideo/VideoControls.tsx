@@ -23,11 +23,11 @@ const VideoControls: FC = () => {
       return
     }
 
-    const handlePlay = () => {
+    const handlePlay = (): void => {
       setVideoState('playing')
     }
 
-    const handlePause = () => {
+    const handlePause = (): void => {
       setVideoState('paused')
     }
 
@@ -39,44 +39,56 @@ const VideoControls: FC = () => {
       videoRef.removeEventListener('pause', handlePause)
 
       // Revoke the object URL to prevent memory leaks
-      URL.revokeObjectURL(videoUrl!)
+      if (videoUrl) {
+        URL.revokeObjectURL(videoUrl)
+      }
     }
   }, [videoRef])
 
-  const handleGoToStart = () => {
-    videoRef!.currentTime = 0
+  const handleGoToStart = (): void => {
+    if (videoRef) {
+      videoRef.currentTime = 0
+    }
   }
 
-  const handleGoToEnd = () => {
-    videoRef!.currentTime = videoRef!.duration
+  const handleGoToEnd = (): void => {
+    if (videoRef) {
+      videoRef.currentTime = videoRef.duration
+    }
   }
 
-  const handlePlayPause = () => {
-    if (videoRef!.paused) {
-      videoRef!.play()
+  const handlePlayPause = (): void => {
+    if (!videoRef) {
+      return
+    }
+
+    if (videoRef.paused) {
+      void videoRef.play()
     } else {
-      videoRef!.pause()
+      videoRef.pause()
     }
   }
 
-  const handleGoBackOneFrame = () => {
-    if (!videoFramerate) {
+  const handleGoBackOneFrame = (): void => {
+    if (!videoFramerate || !videoRef) {
       return
     }
 
-    videoRef!.currentTime -= 1 / videoFramerate
+    videoRef.currentTime -= 1 / videoFramerate
   }
 
-  const handleGoForwardOneFrame = () => {
-    if (!videoFramerate) {
+  const handleGoForwardOneFrame = (): void => {
+    if (!videoFramerate || !videoRef) {
       return
     }
 
-    videoRef!.currentTime += 1 / videoFramerate
+    videoRef.currentTime += 1 / videoFramerate
   }
 
-  const handleSecondsOffset = (seconds: number) => {
-    videoRef!.currentTime += seconds
+  const handleSecondsOffset = (seconds: number): void => {
+    if (videoRef) {
+      videoRef.currentTime += seconds
+    }
   }
 
   return (

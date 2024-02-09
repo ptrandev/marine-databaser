@@ -18,7 +18,7 @@ const RefreshButton: FC = () => {
 
   const [isRefreshingDirectories, setIsRefreshingDirectories] = useState<boolean>(false)
 
-  const handleRefresh = () => {
+  const handleRefresh = (): void => {
     setIsRefreshingDirectories(true)
     ipcRenderer.send('refresh-directories')
     ipcRenderer.once('refreshed-directories', () => {

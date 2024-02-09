@@ -13,9 +13,9 @@ import AudioVisualizers from '@/components/SpliceVideo/AudioVisualizers'
 const SpliceVideo: FC = () => {
   const { updateSelectedVideo, selectedVideo } = useSpliceVideo()
 
-  const handleSelectVideo = () => {
+  const handleSelectVideo = (): void => {
     ipcRenderer.send('select-splice-video-file')
-    ipcRenderer.once('selected-splice-video-file', (_, path) => {
+    ipcRenderer.once('selected-splice-video-file', (_, path: string) => {
       if (!path) return
 
       updateSelectedVideo(path)

@@ -7,7 +7,7 @@ import { enqueueSnackbar } from 'notistack'
 const Export: FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  const handleDatabaseExport = () => {
+  const handleDatabaseExport = (): void => {
     setIsLoading(true)
 
     ipcRenderer.send('database-export')

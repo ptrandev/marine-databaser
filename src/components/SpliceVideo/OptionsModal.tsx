@@ -14,15 +14,15 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
 
   const { handleSpliceVideo } = useSpliceVideo()
 
-  const handleSelectOutputDirectory = () => {
+  const handleSelectOutputDirectory = (): void => {
     ipcRenderer.send('select-directory')
 
-    ipcRenderer.once('selected-directory', (_, directory) => {
+    ipcRenderer.once('selected-directory', (_, directory: string) => {
       setOutputDirectory(directory)
     })
   }
 
-  const handleSplice = () => {
+  const handleSplice = (): void => {
     handleSpliceVideo({
       outputDirectory: useSameDirectory ? undefined : outputDirectory
     })

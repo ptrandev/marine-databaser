@@ -10,7 +10,7 @@ const FileList: FC = () => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
-  const handleDelete = () => {
+  const handleDelete = (): void => {
     deleteSelectedFiles(selectedFiles)
     setShowDeleteModal(false)
   }

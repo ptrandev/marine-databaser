@@ -14,14 +14,14 @@ const FileActions: FC = () => {
 
   const [fileBulkTagsModalOpen, setFileBulkTagsModalOpen] = useState(false)
 
-  const handleFileBulkTagsModalClose = () => {
+  const handleFileBulkTagsModalClose = (): void => {
     setFileBulkTagsModalOpen(false)
     loadFiles()
   }
 
-  const handleBulkExtractAudio = () => {
+  const handleBulkExtractAudio = (): void => {
     // associate selectedFiles with the filePath
-    const filePaths: string[] = files?.filter(file => selectedFiles?.includes(file.id))?.map(file => file.path)
+    const filePaths: string[] = files?.filter(file => selectedFiles?.includes(file.id as number))?.map(file => file.path)
 
     updateSelectedExtractAudioFiles(filePaths)
     updateSelectedFiles([])
@@ -42,7 +42,7 @@ const FileActions: FC = () => {
             updateSelectedFiles(
               selectedFiles?.length === files?.length
                 ? []
-                : files?.map(file => file.id)
+                : (files?.map(file => file.id) as number[])
             )
           }}
         />

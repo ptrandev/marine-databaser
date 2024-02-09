@@ -8,7 +8,7 @@ const Progress: FC = () => {
 
   const [optionsModalOpen, setOptionsModalOpen] = useState(false)
 
-  const handleProcess = () => {
+  const handleProcess = (): void => {
     setOptionsModalOpen(true)
   }
 

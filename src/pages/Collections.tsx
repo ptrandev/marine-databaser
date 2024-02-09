@@ -1,7 +1,8 @@
+import { type FC } from 'react'
 import { Box, Button, Stack, Typography } from '@mui/material'
 import { Add } from '@mui/icons-material'
 
-const Collections = () => {
+const Collections: FC = () => {
   return (
     <Box>
       <Stack flexWrap='wrap' direction='row' justifyContent='space-between' width='100%' mb={2} gap={2}>

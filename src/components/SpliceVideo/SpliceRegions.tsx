@@ -43,7 +43,7 @@ const SpliceRegions: FC = () => {
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
-  const handleInitSpliceRegion = () => {
+  const handleInitSpliceRegion = ():void => {
     if (!videoRef) {
       return
     }

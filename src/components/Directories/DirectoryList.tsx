@@ -9,7 +9,7 @@ import DirectoryDeleteModal from './DirectoryDeleteModal'
 const DirectoryList: FC = () => {
   const { directories, directoriesFileCount, isDeletingDirectory } = useDirectories()
 
-  const handleOpenDirectory = (path: string) => {
+  const handleOpenDirectory = (path: string): void => {
     ipcRenderer.send('open-directory', { path })
   }
 
@@ -29,10 +29,10 @@ const DirectoryList: FC = () => {
       }
       <List>
         {
-          directories?.map((directory: any) => (
+          directories?.map((directory) => (
             <ListItemButton
               key={directory.id}
-              onClick={() => { handleOpenDirectory(directory.path) }}
+              onClick={() => { handleOpenDirectory(directory.path as string) }}
             >
               <ListItemText
                 primary={
@@ -57,7 +57,7 @@ const DirectoryList: FC = () => {
                 color='error'
                 onClick={(e) => {
                   e.stopPropagation()
-                  setDirectoryIdToDelete(directory.id)
+                  setDirectoryIdToDelete(directory.id as number)
                 }}
                 disabled={isDeletingDirectory}
               >

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { type FC, useState } from 'react'
 import { AppBar, Box, Button, Toolbar, Menu, MenuItem, IconButton } from '@mui/material'
 import { NavLink } from 'react-router-dom'
 import MenuIcon from '@mui/icons-material/Menu'
@@ -26,7 +26,7 @@ const LINKS = [
   }
 ]
 
-const Navbar = () => {
+const Navbar: FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   return (

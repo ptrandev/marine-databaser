@@ -10,7 +10,7 @@ import Navbar from './components/Navbar'
 import { createHashRouter, Outlet } from 'react-router-dom'
 import { Box } from '@mui/system'
 
-const NavbarWrapper = () => {
+const NavbarWrapper = (): JSX.Element => {
   return (
     <Box>
       <Navbar />

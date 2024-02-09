@@ -8,7 +8,7 @@ import { enqueueSnackbar } from 'notistack'
 const SaveProject: FC = () => {
   const { spliceRegions, selectedVideo } = useSpliceVideo()
 
-  const handleSave = () => {
+  const handleSave = (): void => {
     const data = {
       selectedVideo,
       spliceRegions

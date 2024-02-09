@@ -1,7 +1,7 @@
 import { Box, Typography, Button, Input, InputLabel, Stack, Grid, LinearProgress, CircularProgress } from '@mui/material'
 import { type FC, useState, useEffect } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
-import { type AutoSpliceSettings } from '../../../shared/types'
+import { type SpliceRegion, type AutoSpliceSettings } from '../../../shared/types'
 import { ipcRenderer } from 'electron'
 import { Modal, type ModalProps } from '../Modal'
 import { enqueueSnackbar } from 'notistack'
@@ -27,7 +27,7 @@ const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSe
 
   const [splicingProgress, setSplicingProgress] = useState(0)
 
-  const handleAutoSplice = () => {
+  const handleAutoSplice = (): void => {
     setIsSplicing(true)
 
     ipcRenderer.send('auto-splice', {
@@ -35,7 +35,7 @@ const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSe
       autoSpliceSettings
     })
 
-    ipcRenderer.once('auto-spliced', (_, spliceRegions) => {
+    ipcRenderer.once('auto-spliced', (_, spliceRegions: SpliceRegion[]) => {
       loadSpliceRegions(spliceRegions)
       setIsSplicing(false)
       onClose()
@@ -110,14 +110,16 @@ const AutoSplice: FC = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false)
 
   useEffect(() => {
-    setAutoSpliceSettings({
-      ...autoSpliceSettings,
-      endSeconds: videoDuration!
-    })
+    if (videoDuration) {
+      setAutoSpliceSettings({
+        ...autoSpliceSettings,
+        endSeconds: videoDuration
+      })
+    }
   }, [videoDuration])
 
   useEffect(() => {
-    ipcRenderer.on('auto-splice-error', (_, errMessage) => {
+    ipcRenderer.on('auto-splice-error', (_, errMessage: string) => {
       enqueueSnackbar(errMessage, { variant: 'error' })
     })
 
@@ -170,7 +172,7 @@ const AutoSplice: FC = () => {
                 componentsProps={{
                   input: {
                     min: autoSpliceSettings.startSeconds,
-                    max: videoDuration!
+                    max: videoDuration ?? autoSpliceSettings.startSeconds,
                   }
                 }}
                 fullWidth
@@ -249,7 +251,7 @@ const AutoSplice: FC = () => {
                 componentsProps={{
                   input: {
                     min: 0,
-                    max: videoDuration!
+                    max: videoDuration ?? 0
                   }
                 }}
                 fullWidth

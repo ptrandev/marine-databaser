@@ -9,7 +9,7 @@ import Progress from '@/components/ExtractAudio/Progress'
 const ExtractAudio: FC = () => {
   const { updateSelectedFiles, isExtractingAudio } = useExtractAudio()
 
-  const handleSelectFiles = () => {
+  const handleSelectFiles = (): void => {
     ipcRenderer.send('select-extract-audio-files')
     ipcRenderer.once('selected-extract-audio-files', (_, files: string[]) => {
       updateSelectedFiles(files)
