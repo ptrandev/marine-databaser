@@ -1,6 +1,6 @@
-import { useContext } from 'react';
-import TagsContext, { TagsContextValue } from '../contexts/TagsContext';
+import { useContext } from 'react'
+import TagsContext, { type TagsContextValue } from '../contexts/TagsContext'
 
-const useTags = (): TagsContextValue => useContext(TagsContext);
+const useTags = (): TagsContextValue => useContext(TagsContext)
 
-export default useTags;
+export default useTags

@@ -1,6 +1,6 @@
-import { FC, createContext, useState, useMemo, useEffect } from 'react'
+import { type FC, createContext, useState, useMemo, useEffect } from 'react'
 import { ipcRenderer } from 'electron'
-import { AudioFileFormat } from 'shared/types'
+import { type AudioFileFormat } from 'shared/types'
 import { enqueueSnackbar } from 'notistack'
 
 export interface ExtractAudioContextValue {
@@ -11,7 +11,7 @@ export interface ExtractAudioContextValue {
   isExtractingAudio: boolean
   handleExtractAudio: ({
     fileFormat,
-    outputDirectory,
+    outputDirectory
   }: {
     fileFormat?: AudioFileFormat
     outputDirectory?: string
@@ -41,7 +41,7 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
 
   const handleExtractAudio = ({
     fileFormat,
-    outputDirectory,
+    outputDirectory
   }: {
     fileFormat?: AudioFileFormat
     outputDirectory?: string
@@ -78,7 +78,7 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
       deleteSelectedFiles,
       isExtractingAudio,
       handleExtractAudio,
-      numCompletedFiles,
+      numCompletedFiles
     }
   }, [selectedFiles, updateSelectedFiles, deleteSelectedFiles, isExtractingAudio, handleExtractAudio, numCompletedFiles])
 

@@ -1,11 +1,11 @@
-import { Add } from "@mui/icons-material"
-import { Typography, Button, Box, LinearProgress, Stack, CircularProgress } from "@mui/material"
+import { Add } from '@mui/icons-material'
+import { Typography, Button, Box, LinearProgress, Stack, CircularProgress } from '@mui/material'
 
-import DirectoryList from "@/components/Directories/DirectoryList"
-import useDirectories from "@/hooks/useDirectories"
-import { ipcRenderer } from "electron"
-import { useEffect } from "react"
-import RefreshButton from "@/components/Directories/RefreshButton"
+import DirectoryList from '@/components/Directories/DirectoryList'
+import useDirectories from '@/hooks/useDirectories'
+import { ipcRenderer } from 'electron'
+import { useEffect } from 'react'
+import RefreshButton from '@/components/Directories/RefreshButton'
 
 const Directories = () => {
   const { isLoadingDirectories, isInitializingDirectory, handleIsInitializingDirectory, loadDirectories } = useDirectories()
@@ -61,16 +61,18 @@ const Directories = () => {
         )
       }
       {
-        isLoadingDirectories ? (
+        isLoadingDirectories
+          ? (
           <Box display='flex' flexDirection='column' mt={4} alignItems='center' justifyContent='center' width='100%' gap={2}>
             <CircularProgress />
             <Typography>
               Loading directories...
             </Typography>
           </Box>
-        ) : (
+            )
+          : (
           <DirectoryList />
-        )
+            )
       }
     </Box>
   )

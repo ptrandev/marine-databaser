@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { type FC } from 'react'
 import { Box, Typography, Stack, Divider } from '@mui/material'
 import Export from '@/components/ImportExport/Export'
 import Import from '@/components/ImportExport/Import'

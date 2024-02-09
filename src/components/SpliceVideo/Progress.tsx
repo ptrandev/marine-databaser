@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { type FC, useState } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import OptionsModal from './OptionsModal'
 import ProgressComponent from '../Progress'
@@ -15,7 +15,7 @@ const Progress: FC = () => {
   return (
     <>
       <ProgressComponent numCompleted={numSpliceRegionsCompleted} totalToComplete={spliceRegions.length} isProcessing={isSplicingVideo} onProcess={handleProcess} processText='Splice Video' />
-      <OptionsModal open={optionsModalOpen} onClose={() => setOptionsModalOpen(false)} />
+      <OptionsModal open={optionsModalOpen} onClose={() => { setOptionsModalOpen(false) }} />
     </>
   )
 }

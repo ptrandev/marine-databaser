@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron'
-import { FC } from 'react'
+import { type FC } from 'react'
 import { IconButton } from '@mui/material'
 import { Save } from '@mui/icons-material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
@@ -15,7 +15,7 @@ const SaveProject: FC = () => {
     }
 
     ipcRenderer.send('save-to-json', {
-      data: data,
+      data,
       filename: 'project.json'
     })
 

@@ -1,6 +1,6 @@
-import { FC, createContext, useMemo, useState, useEffect } from 'react'
-import { Directory, Tag } from '../../electron/database/schemas'
-import { FileTypes, FileWithMetadata } from '../../shared/types'
+import { type FC, createContext, useMemo, useState, useEffect } from 'react'
+import { type Directory, type Tag } from '../../electron/database/schemas'
+import { type FileTypes, type FileWithMetadata } from '../../shared/types'
 import { ipcRenderer } from 'electron'
 import { useEffectDebounced } from '@/hooks/useEffectDebounced'
 import useDirectories from '@/hooks/useDirectories'
@@ -101,7 +101,7 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
       selectedTags,
       updateSelectedTags,
       selectedFileTypes,
-      updateSelectedFileTypes,
+      updateSelectedFileTypes
     }
   }, [files, isLoadingFiles, searchTerm, selectedDirectories, selectedTags, selectedFileTypes, selectedFiles, updateSelectedFiles, updateSearchTerm, updateSelectedDirectories, updateSelectedTags, updateSelectedFileTypes])
 

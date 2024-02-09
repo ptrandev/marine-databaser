@@ -1,21 +1,21 @@
-import { FC, useState, useEffect, useCallback } from 'react'
+import { type FC, useState, useEffect, useCallback } from 'react'
 import WavesurferPlayer from '@wavesurfer/react'
-import SpectrogramPlugin from "wavesurfer.js/dist/plugins/spectrogram.js"
+import SpectrogramPlugin from 'wavesurfer.js/dist/plugins/spectrogram.js'
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.js'
-import RegionPlugin, { Region } from 'wavesurfer.js/dist/plugins/regions.js'
+import RegionPlugin, { type Region } from 'wavesurfer.js/dist/plugins/regions.js'
 import { Box, IconButton, Slider, Stack, Typography, TextField, Button, Grid } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import colormap from 'colormap'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Delete, Loop, PlayArrow, Pause, Edit } from '@mui/icons-material'
-import { SpliceRegion } from '../../../shared/types'
+import { type SpliceRegion } from '../../../shared/types'
 import Modal from '../Modal'
 
 const COLORS = colormap({
   colormap: 'hot',
   nshades: 256,
   format: 'float',
-  alpha: 1,
+  alpha: 1
 })
 
 const REGION_COLOR = 'rgba(0, 0, 255, 0.1)'
@@ -70,18 +70,18 @@ const AudioVisualizers: FC = () => {
         color: REGION_COLOR,
         drag: true,
         resize: true,
-        id: spliceRegion.name,
+        id: spliceRegion.name
       })
 
       region.on('update-end', () => {
         modifySpliceRegion({
           name: spliceRegion.name,
           start: spliceRegion.start,
-          end: spliceRegion.end,
+          end: spliceRegion.end
         }, {
           name: region.id,
           start: region.start,
-          end: region.end,
+          end: region.end
         })
       })
 
@@ -110,22 +110,22 @@ const AudioVisualizers: FC = () => {
       setSelectedRegion({
         start: region.start,
         end: region.end,
-        name: region.id,
+        name: region.id
       })
 
       // for each region...
       regions.forEach(region => {
         // set the color of the region
-        // @ts-ignore
+        // @ts-expect-error
         region.setOptions({
-          color: REGION_COLOR,
+          color: REGION_COLOR
         })
       })
 
       // set the color of the selected region
-      // @ts-ignore
+      // @ts-expect-error
       region.setOptions({
-        color: SELECTED_REGION_COLOR,
+        color: SELECTED_REGION_COLOR
       })
     })
 
@@ -158,7 +158,7 @@ const AudioVisualizers: FC = () => {
     setAudioSampleRate(44_100)
 
     ipcRenderer.send('get-audio-sample-rate', {
-      filePath: selectedVideo,
+      filePath: selectedVideo
     })
 
     ipcRenderer.once('got-audio-sample-rate', (_, sampleRate) => {
@@ -178,9 +178,9 @@ const AudioVisualizers: FC = () => {
     setActiveRegion(undefined)
 
     regions.forEach(region => {
-      // @ts-ignore
+      // @ts-expect-error
       region.setOptions({
-        color: REGION_COLOR,
+        color: REGION_COLOR
       })
     })
   }, [videoRef, regions])
@@ -197,7 +197,7 @@ const AudioVisualizers: FC = () => {
                   <b>Selected Splice Region:</b> {selectedRegion.name}
                 </Typography>
                 <Box>
-                  <IconButton size='small' onClick={() => setEditNameModalOpen(true)}>
+                  <IconButton size='small' onClick={() => { setEditNameModalOpen(true) }}>
                     <Edit fontSize='small' />
                   </IconButton>
                 </Box>
@@ -211,13 +211,13 @@ const AudioVisualizers: FC = () => {
               {isPlaying ? <Pause /> : <PlayArrow />}
             </IconButton>
             <IconButton
-              onClick={() => setIsLoop(!isLoop)}
+              onClick={() => { setIsLoop(!isLoop) }}
               disabled={!selectedRegion}
               color={isLoop ? 'primary' : 'default'}
             >
               <Loop />
             </IconButton>
-            <IconButton onClick={() => deleteSpliceRegion(selectedRegion!)} disabled={!selectedRegion} color='error'>
+            <IconButton onClick={() => { deleteSpliceRegion(selectedRegion) }} disabled={!selectedRegion} color='error'>
               <Delete />
             </IconButton>
           </Box>
@@ -226,7 +226,7 @@ const AudioVisualizers: FC = () => {
           sx={{
             height: 'calc(100vh - 64px - 128px - 80px)',
             overflowY: 'auto',
-            pb: 12,
+            pb: 12
           }}
         >
           <WavesurferPlayer
@@ -236,7 +236,7 @@ const AudioVisualizers: FC = () => {
             minPxPerSec={zoom}
             dragToSeek
             normalize
-            // @ts-ignore
+            // @ts-expect-error
             splitChannels
             sampleRate={audioSampleRate}
             frequencyMax={frequencyMax}
@@ -251,7 +251,7 @@ const AudioVisualizers: FC = () => {
                 frequencyMax,
                 labelsBackground: '#00000066',
                 colorMap: COLORS,
-                splitChannels: false,
+                splitChannels: false
               }))
 
               const wsRegions = wavesurfer.registerPlugin(RegionPlugin.create())
@@ -266,7 +266,7 @@ const AudioVisualizers: FC = () => {
               </Typography>
               <Slider
                 value={zoom}
-                onChange={(_, value) => setZoom(value as number)}
+                onChange={(_, value) => { setZoom(value as number) }}
                 min={1}
                 max={5000}
                 disabled={!selectedVideo}
@@ -278,12 +278,12 @@ const AudioVisualizers: FC = () => {
               </Typography>
               <Slider
                 value={frequencyMax}
-                onChange={(_, value) => setFrequencyMax(value as number)}
+                onChange={(_, value) => { setFrequencyMax(value as number) }}
                 min={0}
                 max={audioSampleRate / 2}
                 valueLabelDisplay='auto'
                 sx={{
-                  flex: 1,
+                  flex: 1
                 }}
                 disabled={!selectedVideo}
               />
@@ -295,7 +295,7 @@ const AudioVisualizers: FC = () => {
         selectedRegion && editNameModalOpen &&
         <EditNameModal
           open={editNameModalOpen}
-          onClose={() => setEditNameModalOpen(false)}
+          onClose={() => { setEditNameModalOpen(false) }}
           spliceRegion={selectedRegion}
         />
       }
@@ -312,7 +312,7 @@ interface EditNameModalProps {
 const EditNameModal: FC<EditNameModalProps> = ({
   open,
   onClose,
-  spliceRegion,
+  spliceRegion
 }) => {
   const { spliceRegions, modifySpliceRegion } = useSpliceVideo()
 
@@ -328,7 +328,7 @@ const EditNameModal: FC<EditNameModalProps> = ({
 
     modifySpliceRegion(spliceRegion, {
       ...spliceRegion,
-      name,
+      name
     })
 
     onClose()

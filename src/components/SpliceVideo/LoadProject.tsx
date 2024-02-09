@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron'
-import { FC } from 'react'
+import { type FC } from 'react'
 import { IconButton } from '@mui/material'
 import { Download } from '@mui/icons-material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'

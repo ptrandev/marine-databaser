@@ -1,15 +1,14 @@
-import Files from "./pages/Files";
-import Directories from "./pages/Directories";
-import Collections from "./pages/Collections";
-import ExtractAudio from "./pages/ExtractAudio";
-import SpliceVideo from "./pages/SpliceVideo";
-import ImportExport from "./pages/ImportExport";
+import Files from './pages/Files'
+import Directories from './pages/Directories'
+import Collections from './pages/Collections'
+import ExtractAudio from './pages/ExtractAudio'
+import SpliceVideo from './pages/SpliceVideo'
+import ImportExport from './pages/ImportExport'
 
-import Navbar from "./components/Navbar";
+import Navbar from './components/Navbar'
 
-import { createHashRouter, Outlet } from "react-router-dom";
-import { Box } from "@mui/system";
-
+import { createHashRouter, Outlet } from 'react-router-dom'
+import { Box } from '@mui/system'
 
 const NavbarWrapper = () => {
   return (
@@ -19,37 +18,37 @@ const NavbarWrapper = () => {
         <Outlet />
       </Box>
     </Box>
-  );
-};
+  )
+}
 
 const router = createHashRouter([
   {
-    path: "/",
+    path: '/',
     element: <NavbarWrapper />,
     children: [
       {
-        path: "/",
+        path: '/',
         element: (
           <Files />
-        ),
+        )
       },
       {
-        path: "/directories",
+        path: '/directories',
         element: (
           <Directories />
-        ),
+        )
       },
       {
-        path: "/collections",
+        path: '/collections',
         element: (
           <Collections />
-        ),
+        )
       },
       {
-        path: "/extract-audio",
+        path: '/extract-audio',
         element: (
           <ExtractAudio />
-        ),
+        )
       },
       {
         path: '/splice-video',
@@ -58,13 +57,13 @@ const router = createHashRouter([
         )
       },
       {
-        path: "/import-export",
+        path: '/import-export',
         element: (
           <ImportExport />
-        ),
+        )
       }
-    ],
-  },
-]);
+    ]
+  }
+])
 
-export default router;
+export default router

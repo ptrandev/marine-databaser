@@ -1,6 +1,6 @@
-import { FC, createContext, useState, useEffect, useMemo } from 'react'
+import { type FC, createContext, useState, useEffect, useMemo } from 'react'
 import { ipcRenderer } from 'electron'
-import { Directory } from '../../electron/database/schemas'
+import { type Directory } from '../../electron/database/schemas'
 
 export interface DirectoriesContextValue {
   directories: Directory[]
@@ -35,7 +35,7 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
     ipcRenderer.send('list-directories-file-count')
 
     // return and await two promises for listed-directories and listed-directories-file-count
-    return Promise.all([
+    return await Promise.all([
       new Promise((resolve) => {
         ipcRenderer.once('listed-directories', (_, directories) => {
           setDirectories(directories)

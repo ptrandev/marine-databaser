@@ -1,10 +1,10 @@
-import { Delete } from "@mui/icons-material"
-import { IconButton, List, ListItemText, ListItemButton, Typography, Box, LinearProgress } from "@mui/material"
-import { ipcRenderer } from "electron"
-import { FC, useState } from "react"
+import { Delete } from '@mui/icons-material'
+import { IconButton, List, ListItemText, ListItemButton, Typography, Box, LinearProgress } from '@mui/material'
+import { ipcRenderer } from 'electron'
+import { type FC, useState } from 'react'
 
-import useDirectories from "@/hooks/useDirectories"
-import DirectoryDeleteModal from "./DirectoryDeleteModal"
+import useDirectories from '@/hooks/useDirectories'
+import DirectoryDeleteModal from './DirectoryDeleteModal'
 
 const DirectoryList: FC = () => {
   const { directories, directoriesFileCount, isDeletingDirectory } = useDirectories()
@@ -32,15 +32,17 @@ const DirectoryList: FC = () => {
           directories?.map((directory: any) => (
             <ListItemButton
               key={directory.id}
-              onClick={() => handleOpenDirectory(directory.path)}
+              onClick={() => { handleOpenDirectory(directory.path) }}
             >
               <ListItemText
                 primary={
                   <>
                     {directory.name}
                     <Typography variant='caption' display='inline'>
-                      {directoriesFileCount[directory.id] ? ` (${new Intl.NumberFormat().format(directoriesFileCount[directory.id])
-                        } files)` : ''}
+                      {directoriesFileCount[directory.id]
+                        ? ` (${new Intl.NumberFormat().format(directoriesFileCount[directory.id])
+                        } files)`
+                        : ''}
                     </Typography>
                   </>
                 }
@@ -67,7 +69,7 @@ const DirectoryList: FC = () => {
       </List>
       {
         directoryIdToDelete !== undefined && (
-          <DirectoryDeleteModal open={directoryIdToDelete !== undefined} onClose={() => setDirectoryIdToDelete(undefined)} directoryId={directoryIdToDelete!} />
+          <DirectoryDeleteModal open={directoryIdToDelete !== undefined} onClose={() => { setDirectoryIdToDelete(undefined) }} directoryId={directoryIdToDelete} />
         )
       }
     </>

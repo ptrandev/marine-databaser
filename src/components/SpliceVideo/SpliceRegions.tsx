@@ -1,8 +1,8 @@
-import { FC, useState } from 'react'
+import { type FC, useState } from 'react'
 import { Box, Button, IconButton, Stack, Typography } from '@mui/material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Add, Delete, Undo, Redo } from '@mui/icons-material'
-import { Modal, ModalProps } from '../Modal'
+import { Modal, type ModalProps } from '../Modal'
 
 interface DeleteModalProps extends Omit<ModalProps, 'children'> { }
 
@@ -55,7 +55,7 @@ const SpliceRegions: FC = () => {
     <>
       {
         deleteModalOpen && (
-          <DeleteModal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} />
+          <DeleteModal open={deleteModalOpen} onClose={() => { setDeleteModalOpen(false) }} />
         )
       }
       <Stack direction='row' flexWrap='wrap' justifyContent='space-between' alignItems='center' mb={4}>
@@ -83,7 +83,7 @@ const SpliceRegions: FC = () => {
             color='error'
             disabled={!selectedVideo || spliceRegions?.length === 0}
             endIcon={<Delete />}
-            onClick={() => setDeleteModalOpen(true)}
+            onClick={() => { setDeleteModalOpen(true) }}
           >
             Delete All Splice Regions
           </Button>

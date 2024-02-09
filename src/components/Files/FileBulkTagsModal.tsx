@@ -1,10 +1,10 @@
-import { FC, useState, useMemo, useEffect } from "react"
-import Modal from "@/components/Modal"
-import { Autocomplete, Box, TextField, Button, Stack, Typography, Chip } from "@mui/material"
-import useTags from "@/hooks/useTags"
-import useFiles from "@/hooks/useFiles"
-import { FileTag, Tag } from '../../../electron/database/schemas'
-import { FileWithMetadata } from "shared/types"
+import { type FC, useState, useMemo, useEffect } from 'react'
+import Modal from '@/components/Modal'
+import { Autocomplete, Box, TextField, Button, Stack, Typography, Chip } from '@mui/material'
+import useTags from '@/hooks/useTags'
+import useFiles from '@/hooks/useFiles'
+import { FileTag, type Tag } from '../../../electron/database/schemas'
+import { type FileWithMetadata } from 'shared/types'
 
 interface FileBulkTagsModal {
   open: boolean
@@ -37,9 +37,9 @@ const FileBulkTagsModal: FC<FileBulkTagsModal> = ({ open, handleClose }) => {
     await tagFiles(selectedFiles, tag).then((fileTags) => {
       // for each file, add the tag to the file if it doesn't already exist
       const newFiles = _files.map(file => {
-        // @ts-ignore
+        // @ts-expect-error
         if (fileTags.find(fileTag => fileTag?.file_id === file.id)) {
-          // @ts-ignore
+          // @ts-expect-error
           file.Tags = [...file.Tags, { id: fileTags.find(fileTag => fileTag.file_id === file.id).tag_id, name: tag }] as any
         }
 
@@ -83,22 +83,22 @@ const FileBulkTagsModal: FC<FileBulkTagsModal> = ({ open, handleClose }) => {
             size='small'
             fullWidth
             sx={{
-              whiteSpace: 'nowrap',
+              whiteSpace: 'nowrap'
             }}
             options={tags.map(tag => tag.name)}
             value={tag}
-            onChange={(_, value) => setTag(value ?? '')}
+            onChange={(_, value) => { setTag(value ?? '') }}
             renderInput={(params) => (
               <TextField
                 {...params}
                 placeholder='Add a tag...'
-                onChange={(e) => setTag(e.target.value)}
+                onChange={(e) => { setTag(e.target.value) }}
               />
             )}
           />
           <Box display='flex' alignItems='center'>
             <Button type='submit' sx={{
-              whiteSpace: 'nowrap',
+              whiteSpace: 'nowrap'
             }}
               variant='contained'
             >
@@ -114,7 +114,7 @@ const FileBulkTagsModal: FC<FileBulkTagsModal> = ({ open, handleClose }) => {
               </Typography>
               {
                 _tags.map(tag => (
-                  <Chip key={tag.id} label={tag.name} onDelete={() => handleDeleteTag(tag.id)} />
+                  <Chip key={tag.id} label={tag.name} onDelete={async () => { await handleDeleteTag(tag.id) }} />
                 ))
               }
             </Stack>

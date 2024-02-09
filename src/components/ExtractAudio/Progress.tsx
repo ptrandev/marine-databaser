@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { type FC, useState } from 'react'
 import useExtractAudio from '@/hooks/useExtractAudio'
 import OptionsModal from './OptionsModal'
 import ProgressComponent from '../Progress'
@@ -10,8 +10,8 @@ const Progress: FC = () => {
 
   return (
     <>
-      <ProgressComponent numCompleted={numCompletedFiles} totalToComplete={selectedFiles.length} isProcessing={isExtractingAudio} onProcess={() => setOptionsModalOpen(true)} processText='Extract Audio' />
-      <OptionsModal open={optionsModalOpen} onClose={() => setOptionsModalOpen(false)} />
+      <ProgressComponent numCompleted={numCompletedFiles} totalToComplete={selectedFiles.length} isProcessing={isExtractingAudio} onProcess={() => { setOptionsModalOpen(true) }} processText='Extract Audio' />
+      <OptionsModal open={optionsModalOpen} onClose={() => { setOptionsModalOpen(false) }} />
     </>
   )
 }

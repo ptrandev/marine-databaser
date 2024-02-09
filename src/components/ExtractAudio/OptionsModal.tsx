@@ -1,28 +1,28 @@
-import { FC, useState, useEffect } from 'react'
-import { Modal, ModalProps } from '../Modal'
+import { type FC, useState, useEffect } from 'react'
+import { Modal, type ModalProps } from '../Modal'
 import { Typography, Button, MenuItem, Grid, TextField, Checkbox, Stack } from '@mui/material'
 import useExtractAudio from '@/hooks/useExtractAudio'
 import { ipcRenderer } from 'electron'
-import { AudioFileFormat } from '../../../shared/types'
+import { type AudioFileFormat } from '../../../shared/types'
 import { enqueueSnackbar } from 'notistack'
 
-const fileFormats: {
+const fileFormats: Array<{
   value: AudioFileFormat
   label: string
-}[] = [
-    {
-      value: 'pcm_s16le',
-      label: 'WAV 16-Bit (recommended)'
-    },
-    {
-      value: 'pcm_s24le',
-      label: 'WAV 24-Bit',
-    },
-    {
-      value: 'pcm_s32le',
-      label: 'WAV 32-Bit'
-    },
-  ]
+}> = [
+  {
+    value: 'pcm_s16le',
+    label: 'WAV 16-Bit (recommended)'
+  },
+  {
+    value: 'pcm_s24le',
+    label: 'WAV 24-Bit'
+  },
+  {
+    value: 'pcm_s32le',
+    label: 'WAV 32-Bit'
+  }
+]
 
 const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
   const [fileFormat, setFileFormat] = useState<AudioFileFormat>('pcm_s16le')
@@ -62,7 +62,7 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
         </Typography>
         <Grid container my={2} spacing={2}>
           <Grid item xs={12}>
-            <TextField fullWidth label='File Format' variant='outlined' select value={fileFormat} onChange={(e) => setFileFormat(e.target.value as AudioFileFormat)}>
+            <TextField fullWidth label='File Format' variant='outlined' select value={fileFormat} onChange={(e) => { setFileFormat(e.target.value as AudioFileFormat) }}>
               {
                 fileFormats.map(({ value, label }) => (
                   <MenuItem key={value} value={value}>
@@ -89,7 +89,7 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
               )
             }
             <Stack direction='row' alignItems='center' mt={1}>
-              <Checkbox checked={useSameDirectory} onChange={(e) => setUseSameDirectory(e.target.checked)} />
+              <Checkbox checked={useSameDirectory} onChange={(e) => { setUseSameDirectory(e.target.checked) }} />
               <Typography variant='body2'>
                 Use same output directory as source file (recommended)
               </Typography>

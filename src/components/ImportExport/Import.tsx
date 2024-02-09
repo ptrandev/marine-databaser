@@ -1,10 +1,10 @@
-import { FC, useState } from "react";
-import { Box, Typography, Button } from "@mui/material";
-import { FileDownload } from "@mui/icons-material";
-import { ipcRenderer } from "electron";
-import useDirectories from "@/hooks/useDirectories";
-import useFiles from "@/hooks/useFiles";
-import { enqueueSnackbar } from "notistack";
+import { type FC, useState } from 'react'
+import { Box, Typography, Button } from '@mui/material'
+import { FileDownload } from '@mui/icons-material'
+import { ipcRenderer } from 'electron'
+import useDirectories from '@/hooks/useDirectories'
+import useFiles from '@/hooks/useFiles'
+import { enqueueSnackbar } from 'notistack'
 
 const Import: FC = () => {
   const { loadDirectories } = useDirectories()
@@ -57,4 +57,4 @@ const Import: FC = () => {
   )
 }
 
-export default Import;
+export default Import

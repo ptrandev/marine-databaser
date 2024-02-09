@@ -1,10 +1,10 @@
-import { FileWithMetadata } from "../../../shared/types"
-import { Typography, Box, Chip, Button, Autocomplete, TextField } from "@mui/material"
-import { Stack } from "@mui/system"
-import { ipcRenderer } from "electron"
-import { FC, useEffect, useMemo, useState } from "react"
-import useTags from "@/hooks/useTags"
-import { Modal, ModalProps } from "@/components/Modal"
+import { type FileWithMetadata } from '../../../shared/types'
+import { Typography, Box, Chip, Button, Autocomplete, TextField } from '@mui/material'
+import { Stack } from '@mui/system'
+import { ipcRenderer } from 'electron'
+import { type FC, useEffect, useMemo, useState } from 'react'
+import useTags from '@/hooks/useTags'
+import { Modal, type ModalProps } from '@/components/Modal'
 
 interface FileTagModalProps extends Omit<ModalProps, 'children'> {
   file: FileWithMetadata
@@ -22,7 +22,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
     await tagFile(file.id, tag).then(fileTag => {
       const newFile = { ...file } as FileWithMetadata
       if (fileTag) {
-        // @ts-ignore
+        // @ts-expect-error
         newFile.Tags = [...newFile.Tags, { id: fileTag.tag_id, name: tag }] as any
       }
 
@@ -69,22 +69,22 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
             size='small'
             fullWidth
             sx={{
-              whiteSpace: 'nowrap',
+              whiteSpace: 'nowrap'
             }}
             options={_tags.map(tag => tag.name)}
             value={tag}
-            onChange={(_, value) => setTag(value ?? '')}
+            onChange={(_, value) => { setTag(value ?? '') }}
             renderInput={(params) => (
               <TextField
                 {...params}
                 placeholder='Add a tag...'
-                onChange={(e) => setTag(e.target.value)}
+                onChange={(e) => { setTag(e.target.value) }}
               />
             )}
           />
           <Box display='flex' alignItems='center'>
             <Button type='submit' sx={{
-              whiteSpace: 'nowrap',
+              whiteSpace: 'nowrap'
             }}
               variant='contained'
             >
@@ -100,7 +100,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
               </Typography>
               {
                 file?.Tags.map(tag => (
-                  <Chip key={tag.id} label={tag.name} onDelete={() => handleDeleteTag(tag.id)} />
+                  <Chip key={tag.id} label={tag.name} onDelete={() => { handleDeleteTag(tag.id) }} />
                 ))
               }
             </Stack>

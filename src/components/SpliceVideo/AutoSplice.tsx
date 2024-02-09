@@ -1,9 +1,9 @@
 import { Box, Typography, Button, Input, InputLabel, Stack, Grid, LinearProgress, CircularProgress } from '@mui/material'
-import { FC, useState, useEffect } from 'react'
+import { type FC, useState, useEffect } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
-import { AutoSpliceSettings } from '../../../shared/types'
+import { type AutoSpliceSettings } from '../../../shared/types'
 import { ipcRenderer } from 'electron'
-import { Modal, ModalProps } from '../Modal'
+import { Modal, type ModalProps } from '../Modal'
 import { enqueueSnackbar } from 'notistack'
 
 const DEFAULT_AUTO_SPLICE_SETTINGS: AutoSpliceSettings = {
@@ -12,7 +12,7 @@ const DEFAULT_AUTO_SPLICE_SETTINGS: AutoSpliceSettings = {
   minFrequency: 0,
   maxFrequency: 20_000,
   minAmplitude: -10,
-  minDuration: 0.1,
+  minDuration: 0.1
 }
 
 interface AutoSpliceModalProps extends Omit<ModalProps, 'children'> {
@@ -32,7 +32,7 @@ const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSe
 
     ipcRenderer.send('auto-splice', {
       videoPath: selectedVideo,
-      autoSpliceSettings,
+      autoSpliceSettings
     })
 
     ipcRenderer.once('auto-spliced', (_, spliceRegions) => {
@@ -112,7 +112,7 @@ const AutoSplice: FC = () => {
   useEffect(() => {
     setAutoSpliceSettings({
       ...autoSpliceSettings,
-      endSeconds: videoDuration!,
+      endSeconds: videoDuration!
     })
   }, [videoDuration])
 
@@ -141,14 +141,16 @@ const AutoSplice: FC = () => {
               <Input
                 type='number'
                 value={autoSpliceSettings.startSeconds}
-                onChange={(e) => setAutoSpliceSettings({
-                  ...autoSpliceSettings,
-                  startSeconds: Number(e.target.value),
-                })}
+                onChange={(e) => {
+                  setAutoSpliceSettings({
+                    ...autoSpliceSettings,
+                    startSeconds: Number(e.target.value)
+                  })
+                }}
                 componentsProps={{
                   input: {
                     min: 0,
-                    max: autoSpliceSettings.endSeconds,
+                    max: autoSpliceSettings.endSeconds
                   }
                 }}
                 fullWidth
@@ -159,14 +161,16 @@ const AutoSplice: FC = () => {
               <Input
                 type='number'
                 value={autoSpliceSettings.endSeconds}
-                onChange={(e) => setAutoSpliceSettings({
-                  ...autoSpliceSettings,
-                  endSeconds: Number(e.target.value),
-                })}
+                onChange={(e) => {
+                  setAutoSpliceSettings({
+                    ...autoSpliceSettings,
+                    endSeconds: Number(e.target.value)
+                  })
+                }}
                 componentsProps={{
                   input: {
                     min: autoSpliceSettings.startSeconds,
-                    max: videoDuration!,
+                    max: videoDuration!
                   }
                 }}
                 fullWidth
@@ -177,14 +181,16 @@ const AutoSplice: FC = () => {
               <Input
                 type='number'
                 value={autoSpliceSettings.minFrequency}
-                onChange={(e) => setAutoSpliceSettings({
-                  ...autoSpliceSettings,
-                  minFrequency: Number(e.target.value),
-                })}
+                onChange={(e) => {
+                  setAutoSpliceSettings({
+                    ...autoSpliceSettings,
+                    minFrequency: Number(e.target.value)
+                  })
+                }}
                 componentsProps={{
                   input: {
                     min: 0,
-                    max: autoSpliceSettings.maxFrequency,
+                    max: autoSpliceSettings.maxFrequency
                   }
                 }}
                 fullWidth
@@ -195,13 +201,15 @@ const AutoSplice: FC = () => {
               <Input
                 type='number'
                 value={autoSpliceSettings.maxFrequency}
-                onChange={(e) => setAutoSpliceSettings({
-                  ...autoSpliceSettings,
-                  maxFrequency: Number(e.target.value),
-                })}
+                onChange={(e) => {
+                  setAutoSpliceSettings({
+                    ...autoSpliceSettings,
+                    maxFrequency: Number(e.target.value)
+                  })
+                }}
                 componentsProps={{
                   input: {
-                    min: autoSpliceSettings.minFrequency,
+                    min: autoSpliceSettings.minFrequency
                   }
                 }}
                 fullWidth
@@ -212,14 +220,16 @@ const AutoSplice: FC = () => {
               <Input
                 type='number'
                 value={autoSpliceSettings.minAmplitude}
-                onChange={(e) => setAutoSpliceSettings({
-                  ...autoSpliceSettings,
-                  minAmplitude: Number(e.target.value),
-                })}
+                onChange={(e) => {
+                  setAutoSpliceSettings({
+                    ...autoSpliceSettings,
+                    minAmplitude: Number(e.target.value)
+                  })
+                }}
                 componentsProps={{
                   input: {
                     min: -145,
-                    max: 0,
+                    max: 0
                   }
                 }}
                 fullWidth
@@ -230,14 +240,16 @@ const AutoSplice: FC = () => {
               <Input
                 type='number'
                 value={autoSpliceSettings.minDuration}
-                onChange={(e) => setAutoSpliceSettings({
-                  ...autoSpliceSettings,
-                  minDuration: Number(e.target.value),
-                })}
+                onChange={(e) => {
+                  setAutoSpliceSettings({
+                    ...autoSpliceSettings,
+                    minDuration: Number(e.target.value)
+                  })
+                }}
                 componentsProps={{
                   input: {
                     min: 0,
-                    max: videoDuration!,
+                    max: videoDuration!
                   }
                 }}
                 fullWidth
@@ -246,7 +258,7 @@ const AutoSplice: FC = () => {
           </Grid>
         </Box>
         <Box>
-          <Button variant='contained' onClick={() => setConfirmModalOpen(true)}>
+          <Button variant='contained' onClick={() => { setConfirmModalOpen(true) }}>
             Confirm Auto Splice
           </Button>
         </Box>
@@ -255,7 +267,7 @@ const AutoSplice: FC = () => {
         confirmModalOpen && (
           <AutoSpliceModal
             open={confirmModalOpen}
-            onClose={() => setConfirmModalOpen(false)}
+            onClose={() => { setConfirmModalOpen(false) }}
             autoSpliceSettings={autoSpliceSettings}
           />
         )

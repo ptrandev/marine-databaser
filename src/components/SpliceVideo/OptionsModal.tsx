@@ -1,11 +1,10 @@
-import { FC, useState } from 'react'
-import { Modal, ModalProps } from '../Modal'
+import { type FC, useState } from 'react'
+import { Modal, type ModalProps } from '../Modal'
 import { Typography, TextField, Stack, Checkbox, Grid, Button } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import path from 'path'
 import { enqueueSnackbar } from 'notistack'
-
 
 const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
   const { selectedVideo, spliceRegions, videoBasename, updateVideoBasename } = useSpliceVideo()
@@ -47,7 +46,7 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
             label='Output File Name'
             variant="outlined"
             value={videoBasename}
-            onChange={(e) => updateVideoBasename(e.target.value)}
+            onChange={(e) => { updateVideoBasename(e.target.value) }}
           />
           <Typography variant='caption'>
             <b>File Name Preview:</b> {videoBasename}{spliceRegions[0]?.name}{path.extname(selectedVideo)}
@@ -71,7 +70,7 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
           <Stack direction="row" alignItems="center" mt={useSameDirectory ? 0 : 1}>
             <Checkbox
               checked={useSameDirectory}
-              onChange={() => setUseSameDirectory(!useSameDirectory)}
+              onChange={() => { setUseSameDirectory(!useSameDirectory) }}
             />
             <Typography variant="body1">
               Use same directory as source file

@@ -1,6 +1,6 @@
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Box, Button, Typography, Stack, Grid } from '@mui/material'
-import { FC, useEffect } from 'react'
+import { type FC, useEffect } from 'react'
 import { ipcRenderer } from 'electron'
 import Progress from '@/components/SpliceVideo/Progress'
 import SpliceRegions from '@/components/SpliceVideo/SpliceRegions'
@@ -53,7 +53,7 @@ const SpliceVideo: FC = () => {
           <Grid item xs={12} md={6}
             style={{
               height: 'calc(100vh - 64px - 128px - 8px)',
-              overflowY: 'auto',
+              overflowY: 'auto'
             }}
           >
             {

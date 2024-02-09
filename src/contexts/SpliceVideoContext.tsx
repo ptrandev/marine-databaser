@@ -1,7 +1,6 @@
 import { ipcRenderer } from 'electron'
-import { FC, createContext, useMemo, useState } from 'react'
-import { useEffect } from 'react'
-import { SpliceRegion } from '../../shared/types'
+import { type FC, createContext, useMemo, useState, useEffect } from 'react'
+import { type SpliceRegion } from '../../shared/types'
 import path from 'path'
 import { enqueueSnackbar } from 'notistack'
 
@@ -48,11 +47,11 @@ export interface SpliceVideoContextValue {
   deleteSpliceRegion: (spliceRegion: SpliceRegion, options?: HistoryOptions) => void
   modifySpliceRegion: (spliceRegion: SpliceRegion, newSpliceRegion: SpliceRegion, options?: HistoryOptions) => void
   deleteAllSpliceRegions: (options?: HistoryOptions) => void
-  loadSpliceRegions: (spliceRegions : SpliceRegion[], options?: HistoryOptions) => void
+  loadSpliceRegions: (spliceRegions: SpliceRegion[], options?: HistoryOptions) => void
   numSpliceRegionsCompleted: number
   isSplicingVideo: boolean
   handleSpliceVideo: ({
-    outputDirectory,
+    outputDirectory
   }: {
     outputDirectory?: string
   }) => void
@@ -105,7 +104,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   }
 
   const handleSpliceVideo = ({
-    outputDirectory,
+    outputDirectory
   }: {
     outputDirectory?: string
   }) => {
@@ -122,7 +121,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       videoPath: selectedVideo,
       spliceRegions,
       outputDirectory,
-      videoBasename,
+      videoBasename
     })
 
     ipcRenderer.once('spliced-video', () => {
@@ -142,9 +141,9 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
   const addEventToEventHistory = (event: Event, {
     clearUndoHistory = true,
-    addToEventHistory = true,
+    addToEventHistory = true
   }: HistoryOptions = {
-    }) => {
+  }) => {
     // if there are events in the undo history, clear them
     if (clearUndoHistory && undoHistory.length > 0) {
       setUndoHistory([])
@@ -166,31 +165,31 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       case 'add':
         deleteSpliceRegion(event.spliceRegion, {
           clearUndoHistory: false,
-          addToEventHistory: false,
+          addToEventHistory: false
         })
         break
       case 'delete':
         addSpliceRegion(event.spliceRegion, {
           clearUndoHistory: false,
-          addToEventHistory: false,
+          addToEventHistory: false
         })
         break
       case 'modify':
         modifySpliceRegion(event.newSpliceRegion, event.spliceRegion, {
           clearUndoHistory: false,
-          addToEventHistory: false,
+          addToEventHistory: false
         })
         break
       case 'load':
         deleteAllSpliceRegions({
           clearUndoHistory: false,
-          addToEventHistory: false,
+          addToEventHistory: false
         })
         break
       case 'deleteAll':
         loadSpliceRegions(event.spliceRegions, {
           clearUndoHistory: false,
-          addToEventHistory: false,
+          addToEventHistory: false
         })
         break
     }
@@ -212,27 +211,27 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     switch (event.type) {
       case 'add':
         addSpliceRegion(event.spliceRegion, {
-          clearUndoHistory: false,
+          clearUndoHistory: false
         })
         break
       case 'delete':
         deleteSpliceRegion(event.spliceRegion, {
-          clearUndoHistory: false,
+          clearUndoHistory: false
         })
         break
       case 'modify':
         modifySpliceRegion(event.spliceRegion, event.newSpliceRegion, {
-          clearUndoHistory: false,
+          clearUndoHistory: false
         })
         break
       case 'load':
         loadSpliceRegions(event.spliceRegions, {
-          clearUndoHistory: false,
+          clearUndoHistory: false
         })
         break
       case 'deleteAll':
         deleteAllSpliceRegions({
-          clearUndoHistory: false,
+          clearUndoHistory: false
         })
         break
     }
@@ -258,17 +257,17 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
    */
   const addSpliceRegion = (spliceRegion: SpliceRegion, {
     clearUndoHistory = true,
-    addToEventHistory = true,
+    addToEventHistory = true
   }: HistoryOptions = {
-    }) => {
+  }) => {
     updateSpliceRegions([...spliceRegions, spliceRegion])
 
     addEventToEventHistory({
       type: 'add',
-      spliceRegion,
+      spliceRegion
     }, {
       clearUndoHistory,
-      addToEventHistory,
+      addToEventHistory
     })
   }
 
@@ -293,19 +292,19 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
    */
   const deleteSpliceRegion = (spliceRegion: SpliceRegion, {
     clearUndoHistory = true,
-    addToEventHistory = true,
+    addToEventHistory = true
   }: HistoryOptions = {
-    }) => {
+  }) => {
     // remember to compare values and not references
     // ensure this works with spliceRegions that have the same start and end
     updateSpliceRegions(spliceRegions.filter((spliceRegion_) => spliceRegion_.start !== spliceRegion.start && spliceRegion_.end !== spliceRegion.end))
 
     addEventToEventHistory({
       type: 'delete',
-      spliceRegion,
+      spliceRegion
     }, {
       clearUndoHistory,
-      addToEventHistory,
+      addToEventHistory
     })
   }
 
@@ -316,9 +315,9 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
    */
   const modifySpliceRegion = (spliceRegion: SpliceRegion, newSpliceRegion: SpliceRegion, {
     clearUndoHistory = true,
-    addToEventHistory = true,
+    addToEventHistory = true
   }: HistoryOptions = {
-    }) => {
+  }) => {
     // find spliceRegion, replace with newSpliceRegion
     updateSpliceRegions(spliceRegions.map((spliceRegion_) => {
       if (spliceRegion_.start === spliceRegion.start && spliceRegion_.end === spliceRegion.end && spliceRegion.name === spliceRegion_.name) {
@@ -331,10 +330,10 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     addEventToEventHistory({
       type: 'modify',
       spliceRegion,
-      newSpliceRegion,
+      newSpliceRegion
     }, {
       clearUndoHistory,
-      addToEventHistory,
+      addToEventHistory
     })
   }
 
@@ -344,9 +343,9 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
    */
   const loadSpliceRegions = (spliceRegions: SpliceRegion[], {
     clearUndoHistory = true,
-    addToEventHistory = true,
+    addToEventHistory = true
   }: HistoryOptions = {
-    }) => {
+  }) => {
     updateSpliceRegions(spliceRegions)
 
     if (clearUndoHistory) {
@@ -359,10 +358,10 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
     addEventToEventHistory({
       type: 'load',
-      spliceRegions,
+      spliceRegions
     }, {
       clearUndoHistory,
-      addToEventHistory,
+      addToEventHistory
     })
   }
 
@@ -371,15 +370,15 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
    */
   const deleteAllSpliceRegions = ({
     clearUndoHistory = true,
-    addToEventHistory = true,
+    addToEventHistory = true
   }: HistoryOptions = {
-    }) => {
+  }) => {
     addEventToEventHistory({
       type: 'deleteAll',
-      spliceRegions,
+      spliceRegions
     }, {
       clearUndoHistory,
-      addToEventHistory,
+      addToEventHistory
     })
 
     updateSpliceRegions([])
@@ -395,7 +394,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     }
 
     ipcRenderer.send('get-video-framerate', {
-      videoPath: selectedVideo,
+      videoPath: selectedVideo
     })
 
     ipcRenderer.once('got-video-framerate', (_, framerate) => {
@@ -409,7 +408,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     })
 
     ipcRenderer.send('get-video-duration', {
-      videoPath: selectedVideo,
+      videoPath: selectedVideo
     })
 
     ipcRenderer.once('got-video-duration', (_, duration) => {
@@ -435,7 +434,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
     ipcRenderer.on('splice-point-video-error', (_, errMessage) => {
       enqueueSnackbar(`Error splicing video: ${errMessage}`, { variant: 'error' })
-    });
+    })
 
     return () => {
       ipcRenderer.removeAllListeners('spliced-point-video')
@@ -451,7 +450,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   }, [eventHistory.length])
 
   useEffect(() => {
-    setVideoBasename(path.basename(selectedVideo).replace(/\.[^/.]+$/, ""))
+    setVideoBasename(path.basename(selectedVideo).replace(/\.[^/.]+$/, ''))
   }, [selectedVideo])
 
   const contextValue = useMemo<SpliceVideoContextValue>(() => {
@@ -477,7 +476,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       undo,
       redo,
       canUndo,
-      canRedo,
+      canRedo
     }
   }, [selectedVideo, numSpliceRegionsCompleted, updateSelectedVideo, videoBasename, updateVideoBasename, spliceRegions, isSplicingVideo, handleSpliceVideo, deleteSpliceRegion, deleteAllSpliceRegions, loadSpliceRegions, initSpliceRegion, modifySpliceRegion, videoFramerate, videoRef, updateVideoRef, videoDuration, history, undo, redo, canUndo, canRedo])
 

@@ -1,6 +1,6 @@
-import { useContext } from 'react';
-import DirectoriesContext, { DirectoriesContextValue } from '../contexts/DirectoriesContext';
+import { useContext } from 'react'
+import DirectoriesContext, { type DirectoriesContextValue } from '../contexts/DirectoriesContext'
 
-const useDirectories = (): DirectoriesContextValue => useContext(DirectoriesContext);
+const useDirectories = (): DirectoriesContextValue => useContext(DirectoriesContext)
 
-export default useDirectories;
+export default useDirectories

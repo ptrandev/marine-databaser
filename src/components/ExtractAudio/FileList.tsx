@@ -1,5 +1,5 @@
-import { FC, useState } from 'react'
-import { Virtuoso } from "react-virtuoso"
+import { type FC, useState } from 'react'
+import { Virtuoso } from 'react-virtuoso'
 import { List, ListItem, ListItemText, Typography, IconButton, Stack, Button, Box } from '@mui/material'
 import { Delete } from '@mui/icons-material'
 import useExtractAudio from '@/hooks/useExtractAudio'
@@ -20,12 +20,12 @@ const FileList: FC = () => {
       <List>
         <ListItem
           sx={{
-            mb: 2,
+            mb: 2
           }}
           secondaryAction={
             <IconButton
               color='error'
-              onClick={() => setShowDeleteModal(true)}
+              onClick={() => { setShowDeleteModal(true) }}
               disabled={isExtractingAudio || selectedFiles.length === 0}
             >
               <Delete />
@@ -39,7 +39,7 @@ const FileList: FC = () => {
             <ListItem
               key={file}
               secondaryAction={
-                <IconButton color='error' onClick={() => deleteSelectedFiles([file])} disabled={isExtractingAudio}>
+                <IconButton color='error' onClick={() => { deleteSelectedFiles([file]) }} disabled={isExtractingAudio}>
                   <Delete />
                 </IconButton>
               }
@@ -53,7 +53,7 @@ const FileList: FC = () => {
       </List>
       <Modal
         open={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
+        onClose={() => { setShowDeleteModal(false) }}
       >
         <Stack spacing={2}>
           <Typography variant='h5'>
@@ -64,7 +64,7 @@ const FileList: FC = () => {
           </Typography>
           <Stack direction='row' justifyContent='flex-end' spacing={2}>
             <Box>
-              <Button onClick={() => setShowDeleteModal(false)}>
+              <Button onClick={() => { setShowDeleteModal(false) }}>
                 Cancel
               </Button>
             </Box>

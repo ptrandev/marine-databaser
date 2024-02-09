@@ -1,14 +1,12 @@
-import { useEffect } from "react";
+import { useEffect } from 'react'
 
-interface useEffectDebounced {
-    (effect: () => void, deps: any[], delay: number): void;
-}
+type useEffectDebounced = (effect: () => void, deps: any[], delay: number) => void
 
-export const useEffectDebounced : useEffectDebounced = (effect, deps, delay) => {
-    useEffect(() => {
-        const handler = setTimeout(() => effect(), delay);
+export const useEffectDebounced: useEffectDebounced = (effect, deps, delay) => {
+  useEffect(() => {
+    const handler = setTimeout(() => { effect() }, delay)
 
-        return () => clearTimeout(handler);
+    return () => { clearTimeout(handler) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [...(deps || []), delay]);
+  }, [...(deps || []), delay])
 }

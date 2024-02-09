@@ -1,10 +1,8 @@
-import { FC } from 'react'
+import { type FC, useState } from 'react'
 import { ipcRenderer } from 'electron'
 import { Box, Typography, Button } from '@mui/material'
 import { FileUpload } from '@mui/icons-material'
-import { useState } from 'react'
 import { enqueueSnackbar } from 'notistack'
-
 
 const Export: FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false)

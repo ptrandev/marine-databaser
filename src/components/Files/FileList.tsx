@@ -1,15 +1,15 @@
-import { FC, useState, useMemo } from "react"
-import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack, Checkbox } from "@mui/material"
-import { ipcRenderer } from "electron"
+import { type FC, useState, useMemo } from 'react'
+import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack, Checkbox } from '@mui/material'
+import { ipcRenderer } from 'electron'
 
-import { Virtuoso } from "react-virtuoso"
-import { FileOpen, Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter, NoteAlt, Plagiarism } from "@mui/icons-material"
-import FileTagsModal from "./FileTagsModal"
-import FileRenameModal from "./FileRenameModal"
-import FileNotesModal from "./FileNotesModal"
+import { Virtuoso } from 'react-virtuoso'
+import { FileOpen, Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter, NoteAlt, Plagiarism } from '@mui/icons-material'
+import FileTagsModal from './FileTagsModal'
+import FileRenameModal from './FileRenameModal'
+import FileNotesModal from './FileNotesModal'
 
-import { FileWithMetadata, MimeTypes } from "../../../shared/types"
-import useFiles from "@/hooks/useFiles"
+import { type FileWithMetadata, MimeTypes } from '../../../shared/types'
+import useFiles from '@/hooks/useFiles'
 
 const FileList: FC = () => {
   const { files, loadFiles, selectedFiles, updateSelectedFiles, searchTerm } = useFiles()
@@ -73,9 +73,9 @@ const FileList: FC = () => {
                     e.stopPropagation()
 
                     updateSelectedFiles(
-                      checked ?
-                        selectedFiles.filter(id => id !== file.id) :
-                        [...selectedFiles, file.id]
+                      checked
+                        ? selectedFiles.filter(id => id !== file.id)
+                        : [...selectedFiles, file.id]
                     )
                   }}
                 />
@@ -185,7 +185,7 @@ const FileList: FC = () => {
         fileNotesFile && (
           <FileNotesModal
             open={!!fileNotesFile}
-            onClose={() => setFileNotesFile(undefined)}
+            onClose={() => { setFileNotesFile(undefined) }}
             file={fileNotesFile}
           />
         )

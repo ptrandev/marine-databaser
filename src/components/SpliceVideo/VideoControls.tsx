@@ -1,4 +1,4 @@
-import { FC, useEffect, useState, useMemo } from 'react'
+import { type FC, useEffect, useState, useMemo } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Box, IconButton, Stack, Tooltip } from '@mui/material'
 import { FirstPage, LastPage, PlayArrow, SkipNext, SkipPrevious, Pause, Replay, Replay5, Forward5, Replay10, Forward10 } from '@mui/icons-material'
@@ -102,21 +102,21 @@ const VideoControls: FC = () => {
               </Box>
               <Box>
                 <Tooltip title='Go backward 10 seconds'>
-                  <IconButton onClick={() => handleSecondsOffset(-10)}>
+                  <IconButton onClick={() => { handleSecondsOffset(-10) }}>
                     <Replay10 />
                   </IconButton>
                 </Tooltip>
               </Box>
               <Box>
                 <Tooltip title='Go backward 5 seconds'>
-                  <IconButton onClick={() => handleSecondsOffset(-5)}>
+                  <IconButton onClick={() => { handleSecondsOffset(-5) }}>
                     <Replay5 />
                   </IconButton>
                 </Tooltip>
               </Box>
               <Box>
                 <Tooltip title='Go backward 1 second'>
-                  <IconButton onClick={() => handleSecondsOffset(-1)}>
+                  <IconButton onClick={() => { handleSecondsOffset(-1) }}>
                     <Replay />
                   </IconButton>
                 </Tooltip>
@@ -146,21 +146,21 @@ const VideoControls: FC = () => {
               </Box>
               <Box>
                 <Tooltip title='Go forward 1 second'>
-                  <IconButton onClick={() => handleSecondsOffset(1)}>
+                  <IconButton onClick={() => { handleSecondsOffset(1) }}>
                     <Replay sx={{ transform: 'scaleX(-1)' }} />
                   </IconButton>
                 </Tooltip>
               </Box>
               <Box>
                 <Tooltip title='Go forward 5 seconds'>
-                  <IconButton onClick={() => handleSecondsOffset(5)}>
+                  <IconButton onClick={() => { handleSecondsOffset(5) }}>
                     <Forward5 />
                   </IconButton>
                 </Tooltip>
               </Box>
               <Box>
                 <Tooltip title='Go forward 10 seconds'>
-                  <IconButton onClick={() => handleSecondsOffset(10)}>
+                  <IconButton onClick={() => { handleSecondsOffset(10) }}>
                     <Forward10 />
                   </IconButton>
                 </Tooltip>
