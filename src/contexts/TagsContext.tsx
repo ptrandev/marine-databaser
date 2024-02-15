@@ -59,7 +59,7 @@ export const TagsProvider: FC<TagsProviderProps> = ({ children }) => {
   const tagFiles = async (fileIds: number[], tag: string): Promise<FileTag[]> => {
     ipcRenderer.send('tag-files', { file_ids: fileIds, tag })
 
-    return await new Promise((resolve, _) => {
+    return await new Promise((resolve, _reject) => {
       ipcRenderer.once('tagged-files', (_, fileTags: FileTag[]) => {
         void loadTags()
         resolve(fileTags)
