@@ -14,15 +14,15 @@ const FileNotesModal: FC<FileNotesModalProps> = ({ open, onClose, file }) => {
   const [notes, setNotes] = useState<FileNote[]>([])
   const [note, setNote] = useState<string>('')
 
-  const handleListNotes = () => {
+  const handleListNotes = (): void => {
     ipcRenderer.send('list-notes', { file_id: file.id })
 
-    ipcRenderer.once('listed-notes', (_, notes) => {
+    ipcRenderer.once('listed-notes', (_, notes: FileNote[]) => {
       setNotes(notes)
     })
   }
 
-  const handleAddNote = () => {
+  const handleAddNote = (): void => {
     ipcRenderer.send('add-note', { file_id: file.id, note })
 
     setNote('')
@@ -32,7 +32,7 @@ const FileNotesModal: FC<FileNotesModalProps> = ({ open, onClose, file }) => {
     })
   }
 
-  const handleDeleteNote = (id: number) => {
+  const handleDeleteNote = (id: number): void => {
     ipcRenderer.send('delete-note', { id })
 
     ipcRenderer.once('deleted-note', () => {
@@ -40,10 +40,10 @@ const FileNotesModal: FC<FileNotesModalProps> = ({ open, onClose, file }) => {
     })
   }
 
-  const handleUpdateNote = async (id: number, note: string) => {
+  const handleUpdateNote = async (id: number, note: string): Promise<void> => {
     ipcRenderer.send('update-note', { id, note })
 
-    await new Promise<void>((resolve, _) => {
+    await new Promise<void>((resolve, _reject) => {
       ipcRenderer.once('updated-note', () => {
         handleListNotes()
         resolve()
@@ -102,7 +102,12 @@ interface NoteProps {
 
 const Note: FC<NoteProps> = ({ note, handleDeleteNote, handleUpdateNote }) => {
   const [edited, setEdited] = useState<boolean>(false)
-  const [_note, _setNote] = useState<string>(note.note)
+  const [_note, _setNote] = useState<string>(note.note as string)
+
+  const handleOnBlur = async (): Promise<void> => {
+    await handleUpdateNote(note.id as number, _note)
+    setEdited(false)
+  }
 
   return (
     <ListItem key={note.id}>
@@ -117,10 +122,7 @@ const Note: FC<NoteProps> = ({ note, handleDeleteNote, handleUpdateNote }) => {
               rows={4}
               value={_note}
               onChange={e => { _setNote(e.target.value) }}
-              onBlur={async () => {
-                await handleUpdateNote(note.id, _note)
-                setEdited(false)
-              }}
+              onBlur={() => { void handleOnBlur() }}
             />
           </>
           : <ListItemText primary={note.note} />
@@ -136,7 +138,7 @@ const Note: FC<NoteProps> = ({ note, handleDeleteNote, handleUpdateNote }) => {
       <IconButton
         aria-label='delete'
         color='error'
-        onClick={() => { handleDeleteNote(note.id) }}
+        onClick={() => { handleDeleteNote(note.id as number) }}
       >
         <Delete />
       </IconButton>

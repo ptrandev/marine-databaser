@@ -22,7 +22,7 @@ const RefreshButton: FC = () => {
     setIsRefreshingDirectories(true)
     ipcRenderer.send('refresh-directories')
     ipcRenderer.once('refreshed-directories', () => {
-      loadDirectories()
+      void loadDirectories()
     })
   }
 

@@ -65,7 +65,7 @@ export interface SpliceVideoContextValue {
   canRedo: boolean
 }
 
-const SpliceVideoContext = createContext<SpliceVideoContextValue>(undefined as any)
+const SpliceVideoContext = createContext<SpliceVideoContextValue | null>(null)
 
 interface SpliceVideoProviderProps {
   children: React.ReactNode
@@ -99,7 +99,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     return undoHistory.length > 0
   }, [undoHistory.length])
 
-  const updateVideoRef = (video: HTMLVideoElement | null) => {
+  const updateVideoRef = (video: HTMLVideoElement | null): void => {
     setVideoRef(video)
   }
 
@@ -107,7 +107,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     outputDirectory
   }: {
     outputDirectory?: string
-  }) => {
+  }): void => {
     // get length of video
     const video = document.getElementById('splice-video') as HTMLVideoElement
 
@@ -130,11 +130,11 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     })
   }
 
-  const updateVideoBasename = (basename: string) => {
+  const updateVideoBasename = (basename: string): void => {
     setVideoBasename(basename)
   }
 
-  const updateSelectedVideo = (video: string) => {
+  const updateSelectedVideo = (video: string): void => {
     setSelectedVideo(video)
     setSpliceRegions([])
   }
@@ -143,7 +143,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     clearUndoHistory = true,
     addToEventHistory = true
   }: HistoryOptions = {
-  }) => {
+  }): void => {
     // if there are events in the undo history, clear them
     if (clearUndoHistory && undoHistory.length > 0) {
       setUndoHistory([])
@@ -154,7 +154,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     }
   }
 
-  const undo = () => {
+  const undo = (): void => {
     if (eventHistory.length === 0) {
       return
     }
@@ -201,7 +201,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     setUndoHistory((prev) => [...prev, event])
   }
 
-  const redo = () => {
+  const redo = (): void => {
     if (undoHistory.length === 0) {
       return
     }
@@ -243,7 +243,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   /**
    * Dedupe splice regions when they are updated
    */
-  const updateSpliceRegions = (spliceRegions: SpliceRegion[]) => {
+  const updateSpliceRegions = (spliceRegions: SpliceRegion[]): void => {
     // remove duplicates (remember to compare values and not references)
     setSpliceRegions(
       spliceRegions
@@ -259,7 +259,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     clearUndoHistory = true,
     addToEventHistory = true
   }: HistoryOptions = {
-  }) => {
+  }): void => {
     updateSpliceRegions([...spliceRegions, spliceRegion])
 
     addEventToEventHistory({
@@ -275,8 +275,10 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
    * Automatically determines where to initialize a splice region based on the current time
    * @param currentTime in seconds
   */
-  const initSpliceRegion = (currentTime: number) => {
-    const regionTime = [currentTime, currentTime + 0.5 > videoDuration! ? currentTime - 0.5 : currentTime + 0.5]
+  const initSpliceRegion = (currentTime: number): void => {
+    if (!videoDuration) return
+
+    const regionTime = [currentTime, currentTime + 0.5 > videoDuration ? currentTime - 0.5 : currentTime + 0.5]
     regionTime.sort((a, b) => a - b)
 
     addSpliceRegion({
@@ -294,7 +296,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     clearUndoHistory = true,
     addToEventHistory = true
   }: HistoryOptions = {
-  }) => {
+  }): void => {
     // remember to compare values and not references
     // ensure this works with spliceRegions that have the same start and end
     updateSpliceRegions(spliceRegions.filter((spliceRegion_) => spliceRegion_.start !== spliceRegion.start && spliceRegion_.end !== spliceRegion.end))
@@ -317,7 +319,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     clearUndoHistory = true,
     addToEventHistory = true
   }: HistoryOptions = {
-  }) => {
+  }): void => {
     // find spliceRegion, replace with newSpliceRegion
     updateSpliceRegions(spliceRegions.map((spliceRegion_) => {
       if (spliceRegion_.start === spliceRegion.start && spliceRegion_.end === spliceRegion.end && spliceRegion.name === spliceRegion_.name) {
@@ -345,7 +347,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     clearUndoHistory = true,
     addToEventHistory = true
   }: HistoryOptions = {
-  }) => {
+  }): void => {
     updateSpliceRegions(spliceRegions)
 
     if (clearUndoHistory) {
@@ -372,7 +374,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     clearUndoHistory = true,
     addToEventHistory = true
   }: HistoryOptions = {
-  }) => {
+  }): void => {
     addEventToEventHistory({
       type: 'deleteAll',
       spliceRegions
@@ -397,10 +399,11 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       videoPath: selectedVideo
     })
 
-    ipcRenderer.once('got-video-framerate', (_, framerate) => {
+    ipcRenderer.once('got-video-framerate', (_, framerate: string) => {
       // evaluate the string as a number; it is in the form of '30/1'
-      framerate = eval(framerate)
-      setVideoFramerate(framerate)
+      // eslint-disable-next-line no-eval
+      const _framerate: number = eval(framerate)
+      setVideoFramerate(_framerate)
     })
 
     ipcRenderer.once('get-video-framerate-error', (_, errMessage) => {
@@ -411,7 +414,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       videoPath: selectedVideo
     })
 
-    ipcRenderer.once('got-video-duration', (_, duration) => {
+    ipcRenderer.once('got-video-duration', (_, duration: number) => {
       setVideoDuration(duration)
     })
 

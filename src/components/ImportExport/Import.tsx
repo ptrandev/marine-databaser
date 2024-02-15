@@ -12,7 +12,7 @@ const Import: FC = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  const handleDatabaseImport = () => {
+  const handleDatabaseImport = (): void => {
     setIsLoading(true)
 
     ipcRenderer.send('database-import')
@@ -30,7 +30,7 @@ const Import: FC = () => {
     ipcRenderer.once('database-import-success', () => {
       enqueueSnackbar('Database imported successfully.', { variant: 'success' })
 
-      loadDirectories()
+      void loadDirectories()
       loadFiles()
 
       setIsLoading(false)

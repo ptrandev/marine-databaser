@@ -10,9 +10,9 @@ interface FileRenameModalProps extends Omit<ModalProps, 'children'> {
 }
 
 const FileRenameModal: FC<FileRenameModalProps> = ({ open, onClose, file, setFile }) => {
-  const [name, setName] = useState<string>(file.name)
+  const [name, setName] = useState<string>(file.name as string)
 
-  const onFileRename = () => {
+  const onFileRename = (): void => {
     if (!name) return
 
     ipcRenderer.send('rename-file', { file, name })

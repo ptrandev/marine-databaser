@@ -3,15 +3,15 @@ import Modal from '@/components/Modal'
 import { Autocomplete, Box, TextField, Button, Stack, Typography, Chip } from '@mui/material'
 import useTags from '@/hooks/useTags'
 import useFiles from '@/hooks/useFiles'
-import { FileTag, type Tag } from '../../../electron/database/schemas'
+import { type Tag } from '../../../electron/database/schemas'
 import { type FileWithMetadata } from 'shared/types'
 
-interface FileBulkTagsModal {
+interface FileBulkTagsModalProps {
   open: boolean
   handleClose: () => void
 }
 
-const FileBulkTagsModal: FC<FileBulkTagsModal> = ({ open, handleClose }) => {
+const FileBulkTagsModal: FC<FileBulkTagsModalProps> = ({ open, handleClose }) => {
   const { tags, untagFiles, tagFiles } = useTags()
   const { files, selectedFiles } = useFiles()
 
@@ -31,15 +31,15 @@ const FileBulkTagsModal: FC<FileBulkTagsModal> = ({ open, handleClose }) => {
     }, [])
   }, [_files])
 
-  const onAddTag = async () => {
+  const onAddTag = async (): Promise<void> => {
     if (!tag) return
 
     await tagFiles(selectedFiles, tag).then((fileTags) => {
       // for each file, add the tag to the file if it doesn't already exist
       const newFiles = _files.map(file => {
-        // @ts-expect-error
+        // @ts-expect-error - this is a hack to get around the fact that the type of file is not correct for some reason
         if (fileTags.find(fileTag => fileTag?.file_id === file.id)) {
-          // @ts-expect-error
+          // @ts-expect-error - this is a hack to get around the fact that the type of file is not correct for some reason
           file.Tags = [...file.Tags, { id: fileTags.find(fileTag => fileTag.file_id === file.id).tag_id, name: tag }] as any
         }
 
@@ -52,11 +52,11 @@ const FileBulkTagsModal: FC<FileBulkTagsModal> = ({ open, handleClose }) => {
     setTag('')
   }
 
-  const handleDeleteTag = async (tag_id: number) => {
-    await untagFiles(selectedFiles, tag_id).then(() => {
+  const handleDeleteTag = async (tagId: number): Promise<void> => {
+    await untagFiles(selectedFiles, tagId).then(() => {
       // remove the tag from the files
       const newFiles = _files.map(file => {
-        file.Tags = file.Tags.filter(tag => tag.id !== tag_id)
+        file.Tags = file.Tags.filter(tag => tag.id !== tagId)
         return file
       })
 
@@ -65,7 +65,7 @@ const FileBulkTagsModal: FC<FileBulkTagsModal> = ({ open, handleClose }) => {
   }
 
   useEffect(() => {
-    setFiles(files.filter(file => selectedFiles.includes(file.id)))
+    setFiles(files.filter(file => selectedFiles.includes(file.id as number)))
   }, [files, selectedFiles])
 
   return (
@@ -76,7 +76,7 @@ const FileBulkTagsModal: FC<FileBulkTagsModal> = ({ open, handleClose }) => {
         </Typography>
         <Box display='flex' component='form' onSubmit={(e) => {
           e.preventDefault()
-          onAddTag()
+          void onAddTag()
         }} gap={2}>
           <Autocomplete
             freeSolo
@@ -87,7 +87,7 @@ const FileBulkTagsModal: FC<FileBulkTagsModal> = ({ open, handleClose }) => {
             }}
             options={tags.map(tag => tag.name)}
             value={tag}
-            onChange={(_, value) => { setTag(value ?? '') }}
+            onChange={(_, value) => { setTag(value as string ?? '') }}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -114,7 +114,7 @@ const FileBulkTagsModal: FC<FileBulkTagsModal> = ({ open, handleClose }) => {
               </Typography>
               {
                 _tags.map(tag => (
-                  <Chip key={tag.id} label={tag.name} onDelete={async () => { await handleDeleteTag(tag.id) }} />
+                  <Chip key={tag.id} label={tag.name} onDelete={() => { void handleDeleteTag(tag.id as number) }} />
                 ))
               }
             </Stack>

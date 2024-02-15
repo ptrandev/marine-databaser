@@ -16,13 +16,14 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
 
   const [tag, setTag] = useState<string>('')
 
-  const onAddTag = async () => {
+  const onAddTag = async (): Promise<void> => {
     if (!tag) return
 
-    await tagFile(file.id, tag).then(fileTag => {
-      const newFile = { ...file } as FileWithMetadata
+    await tagFile(file.id as number, tag).then(fileTag => {
+      // @ts-expect-error - this is a hack to get around the fact that the type of file.Tags is readonly
+      const newFile: FileWithMetadata = { ...file }
       if (fileTag) {
-        // @ts-expect-error
+        // @ts-expect-error - this is a hack to get around the fact that the type of file.Tags is readonly
         newFile.Tags = [...newFile.Tags, { id: fileTag.tag_id, name: tag }] as any
       }
 
@@ -32,12 +33,13 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
     setTag('')
   }
 
-  const handleDeleteTag = (tag_id: number) => {
-    const file_id: number = file.id
+  const handleDeleteTag = async (tagId: number): Promise<void> => {
+    const fileId: number = file.id
 
-    untagFile(file_id, tag_id).then(() => {
-      const newFile = { ...file } as FileWithMetadata
-      newFile.Tags = newFile.Tags.filter(tag => tag.id !== tag_id) as any
+    await untagFile(fileId, tagId).then(() => {
+      // @ts-expect-error - this is a hack to get around the fact that the type of file.Tags is readonly
+      const newFile: FileWithMetadata = { ...file }
+      newFile.Tags = newFile.Tags.filter(tag => tag.id !== tagId) as any
       setFile(newFile)
     })
   }
@@ -62,7 +64,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
         </Typography>
         <Box display='flex' component='form' onSubmit={(e) => {
           e.preventDefault()
-          onAddTag()
+          void onAddTag()
         }} gap={2}>
           <Autocomplete
             freeSolo
@@ -73,7 +75,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
             }}
             options={_tags.map(tag => tag.name)}
             value={tag}
-            onChange={(_, value) => { setTag(value ?? '') }}
+            onChange={(_, value) => { setTag(value as string ?? '') }}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -100,7 +102,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
               </Typography>
               {
                 file?.Tags.map(tag => (
-                  <Chip key={tag.id} label={tag.name} onDelete={() => { handleDeleteTag(tag.id) }} />
+                  <Chip key={tag.id} label={tag.name} onDelete={() => { void handleDeleteTag(tag.id as number) }} />
                 ))
               }
             </Stack>

@@ -21,7 +21,7 @@ export interface FilesContextValue {
   updateSelectedFileTypes: (fileTypes: FileTypes[]) => void
 }
 
-const FilesContext = createContext<FilesContextValue>(undefined as any)
+const FilesContext = createContext<FilesContextValue | null>(null)
 
 interface FilesProviderProps {
   children: React.ReactNode
@@ -38,7 +38,7 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
   const [selectedTags, setSelectedTags] = useState<Tag[]>([])
   const [selectedFileTypes, setSelectedFileTypes] = useState<FileTypes[]>([])
 
-  const loadFiles = () => {
+  const loadFiles = (): void => {
     setIsLoadingFiles(true)
 
     const directories: number[] = selectedDirectories?.map(directory => directory.id)
@@ -46,29 +46,29 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
 
     ipcRenderer.send('list-files', { directories, tags, searchTerm, fileTypes: selectedFileTypes })
 
-    ipcRenderer.once('listed-files', (_, files) => {
+    ipcRenderer.once('listed-files', (_, files: FileWithMetadata[]) => {
       setFiles(files)
       setIsLoadingFiles(false)
     })
   }
 
-  const updateSelectedFiles = (selectedFiles: number[]) => {
+  const updateSelectedFiles = (selectedFiles: number[]): void => {
     setSelectedFiles(selectedFiles)
   }
 
-  const updateSearchTerm = (searchTerm: string) => {
+  const updateSearchTerm = (searchTerm: string): void => {
     setSearchTerm(searchTerm)
   }
 
-  const updateSelectedDirectories = (directories: Directory[]) => {
+  const updateSelectedDirectories = (directories: Directory[]): void => {
     setSelectedDirectories(directories)
   }
 
-  const updateSelectedTags = (tags: Tag[]) => {
+  const updateSelectedTags = (tags: Tag[]): void => {
     setSelectedTags(tags)
   }
 
-  const updateSelectedFileTypes = (fileTypes: FileTypes[]) => {
+  const updateSelectedFileTypes = (fileTypes: FileTypes[]): void => {
     setSelectedFileTypes(fileTypes)
   }
 

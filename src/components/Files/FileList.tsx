@@ -1,9 +1,9 @@
-import { type FC, useState, useMemo } from 'react'
+import { type FC, useState } from 'react'
 import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack, Checkbox } from '@mui/material'
 import { ipcRenderer } from 'electron'
 
 import { Virtuoso } from 'react-virtuoso'
-import { FileOpen, Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter, NoteAlt, Plagiarism } from '@mui/icons-material'
+import { FileOpen, Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter, NoteAlt } from '@mui/icons-material'
 import FileTagsModal from './FileTagsModal'
 import FileRenameModal from './FileRenameModal'
 import FileNotesModal from './FileNotesModal'
@@ -18,21 +18,21 @@ const FileList: FC = () => {
   const [fileRenameFile, setFileRenameFile] = useState<FileWithMetadata>()
   const [fileNotesFile, setFileNotesFile] = useState<FileWithMetadata>()
 
-  const handleFileTagModalClose = () => {
+  const handleFileTagModalClose = (): void => {
     setFileTagFile(undefined)
     loadFiles()
   }
 
-  const handleFileRenameModalClose = () => {
+  const handleFileRenameModalClose = (): void => {
     setFileRenameFile(undefined)
     loadFiles()
   }
 
-  const handleSetFileTagFile = (file: FileWithMetadata) => {
+  const handleSetFileTagFile = (file: FileWithMetadata): void => {
     setFileTagFile(file)
   }
 
-  const handleSetFileRenameFile = (file: FileWithMetadata) => {
+  const handleSetFileRenameFile = (file: FileWithMetadata): void => {
     setFileRenameFile(file)
   }
 
@@ -43,9 +43,9 @@ const FileList: FC = () => {
           style={{ height: 'calc(100vh - 64px - 128px - 72px - 64px)' }}
           data={files}
           itemContent={(_, file) => {
-            const checked = selectedFiles?.includes(file.id)
+            const checked = selectedFiles?.includes(file.id as number)
 
-            const fileIcon = () => {
+            const fileIcon = (): JSX.Element => {
               if (MimeTypes.image.some(type => file.mimeType?.includes(type))) {
                 return <Image color='error' />
               } else if (MimeTypes.video.some(type => file.mimeType?.includes(type))) {
@@ -75,7 +75,7 @@ const FileList: FC = () => {
                     updateSelectedFiles(
                       checked
                         ? selectedFiles.filter(id => id !== file.id)
-                        : [...selectedFiles, file.id]
+                        : [...selectedFiles, file.id as number]
                     )
                   }}
                 />

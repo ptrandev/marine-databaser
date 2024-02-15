@@ -172,7 +172,7 @@ const AutoSplice: FC = () => {
                 componentsProps={{
                   input: {
                     min: autoSpliceSettings.startSeconds,
-                    max: videoDuration ?? autoSpliceSettings.startSeconds,
+                    max: videoDuration ?? autoSpliceSettings.startSeconds
                   }
                 }}
                 fullWidth

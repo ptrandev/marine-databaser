@@ -18,7 +18,7 @@ export interface ExtractAudioContextValue {
   }) => void
 }
 
-const ExtractAudioContext = createContext<ExtractAudioContextValue>(undefined as any)
+const ExtractAudioContext = createContext<ExtractAudioContextValue | null>(null)
 
 interface ExtractAudioProviderProps {
   children: React.ReactNode
@@ -29,13 +29,13 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
   const [isExtractingAudio, setIsExtractingAudio] = useState<boolean>(false)
   const [numCompletedFiles, setNumCompletedFiles] = useState<number>(0)
 
-  const updateSelectedFiles = (files: string[]) => {
+  const updateSelectedFiles = (files: string[]): void => {
     // don't allow duplicates
     const newFiles = files.filter((file) => !selectedFiles.includes(file))
     setSelectedFiles([...selectedFiles, ...newFiles])
   }
 
-  const deleteSelectedFiles = (files: string[]) => {
+  const deleteSelectedFiles = (files: string[]): void => {
     setSelectedFiles(selectedFiles.filter((file) => !files.includes(file)))
   }
 
@@ -45,7 +45,7 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
   }: {
     fileFormat?: AudioFileFormat
     outputDirectory?: string
-  }) => {
+  }): void => {
     setIsExtractingAudio(true)
 
     ipcRenderer.send('bulk-extract-audio', { files: selectedFiles, fileFormat, outputDirectory })
