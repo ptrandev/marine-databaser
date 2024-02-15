@@ -1,35 +1,35 @@
-import { BrowserWindow, IpcMainEvent, dialog, shell } from "electron";
-import { Directory, File, FileTag } from "../database/schemas";
-const fs = require("fs").promises;
-import mime from "mime-types";
-import { Sequelize, Op } from "sequelize";
-import { handleKillOrphanedTags } from "./tag";
+import { type BrowserWindow, type IpcMainEvent, dialog, shell } from 'electron'
+import { Directory, File, FileTag } from '../database/schemas'
+import mime from 'mime-types'
+import { Sequelize, Op } from 'sequelize'
+import { handleKillOrphanedTags } from './tag'
+const fs = require('fs').promises
 
 const getFileList = async (directory: string): Promise<string[]> => {
-  let files = [];
+  let files = []
   const items = await fs.readdir(directory, { withFileTypes: true }).catch(() => {
-    return [];
-  });
+    return []
+  })
 
   for (const item of items) {
     if (item.isDirectory()) {
-      files = files.concat(await getFileList(`${directory}/${item.name}`));
+      files = files.concat(await getFileList(`${directory}/${item.name}`))
     } else {
-      files.push(`${directory}/${item.name}`);
+      files.push(`${directory}/${item.name}`)
     }
   }
 
-  return files;
-};
+  return files
+}
 
 const addFilesToDatabase = async ({ files, directoryId }: {
-  files: string[],
+  files: string[]
   directoryId: number
 }): Promise<File[]> => {
   return await File.bulkCreate(
     await Promise.all(
       files.map(async (file) => {
-        return await addFileToDatabase({ file, directoryId });
+        return await addFileToDatabase({ file, directoryId })
       }
       )
     )
@@ -37,53 +37,53 @@ const addFilesToDatabase = async ({ files, directoryId }: {
 }
 
 const addFileToDatabase = async ({ file, directoryId }: {
-  file: string,
+  file: string
   directoryId: number
 }): Promise<
-  {
-    name: string,
-    path: string,
-    directoryId: number,
-    mimeType: string,
-    lastModified: Date,
-    birthTime: Date,
-    fileSize: number
-  }> => {
-  const { mtime, birthtime, size } = await fs.stat(file);
+{
+  name: string
+  path: string
+  directoryId: number
+  mimeType: string
+  lastModified: Date
+  birthTime: Date
+  fileSize: number
+}> => {
+  const { mtime, birthtime, size } = await fs.stat(file)
 
   return {
-    name: file.split("/").pop(),
+    name: file.split('/').pop(),
     path: file,
     directoryId,
     mimeType: mime.lookup(file).toString(),
     lastModified: mtime,
     birthTime: birthtime,
-    fileSize: size,
+    fileSize: size
   }
 }
 
 export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent) => {
   const result = await dialog.showOpenDialog(win, {
-    properties: ["openDirectory"],
-  });
+    properties: ['openDirectory']
+  })
 
-  if (result.filePaths.length === 0) return;
+  if (result.filePaths.length === 0) return
 
-  event.reply("added-directory", result.filePaths);
+  event.reply('added-directory', result.filePaths)
 
   // add directory to database
   const directory = await Directory.create({
-    name: result.filePaths[0].split("/").pop(),
-    path: result.filePaths[0],
-  });
+    name: result.filePaths[0].split('/').pop(),
+    path: result.filePaths[0]
+  })
 
   // look at files in directory; make sure to crawl subdirectories
-  const files = await getFileList(result.filePaths[0]);
+  const files = await getFileList(result.filePaths[0])
 
-  await addFilesToDatabase({ files, directoryId: directory.id });
+  await addFilesToDatabase({ files, directoryId: directory.id })
 
-  event.reply("initialized-directory");
-};
+  event.reply('initialized-directory')
+}
 
 /**
  * Allows the user to select a single directory
@@ -93,77 +93,77 @@ export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent
  */
 export const handleSelectDirectory = async (win: BrowserWindow, event: IpcMainEvent) => {
   const result = await dialog.showOpenDialog(win, {
-    properties: ["openDirectory"],
-  });
+    properties: ['openDirectory']
+  })
 
-  if (result.filePaths.length === 0) return;
+  if (result.filePaths.length === 0) return
 
-  event.reply("selected-directory", result.filePaths);
+  event.reply('selected-directory', result.filePaths)
 }
 
 export const handleListDirectories = async (event: IpcMainEvent) => {
   const directories: Directory[] = await Directory.findAll().then(
     (dictionaries) => dictionaries.map((dictionary) => dictionary.toJSON())
-  );
+  )
 
-  event.reply("listed-directories", directories);
-};
+  event.reply('listed-directories', directories)
+}
 
 export const handleDirectoriesFileCount = async (event: IpcMainEvent) => {
   // get number of files for each directory
   const directories = await Directory.findAll({
     attributes: [
-      "id",
-      [Sequelize.fn("COUNT", Sequelize.col("files.id")), "file_count"],
+      'id',
+      [Sequelize.fn('COUNT', Sequelize.col('files.id')), 'file_count']
     ],
     include: [
       {
         model: File,
-        attributes: [],
-      },
+        attributes: []
+      }
     ],
-    group: ["directory.id"],
+    group: ['directory.id']
   }).then(
     (directories) =>
       directories.reduce((acc, directory) => {
-        // @ts-ignore
-        const { id, file_count } = directory.toJSON();
-        acc[id] = file_count;
-        return acc;
+        // @ts-expect-error
+        const { id, file_count } = directory.toJSON()
+        acc[id] = file_count
+        return acc
       }, {})
-  );
+  )
 
-  event.reply("listed-directories-file-count", directories);
-};
+  event.reply('listed-directories-file-count', directories)
+}
 
 export const handleOpenDirectory = async (arg: { path: string }) => {
-  const { path } = arg;
+  const { path } = arg
 
   // make sure the directory exists before opening it
   await fs.stat(path).catch(() => {
-    throw new Error("Directory does not exist");
-  });
+    throw new Error('Directory does not exist')
+  })
 
-  shell.openPath(path);
-};
+  shell.openPath(path)
+}
 
 export const handleDeleteDirectory = async (event: IpcMainEvent, arg: { directoryId: number }) => {
-  const { directoryId } = arg;
+  const { directoryId } = arg
 
   await Directory.destroy({
     where: {
-      id: directoryId,
-    },
-  });
+      id: directoryId
+    }
+  })
 
   // remove all files associated with directory
   await File.destroy({
     where: {
-      directoryId: directoryId,
-    },
-  });
+      directoryId
+    }
+  })
 
-  event.reply("deleted-directory", arg);
+  event.reply('deleted-directory', arg)
 }
 
 /**
@@ -178,14 +178,14 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
   )
 
   if (directories.length === 0) {
-    event.reply("refreshed-directories")
+    event.reply('refreshed-directories')
     return
   }
-  
-  for (const directory of directories) {
-    const currentTime = new Date();
 
-    const files = await getFileList(directory.path);
+  for (const directory of directories) {
+    const currentTime = new Date()
+
+    const files = await getFileList(directory.path)
 
     // get files that already exist in the database
     // to exist in the database, it must have the same path and birthTime
@@ -201,7 +201,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
     // use await fs.stat(file.path) to get the birthTime of the file on disk
     const existingFiles = await Promise.all(
       _existingFiles.map(async (file) => {
-        const { birthtime } = await fs.stat(file.path);
+        const { birthtime } = await fs.stat(file.path)
         if (birthtime.getTime() === file.birthTime.getTime()) {
           return file
         }
@@ -212,12 +212,12 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
     // for files that already exist in the database, update metadata based upon the file id
     const updateExistingFiles = await Promise.all(
       existingFiles.map(async (file) => {
-        const { mtime, size } = await fs.stat(file.path);
+        const { mtime, size } = await fs.stat(file.path)
         return {
           ...file.toJSON(),
           lastModified: mtime,
           fileSize: size,
-          updatedAt: currentTime,
+          updatedAt: currentTime
         }
       }
       )
@@ -225,13 +225,13 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
 
     await File.bulkCreate(updateExistingFiles, {
       updateOnDuplicate: [
-        "lastModified",
-        "fileSize",
-        "updatedAt"
+        'lastModified',
+        'fileSize',
+        'updatedAt'
       ]
     })
 
-    const existingFilesPaths = existingFiles.map((file) => file.path);
+    const existingFilesPaths = existingFiles.map((file) => file.path)
 
     // get files that have been renamed
     // to be renamed, the file must have the same birthTime, fileSize, mimeType,
@@ -240,45 +240,45 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
       files
         .filter((file) => !existingFilesPaths.includes(file))
         .map(async (file) => {
-          const { birthtime, size, mtime } = await fs.stat(file);
-          const mimeType = mime.lookup(file).toString();
+          const { birthtime, size, mtime } = await fs.stat(file)
+          const mimeType = mime.lookup(file).toString()
 
           const renamedFile = await File.findOne({
             where: {
               birthTime: birthtime,
               fileSize: size,
               lastModified: mtime,
-              mimeType,
-            },
-          });
+              mimeType
+            }
+          })
 
           // if the file was renamed, update the database
           if (renamedFile !== null) {
             await File.update(
               {
-                name: file.split("/").pop(),
+                name: file.split('/').pop(),
                 path: file,
-                updatedAt: currentTime,
+                updatedAt: currentTime
               },
               {
                 where: {
-                  id: renamedFile.id,
-                },
+                  id: renamedFile.id
+                }
               }
             )
 
             return await File.findOne({
               where: {
-                id: renamedFile.id,
-              },
-            });
+                id: renamedFile.id
+              }
+            })
           }
 
-          return null;
+          return null
         })
-    ).then((files) => files.filter((file) => file !== null));
+    ).then((files) => files.filter((file) => file !== null))
 
-    const renamedFilesPaths = renamedFiles.map((file) => file.path);
+    const renamedFilesPaths = renamedFiles.map((file) => file.path)
 
     // add new files to the database
     await addFilesToDatabase({
@@ -288,44 +288,44 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
           !renamedFilesPaths.includes(file)
       ),
       directoryId: directory.id
-    });
+    })
 
     // get all files that are in the database but not in the directory
     const deletedFiles = await File.findAll({
       where: {
         directoryId: directory.id,
         path: {
-          [Op.notIn]: files,
-        },
-      },
-    }).then((files) => files.map((file) => file.toJSON()));
+          [Op.notIn]: files
+        }
+      }
+    }).then((files) => files.map((file) => file.toJSON()))
 
     // delete them
     await File.destroy({
       where: {
-        id: deletedFiles.map((file) => file.id),
-      },
-    });
+        id: deletedFiles.map((file) => file.id)
+      }
+    })
 
     // remove file tag associations for deleted files
     await FileTag.destroy({
       where: {
-        // @ts-ignore
-        file_id: deletedFiles.map((file) => file.id),
-      },
-    });
+        // @ts-expect-error
+        file_id: deletedFiles.map((file) => file.id)
+      }
+    })
 
-    event.reply("refreshed-directory", {
+    event.reply('refreshed-directory', {
       directoryId: directory.id,
       numExistingFiles: existingFiles.length,
       numRenamedFiles: renamedFiles.length,
       numDeletedFiles: deletedFiles.length,
-      numNewFiles: files.length - existingFiles.length - renamedFiles.length,
-    });
+      numNewFiles: files.length - existingFiles.length - renamedFiles.length
+    })
   }
 
   // remove tags that no longer have any associations
-  await handleKillOrphanedTags(event);
+  await handleKillOrphanedTags(event)
 
-  event.reply("refreshed-directories")
+  event.reply('refreshed-directories')
 }

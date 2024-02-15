@@ -1,25 +1,24 @@
-import { dialog, BrowserWindow, IpcMainEvent } from 'electron';
-import mime from 'mime-types';
-import path from 'path';
-import { AudioFileFormat, AutoSpliceSettings, SpliceRegion } from '../../shared/types';
-import fs from 'fs';
+import { dialog, type BrowserWindow, type IpcMainEvent } from 'electron'
+import mime from 'mime-types'
+import path from 'path'
+import { type AudioFileFormat, type AutoSpliceSettings, type SpliceRegion } from '../../shared/types'
+import fs from 'fs'
 
-const ffmpeg = require('fluent-ffmpeg');
+const ffmpeg = require('fluent-ffmpeg')
 
-
-//Get the paths to the packaged versions of the binaries we want to use
+// Get the paths to the packaged versions of the binaries we want to use
 const ffmpegPath = require('ffmpeg-static').replace(
   'app.asar',
   'app.asar.unpacked'
-);
+)
 const ffprobePath = require('ffprobe-static').path.replace(
   'app.asar',
   'app.asar.unpacked'
-);
+)
 
 // tell the ffmpeg package where it can find the needed binaries.
-ffmpeg.setFfmpegPath(ffmpegPath);
-ffmpeg.setFfprobePath(ffprobePath);
+ffmpeg.setFfmpegPath(ffmpegPath)
+ffmpeg.setFfprobePath(ffprobePath)
 
 /**
  * extract the audio from a video
@@ -31,33 +30,33 @@ ffmpeg.setFfprobePath(ffprobePath);
 const extractAudio = async ({
   fileFormat = 'pcm_s16le',
   inputPath,
-  outputDirectory,
+  outputDirectory
 }: {
-  fileFormat?: AudioFileFormat;
-  inputPath: string;
-  outputDirectory?: string;
+  fileFormat?: AudioFileFormat
+  inputPath: string
+  outputDirectory?: string
 }): Promise<void> => {
-  return new Promise<void>((resolve, reject) => {
-    const date = new Date();
+  await new Promise<void>((resolve, reject) => {
+    const date = new Date()
 
     // if outputDirectory is not defined, save the audio in the same directory as the input file
     if (!outputDirectory) {
-      outputDirectory = path.dirname(inputPath);
+      outputDirectory = path.dirname(inputPath)
     }
 
     ffmpeg(inputPath)
       .outputOptions('-acodec', fileFormat)
       .toFormat('wav')
       // save in the same directory as the input file, but with a .wav extension and audio appended to the name
-      .save(`${outputDirectory}/${path.basename(inputPath).replace(/\.[^/.]+$/, "")}-audio-${date.getTime()}.wav`)
+      .save(`${outputDirectory}/${path.basename(inputPath).replace(/\.[^/.]+$/, '')}-audio-${date.getTime()}.wav`)
       .on('end', () => {
-        return resolve();
+        resolve()
       })
       .on('error', (err) => {
-        console.error('Error extracting audio:', err);
-        return reject(err);
-      }).run();
-  });
+        console.error('Error extracting audio:', err)
+        reject(err)
+      }).run()
+  })
 }
 
 /**
@@ -76,18 +75,18 @@ const spliceVideo = async ({
   endTime,
   name,
   outputDirectory,
-  videoBasename,
+  videoBasename
 }: {
-  inputPath: string;
-  startTime: number;
-  endTime: number;
-  name: string;
-  outputDirectory?: string;
-  videoBasename: string;
+  inputPath: string
+  startTime: number
+  endTime: number
+  name: string
+  outputDirectory?: string
+  videoBasename: string
 }): Promise<void> => {
-  return new Promise<void>((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     if (!outputDirectory) {
-      outputDirectory = path.dirname(inputPath);
+      outputDirectory = path.dirname(inputPath)
     }
 
     ffmpeg(inputPath)
@@ -96,13 +95,13 @@ const spliceVideo = async ({
       .outputOptions('-c', 'copy')
       .save(`${outputDirectory}/${videoBasename}${name}${path.extname(inputPath)}`)
       .on('end', () => {
-        return resolve();
+        resolve()
       })
       .on('error', (err) => {
-        console.error('Error splicing video:', err);
-        return reject(err);
-      }).run();
-  });
+        console.error('Error splicing video:', err)
+        reject(err)
+      }).run()
+  })
 }
 
 /**
@@ -110,18 +109,18 @@ const spliceVideo = async ({
  * @param {string} videoPath - the path to the video to get the length of
  * @returns {Promise<number>} - a promise that resolves with the length of the video
  */
-const getVideoDuration = (videoPath: string): Promise<number> => {
-  return new Promise<number>((resolve, reject) => {
+const getVideoDuration = async (videoPath: string): Promise<number> => {
+  return await new Promise<number>((resolve, reject) => {
     ffmpeg.ffprobe(videoPath, (err, metadata) => {
       if (err) {
-        reject(err);
+        reject(err)
       }
 
-      const duration = metadata.format.duration;
+      const duration = metadata.format.duration
 
-      resolve(duration);
-    });
-  });
+      resolve(duration)
+    })
+  })
 }
 
 /**
@@ -133,10 +132,10 @@ export const handleGetVideoDuration = (event: IpcMainEvent, arg: {
   videoPath: string
 }): void => {
   getVideoDuration(arg.videoPath).then((duration) => {
-    event.reply('got-video-duration', duration);
+    event.reply('got-video-duration', duration)
   }).catch((err) => {
-    event.reply('get-video-duration-error', err.message);
-  });
+    event.reply('get-video-duration-error', err.message)
+  })
 }
 
 /**
@@ -146,7 +145,7 @@ export const handleGetVideoDuration = (event: IpcMainEvent, arg: {
  * @returns {SpliceRegion[]} - a list of timestamps containing noise
  */
 const findNoiseTimeStamps = (silenceTimestamps: SpliceRegion[], audioLength: number): SpliceRegion[] => {
-  let noiseTimestamps: SpliceRegion[] = [];
+  const noiseTimestamps: SpliceRegion[] = []
 
   // If the list of silence timestamps is empty, the whole audio contains noise
   if (silenceTimestamps.length === 0) {
@@ -154,8 +153,8 @@ const findNoiseTimeStamps = (silenceTimestamps: SpliceRegion[], audioLength: num
       name: `${Date.now()}`,
       start: 0,
       end: audioLength
-    });
-    return noiseTimestamps;
+    })
+    return noiseTimestamps
   }
 
   // Check for noise before the first silence timestamp
@@ -163,21 +162,21 @@ const findNoiseTimeStamps = (silenceTimestamps: SpliceRegion[], audioLength: num
     noiseTimestamps.push({
       name: `${Date.now()}`,
       start: 0,
-      end: silenceTimestamps[0].start,
-    });
+      end: silenceTimestamps[0].start
+    })
   }
 
   // Check for noise between silence timestamps
   for (let i = 1; i < silenceTimestamps.length; i++) {
-    let start = silenceTimestamps[i - 1].end;
-    let end = silenceTimestamps[i].start;
+    const start = silenceTimestamps[i - 1].end
+    const end = silenceTimestamps[i].start
 
     if (end > start) {
       noiseTimestamps.push({
         name: `${Date.now()}`,
         start,
-        end,
-      });
+        end
+      })
     }
   }
 
@@ -186,11 +185,11 @@ const findNoiseTimeStamps = (silenceTimestamps: SpliceRegion[], audioLength: num
     noiseTimestamps.push({
       name: `${Date.now()}`,
       start: silenceTimestamps[silenceTimestamps.length - 1].end,
-      end: audioLength,
-    });
+      end: audioLength
+    })
   }
 
-  return noiseTimestamps;
+  return noiseTimestamps
 }
 
 /**
@@ -200,30 +199,30 @@ const findNoiseTimeStamps = (silenceTimestamps: SpliceRegion[], audioLength: num
  * @returns {Promise<void>} - a promise that resolves when the audio has been extracted
  */
 export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
-  files: number[] | string[],
-  fileFormat: AudioFileFormat,
+  files: number[] | string[]
+  fileFormat: AudioFileFormat
   outputDirectory: string
 }): Promise<void> => {
-  if (arg.files.length === 0) return;
+  if (arg.files.length === 0) return
 
   // if typeof files is string
   // filter mimetype to video
   const files: string[] = await arg.files.map((file) => {
     if (mime.lookup(file).toString().includes('video')) {
-      return file;
+      return file
     }
   })
 
   // for each file, extract the audio
   for (const file of files) {
     await extractAudio({ inputPath: file, fileFormat: arg.fileFormat, outputDirectory: arg.outputDirectory }).catch((err) => {
-      event.reply('extracted-audio-error', err.message);
-    });
+      event.reply('extracted-audio-error', err.message)
+    })
 
     event.reply('extracted-audio')
   }
 
-  event.reply('bulk-extract-audio');
+  event.reply('bulk-extract-audio')
 }
 
 /**
@@ -236,25 +235,25 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
  * @returns {Promise<void>} - a promise that resolves when the video has been spliced
  */
 export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, spliceRegions: SpliceRegion[], outputDirectory?: string, videoBasename: string }): Promise<void> => {
-  const { videoPath, spliceRegions, outputDirectory, videoBasename } = arg;
+  const { videoPath, spliceRegions, outputDirectory, videoBasename } = arg
 
   // for each splice region, splice the video; ensure this happens synchronously
   for (const spliceRegion of spliceRegions) {
-    await spliceVideo({ 
+    await spliceVideo({
       inputPath: videoPath,
       startTime: spliceRegion.start,
       endTime: spliceRegion.end,
       name: spliceRegion.name,
       outputDirectory,
-      videoBasename,
+      videoBasename
     }).catch((err) => {
-      event.reply('splice-point-video-error', err.message);
-    });
+      event.reply('splice-point-video-error', err.message)
+    })
 
-    event.reply('spliced-point-video');
+    event.reply('spliced-point-video')
   }
 
-  event.reply('spliced-video');
+  event.reply('spliced-video')
 }
 
 /**
@@ -265,13 +264,13 @@ export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: s
  */
 export const handleSelectExtractAudioFiles = async (win: BrowserWindow, event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog(win, {
-    properties: ["openFile", "multiSelections"],
+    properties: ['openFile', 'multiSelections'],
     filters: [
       { name: 'Video Files', extensions: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm'] }
     ]
-  });
+  })
 
-  event.reply('selected-extract-audio-files', result.filePaths);
+  event.reply('selected-extract-audio-files', result.filePaths)
 }
 
 /**
@@ -282,13 +281,13 @@ export const handleSelectExtractAudioFiles = async (win: BrowserWindow, event: I
  */
 export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog(win, {
-    properties: ["openFile"],
+    properties: ['openFile'],
     filters: [
       { name: 'Video Files', extensions: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm'] }
     ]
-  });
+  })
 
-  event.reply('selected-splice-video-file', result.filePaths[0]);
+  event.reply('selected-splice-video-file', result.filePaths[0])
 }
 
 /**
@@ -300,38 +299,38 @@ export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: Ipc
 export const handleGetVideoFramerate = async (event: IpcMainEvent, arg: { videoPath: string }): Promise<void> => {
   ffmpeg.ffprobe(arg.videoPath, (err, metadata) => {
     if (err) {
-      event.reply('failed-to-get-video-framerate', err.message);
-      return;
+      event.reply('failed-to-get-video-framerate', err.message)
+      return
     }
 
     // find first metadata.stream with codec_type video; get r_frame_rate from that stream
-    const framerate = metadata.streams.find((stream: { codec_type: string }) => stream.codec_type === 'video')?.r_frame_rate;
+    const framerate = metadata.streams.find((stream: { codec_type: string }) => stream.codec_type === 'video')?.r_frame_rate
 
     if (!framerate) {
-      event.reply('failed-to-get-video-framerate', 'Failed to get framerate of video.');
-      return;
+      event.reply('failed-to-get-video-framerate', 'Failed to get framerate of video.')
+      return
     }
 
-    event.reply('got-video-framerate', framerate);
-  });
+    event.reply('got-video-framerate', framerate)
+  })
 }
 
 export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: string, autoSpliceSettings: AutoSpliceSettings, outputDirectory?: string }): Promise<void> => {
-  let spliceRegions: SpliceRegion[] = [];
+  const spliceRegions: SpliceRegion[] = []
 
-  const { minFrequency, maxFrequency, minAmplitude, minDuration } = arg.autoSpliceSettings;
-  const { videoPath } = arg;
+  const { minFrequency, maxFrequency, minAmplitude, minDuration } = arg.autoSpliceSettings
+  const { videoPath } = arg
 
   if (!arg.outputDirectory) {
-    arg.outputDirectory = path.dirname(videoPath);
+    arg.outputDirectory = path.dirname(videoPath)
   }
 
-  const outputDirectory = arg.outputDirectory;
+  const outputDirectory = arg.outputDirectory
 
-  const videoDuration = await getVideoDuration(videoPath);
+  const videoDuration = await getVideoDuration(videoPath)
 
   // use a timestamp as the temporary file name
-  const timestamp = new Date().getTime().toString(16) + '.wav';
+  const timestamp = new Date().getTime().toString(16) + '.wav'
 
   // Apply the following audio filters:
   // - filter out frequencies below minFrequency and above maxFrequency
@@ -342,37 +341,37 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
     .audioFilter(`highpass=f=${minFrequency},lowpass=f=${maxFrequency}`)
     .audioFilters(`silencedetect=n=${minAmplitude}dB:d=${minDuration}`)
     .on('end', async () => {
-      const noiseTimestamps = findNoiseTimeStamps(spliceRegions, videoDuration);
+      const noiseTimestamps = findNoiseTimeStamps(spliceRegions, videoDuration)
 
-      fs.unlinkSync(timestamp);
-      event.reply('auto-spliced', noiseTimestamps);
+      fs.unlinkSync(timestamp)
+      event.reply('auto-spliced', noiseTimestamps)
     })
     .on('error', (err) => {
-      event.reply('auto-splice-error', err.message);
-      fs.unlinkSync(timestamp);
+      event.reply('auto-splice-error', err.message)
+      fs.unlinkSync(timestamp)
     })
     .on('stderr', (stderrLine) => {
       if (stderrLine.includes('silence_start')) {
-        const start = parseFloat(stderrLine.split('silence_start: ')[1]);
+        const start = parseFloat(stderrLine.split('silence_start: ')[1])
         spliceRegions.push({
           name: `${Date.now()}`,
           start,
-          end: 0,
-        });
+          end: 0
+        })
       }
 
       if (stderrLine.includes('silence_end')) {
-        const end = parseFloat(stderrLine.split('silence_end: ')[1]);
+        const end = parseFloat(stderrLine.split('silence_end: ')[1])
         spliceRegions[spliceRegions.length - 1] = {
           ...spliceRegions[spliceRegions.length - 1],
-          end,
-        };
+          end
+        }
 
         // progress is the endpoint / video length
-        event.reply('auto-spliced-progress', end / videoDuration);
+        event.reply('auto-spliced-progress', end / videoDuration)
       }
     })
-    .save(timestamp);
+    .save(timestamp)
 }
 
 /**
@@ -382,22 +381,22 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
  * @returns {Promise<void>} - a promise that resolves when the sample rate has been retrieved
  */
 export const handleGetAudioSampleRate = async (event: IpcMainEvent, arg: { filePath: string }): Promise<void> => {
-  const { filePath } = arg;
+  const { filePath } = arg
 
   ffmpeg.ffprobe(filePath, (err, metadata) => {
     if (err) {
-      event.reply('failed-to-get-audio-sample-rate', err.message);
-      return;
+      event.reply('failed-to-get-audio-sample-rate', err.message)
+      return
     }
 
     // find first metadata.stream with codec_type audio; get sample_rate from that stream
-    const sampleRate = metadata.streams.find((stream: { codec_type: string }) => stream.codec_type === 'audio')?.sample_rate;
+    const sampleRate = metadata.streams.find((stream: { codec_type: string }) => stream.codec_type === 'audio')?.sample_rate
 
     if (!sampleRate) {
-      event.reply('failed-to-get-audio-sample-rate', 'Failed to get sample rate of audio.');
-      return;
+      event.reply('failed-to-get-audio-sample-rate', 'Failed to get sample rate of audio.')
+      return
     }
 
-    event.reply('got-audio-sample-rate', sampleRate);
-  });
+    event.reply('got-audio-sample-rate', sampleRate)
+  })
 }
