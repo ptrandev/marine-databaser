@@ -13,6 +13,8 @@ import { handleListNotes, handleAddNote, handleUpdateNote, handleDeleteNote } fr
 import { handleDatabaseExport } from '../handlers/export'
 import { handleDatabaseImport } from '../handlers/import'
 import { handleSaveToJSON, handleLoadFromJSON } from '../handlers/json'
+import { type AutoSpliceSettings, type AudioFileFormat, type SpliceRegion, type FileTypes } from '../../shared/types'
+import { type File } from '../database/schemas'
 
 // The built directory structure
 //
@@ -156,111 +158,111 @@ sequelize
 // DIRECTORY
 //
 
-ipcMain.on('add-directory', async (event) => {
-  handleAddDirectory(win, event)
+ipcMain.on('add-directory', (event) => {
+  void handleAddDirectory(win, event)
 })
 
-ipcMain.on('list-directories', async (event) => {
-  handleListDirectories(event)
+ipcMain.on('list-directories', (event) => {
+  void handleListDirectories(event)
 })
 
-ipcMain.on('open-directory', async (_, arg) => {
-  handleOpenDirectory(arg)
+ipcMain.on('open-directory', (_, arg: { path: string }) => {
+  void handleOpenDirectory(arg)
 })
 
-ipcMain.on('delete-directory', async (event, arg) => {
-  handleDeleteDirectory(event, arg)
+ipcMain.on('delete-directory', (event, arg: { directoryId: number }) => {
+  void handleDeleteDirectory(event, arg)
 })
 
-ipcMain.on('list-directories-file-count', async (event) => {
-  handleDirectoriesFileCount(event)
+ipcMain.on('list-directories-file-count', (event) => {
+  void handleDirectoriesFileCount(event)
 })
 
-ipcMain.on('refresh-directories', async (event) => {
-  handleRefreshDirectories(event)
+ipcMain.on('refresh-directories', (event) => {
+  void handleRefreshDirectories(event)
 })
 
-ipcMain.on('select-directory', async (event) => {
-  handleSelectDirectory(win, event)
+ipcMain.on('select-directory', (event) => {
+  void handleSelectDirectory(win, event)
 })
 
 //
 // FFMPEG
 //
 
-ipcMain.on('bulk-extract-audio', async (event, arg) => {
-  handleBulkExtractAudio(event, arg)
+ipcMain.on('bulk-extract-audio', (event, arg: { files: number[] | string[], fileFormat: AudioFileFormat, outputDirectory: string }) => {
+  void handleBulkExtractAudio(event, arg)
 })
 
-ipcMain.on('select-extract-audio-files', async (event) => {
-  handleSelectExtractAudioFiles(win, event)
+ipcMain.on('select-extract-audio-files', (event) => {
+  void handleSelectExtractAudioFiles(win, event)
 })
 
-ipcMain.on('select-splice-video-file', async (event) => {
-  handleSelectSpliceVideoFile(win, event)
+ipcMain.on('select-splice-video-file', (event) => {
+  void handleSelectSpliceVideoFile(win, event)
 })
 
-ipcMain.on('splice-video', async (event, arg) => {
-  handleSpliceVideo(event, arg)
+ipcMain.on('splice-video', (event, arg: { videoPath: string, spliceRegions: SpliceRegion[], outputDirectory?: string, videoBasename: string }) => {
+  void handleSpliceVideo(event, arg)
 })
 
-ipcMain.on('get-video-framerate', async (event, arg) => {
-  handleGetVideoFramerate(event, arg)
+ipcMain.on('get-video-framerate', (event, arg: { videoPath: string }) => {
+  void handleGetVideoFramerate(event, arg)
 })
 
-ipcMain.on('get-video-duration', async (event, arg) => {
+ipcMain.on('get-video-duration', (event, arg: { videoPath: string }) => {
   handleGetVideoDuration(event, arg)
 })
 
-ipcMain.on('auto-splice', async (event, arg) => {
-  handleAutoSplice(event, arg)
+ipcMain.on('auto-splice', (event, arg: { videoPath: string, autoSpliceSettings: AutoSpliceSettings, outputDirectory?: string }) => {
+  void handleAutoSplice(event, arg)
 })
 
-ipcMain.on('get-audio-sample-rate', async (event, arg) => {
-  handleGetAudioSampleRate(event, arg)
+ipcMain.on('get-audio-sample-rate', (event, arg: { filePath: string }) => {
+  void handleGetAudioSampleRate(event, arg)
 })
 
 //
 // FILE
 //
 
-ipcMain.on('select-file', async (event) => {
-  handleSelectFile(win, event)
+ipcMain.on('select-file', (event) => {
+  void handleSelectFile(win, event)
 })
 
-ipcMain.on('list-files', async (event, arg) => {
-  handleListFiles(event, arg)
+ipcMain.on('list-files', (event, arg: { directories?: number[], tags?: number[], fileTypes?: FileTypes[], searchTerm?: string }) => {
+  void handleListFiles(event, arg)
 })
 
-ipcMain.on('open-file', async (_, arg) => {
-  shell.openPath(arg)
+ipcMain.on('open-file', (_, arg: string) => {
+  void shell.openPath(arg)
 })
 
-ipcMain.on('rename-file', async (event, arg) => {
-  handleFileRename(event, arg)
+ipcMain.on('rename-file', (event, arg: { file: File, name: string }) => {
+  void handleFileRename(event, arg)
 })
 
 //
 // TAG
 //
 
-ipcMain.on('tag-file', async (event, arg) => {
+ipcMain.on('tag-file', (event, arg) => {
   handleTagFile(event, arg)
 })
 
-ipcMain.on('tag-files', async (event, arg) => {
+ipcMain.on('tag-files', (event, arg) => {
   handleTagFiles(event, arg)
 })
 
-ipcMain.on('list-tags', async (event) => {
+ipcMain.on('list-tags', (event) => {
   handleListTags(event)
 })
 
-ipcMain.on('untag-file', async (event, arg) => {
+ipcMain.on('untag-file', (event, arg) => {
   handleUntagFile(event, arg)
 })
 
-ipcMain.on('untag-files', async (event, arg) => {
+ipcMain.on('untag-files', (event, arg) => {
   handleUntagFiles(event, arg)
 })
 
@@ -268,42 +270,42 @@ ipcMain.on('untag-files', async (event, arg) => {
 // NOTES
 //
 
-ipcMain.on('list-notes', async (event, arg) => {
-  handleListNotes(event, arg)
+ipcMain.on('list-notes', (event, arg: { file_id: number }) => {
+  void handleListNotes(event, arg)
 })
 
-ipcMain.on('add-note', async (event, arg) => {
-  handleAddNote(event, arg)
+ipcMain.on('add-note', (event, arg: { file_id: number, note: string }) => {
+  void handleAddNote(event, arg)
 })
 
-ipcMain.on('update-note', async (event, arg) => {
-  handleUpdateNote(event, arg)
+ipcMain.on('update-note', (event, arg: { id: number, note: string }) => {
+  void handleUpdateNote(event, arg)
 })
 
-ipcMain.on('delete-note', async (event, arg) => {
-  handleDeleteNote(event, arg)
+ipcMain.on('delete-note', (event, arg: { id: number }) => {
+  void handleDeleteNote(event, arg)
 })
 
 //
 // EXPORT
 //
 
-ipcMain.on('database-export', async (event) => {
-  handleDatabaseExport(event)
+ipcMain.on('database-export', (event) => {
+  void handleDatabaseExport(event)
 })
 
 // IMPORT
 
-ipcMain.on('database-import', async (event) => {
-  handleDatabaseImport(event)
+ipcMain.on('database-import', (event) => {
+  void handleDatabaseImport(event)
 })
 
 // JSON
 
-ipcMain.on('save-to-json', async (event, arg) => {
-  handleSaveToJSON(event, arg)
+ipcMain.on('save-to-json', (event, arg) => {
+  void handleSaveToJSON(event, arg)
 })
 
-ipcMain.on('load-from-json', async (event) => {
-  handleLoadFromJSON(event)
+ipcMain.on('load-from-json', (event) => {
+  void handleLoadFromJSON(event)
 })
