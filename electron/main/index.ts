@@ -52,7 +52,7 @@ const preload = join(__dirname, '../preload/index.js')
 const url = process.env.VITE_DEV_SERVER_URL
 const indexHtml = join(process.env.DIST, 'index.html')
 
-async function createWindow () {
+async function createWindow (): Promise<void> {
   win = new BrowserWindow({
     title: 'Main window',
     icon: join(process.env.PUBLIC, 'favicon.ico'),
@@ -68,11 +68,11 @@ async function createWindow () {
 
   if (process.env.VITE_DEV_SERVER_URL) {
     // electron-vite-vue#298
-    win.loadURL(url)
+    void win.loadURL(url)
     // Open devTool if the app is not packaged
     win.webContents.openDevTools()
   } else {
-    win.loadFile(indexHtml)
+    void win.loadFile(indexHtml)
   }
 
   // Test actively push message to the Electron-Renderer
@@ -82,12 +82,12 @@ async function createWindow () {
 
   // Make all links open with the browser, not with the application
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('https:')) shell.openExternal(url)
+    if (url.startsWith('https:')) void shell.openExternal(url)
     return { action: 'deny' }
   })
 }
 
-app.whenReady().then(() => {
+void app.whenReady().then(() => {
   protocol.registerFileProtocol('media-loader', (request, callback) => {
     const url = request.url.replace('media-loader://', '')
     try {
@@ -98,7 +98,7 @@ app.whenReady().then(() => {
     }
   })
 
-  createWindow()
+  void createWindow()
 })
 
 app.on('window-all-closed', () => {
@@ -119,7 +119,7 @@ app.on('activate', () => {
   if (allWindows.length) {
     allWindows[0].focus()
   } else {
-    createWindow()
+    void createWindow()
   }
 })
 
@@ -134,9 +134,9 @@ ipcMain.handle('open-win', (_, arg) => {
   })
 
   if (process.env.VITE_DEV_SERVER_URL) {
-    childWindow.loadURL(`${url}#${arg}`)
+    void childWindow.loadURL(`${url}#${arg}`)
   } else {
-    childWindow.loadFile(indexHtml, { hash: arg })
+    void childWindow.loadFile(indexHtml, { hash: arg })
   }
 })
 

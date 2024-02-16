@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 async function domReady (condition: DocumentReadyState[] = ['complete', 'interactive']) {
   return await new Promise(resolve => {
     if (condition.includes(document.readyState)) {
