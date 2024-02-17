@@ -102,10 +102,10 @@ interface NoteProps {
 
 const Note: FC<NoteProps> = ({ note, handleDeleteNote, handleUpdateNote }) => {
   const [edited, setEdited] = useState<boolean>(false)
-  const [_note, _setNote] = useState<string>(note.note as string)
+  const [_note, _setNote] = useState<string>(note.note)
 
   const handleOnBlur = async (): Promise<void> => {
-    await handleUpdateNote(note.id as number, _note)
+    await handleUpdateNote(note.id, _note)
     setEdited(false)
   }
 
@@ -138,7 +138,7 @@ const Note: FC<NoteProps> = ({ note, handleDeleteNote, handleUpdateNote }) => {
       <IconButton
         aria-label='delete'
         color='error'
-        onClick={() => { handleDeleteNote(note.id as number) }}
+        onClick={() => { handleDeleteNote(note.id) }}
       >
         <Delete />
       </IconButton>

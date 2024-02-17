@@ -1,28 +1,28 @@
-import sequelize from "../initialize";
+import sequelize from '../initialize'
 
-import { Model, InferAttributes, InferCreationAttributes, DataTypes } from 'sequelize';
+import { Model, type InferAttributes, type InferCreationAttributes, DataTypes } from 'sequelize'
 
 class Tag extends Model<InferAttributes<Tag>, InferCreationAttributes<Tag>> {
-  id: number;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
+  id: number
+  name: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 Tag.init({
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
+    primaryKey: true
   },
   name: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: false
   },
   createdAt: DataTypes.DATE,
-  updatedAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE
 }, {
-  sequelize,
-});
+  sequelize
+})
 
-export default Tag;
+export default Tag

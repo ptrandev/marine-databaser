@@ -322,7 +322,7 @@ const EditNameModal: FC<EditNameModalProps> = ({
 }) => {
   const { spliceRegions, modifySpliceRegion } = useSpliceVideo()
 
-  const [name, setName] = useState<string>(spliceRegion?.name as string ?? '')
+  const [name, setName] = useState<string>(spliceRegion?.name ?? '')
   const [helperText, setHelperText] = useState<string>('')
 
   const handleChangeName = (): void => {

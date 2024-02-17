@@ -32,7 +32,7 @@ const DirectoryList: FC = () => {
           directories?.map((directory) => (
             <ListItemButton
               key={directory.id}
-              onClick={() => { handleOpenDirectory(directory.path as string) }}
+              onClick={() => { handleOpenDirectory(directory.path) }}
             >
               <ListItemText
                 primary={
@@ -57,7 +57,7 @@ const DirectoryList: FC = () => {
                 color='error'
                 onClick={(e) => {
                   e.stopPropagation()
-                  setDirectoryIdToDelete(directory.id as number)
+                  setDirectoryIdToDelete(directory.id)
                 }}
                 disabled={isDeletingDirectory}
               >

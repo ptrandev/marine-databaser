@@ -43,7 +43,7 @@ const FileList: FC = () => {
           style={{ height: 'calc(100vh - 64px - 128px - 72px - 64px)' }}
           data={files}
           itemContent={(_, file) => {
-            const checked = selectedFiles?.includes(file.id as number)
+            const checked = selectedFiles?.includes(file.id)
 
             const fileIcon = (): JSX.Element => {
               if (MimeTypes.image.some(type => file.mimeType?.includes(type))) {
@@ -75,7 +75,7 @@ const FileList: FC = () => {
                     updateSelectedFiles(
                       checked
                         ? selectedFiles.filter(id => id !== file.id)
-                        : [...selectedFiles, file.id as number]
+                        : [...selectedFiles, file.id]
                     )
                   }}
                 />

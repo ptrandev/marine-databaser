@@ -1,5 +1,5 @@
-import { IpcMainEvent } from "electron";
-import { FileTag, Tag } from "../database/schemas";
+import { type IpcMainEvent } from 'electron'
+import { FileTag, Tag } from '../database/schemas'
 
 /**
  * Creates a tag if it doesn't already exist
@@ -7,22 +7,22 @@ import { FileTag, Tag } from "../database/schemas";
  * @param name Name of the tag
  * @returns Tag object
  */
-const createTag = async (name : string) => {
+const createTag = async (name: string) => {
   const existingTag: Tag | null = await Tag.findOne({
     where: {
-      name,
-    },
-  });
+      name
+    }
+  })
 
   // tag already exists, so just return it
-  if (existingTag) return existingTag;
+  if (existingTag) return existingTag
 
   const tag: Tag = await Tag.create({
-    name,
-  });
+    name
+  })
 
-  return tag;
-};
+  return tag
+}
 
 /**
  * Tags a file with a tag
@@ -31,70 +31,70 @@ const createTag = async (name : string) => {
  * If the file doesn't have the tag, it will be added
  */
 export const handleTagFile = async (event: IpcMainEvent, arg: {
-  file_id: number;
-  tag: string;
+  file_id: number
+  tag: string
 }) => {
-  const { file_id, tag } = arg;
+  const { file_id, tag } = arg
 
-  const _tag: Tag = await createTag(tag);
+  const _tag: Tag = await createTag(tag)
 
   // check if file already has tag
   const hasTag: FileTag | null = await FileTag.findOne({
     where: {
-      // @ts-ignore
+      // @ts-expect-error
       file_id,
-      tag_id: _tag.id,
-    },
-  });
+      tag_id: _tag.id
+    }
+  })
 
   if (hasTag) {
-    event.reply("tagged-file");
-    return;
+    event.reply('tagged-file')
+    return
   }
 
   // else add tag to file
   const fileTag: FileTag = await FileTag.create({
-    file_id: file_id,
-    tag_id: _tag.id,
-  }).then((fileTag) => fileTag.toJSON());
+    file_id,
+    tag_id: _tag.id
+  }).then((fileTag) => fileTag.toJSON())
 
-  event.reply("tagged-file", fileTag);
+  event.reply('tagged-file', fileTag)
 }
 
 /**
  * Tags multiple files with a tag
  */
 export const handleTagFiles = async (event: IpcMainEvent, arg: {
-  file_ids: number[];
-  tag: string;
+  file_ids: number[]
+  tag: string
 }) => {
-  const { file_ids, tag } = arg;
+  const { file_ids, tag } = arg
 
-  const _tag: Tag = await createTag(tag);
+  const _tag: Tag = await createTag(tag)
 
   // only add tag to files that don't already have it
   const fileTags: FileTag[] = await Promise.all(
     file_ids.map(async (file_id) => {
       const hasTag: FileTag | null = await FileTag.findOne({
         where: {
-          // @ts-ignore
+          // @ts-expect-error
           file_id,
-          tag_id: _tag.id,
-        },
-      });
+          tag_id: _tag.id
+        }
+      })
 
-      if (hasTag) return;
+      if (hasTag) return
 
       const fileTag: FileTag = await FileTag.create({
         file_id,
-        tag_id: _tag.id,
-      }).then((fileTag) => fileTag.toJSON());
+        tag_id: _tag.id
+      }).then((fileTag) => fileTag.toJSON())
 
-      return fileTag;
+      return fileTag
     })
-  );
+  )
 
-  event.reply("tagged-files", fileTags);
+  event.reply('tagged-files', fileTags)
 }
 
 /**
@@ -103,56 +103,56 @@ export const handleTagFiles = async (event: IpcMainEvent, arg: {
 export const handleListTags = async (event: IpcMainEvent) => {
   const tags: Tag[] = await Tag.findAll().then((tags) =>
     tags.map((tag) => tag.toJSON())
-  );
-  event.reply("listed-tags", tags);
+  )
+  event.reply('listed-tags', tags)
 }
 
 /**
  * Untags a file from a tag
  */
 export const handleUntagFile = async (event: IpcMainEvent, arg: {
-  file_id: number;
-  tag_id: number;
+  file_id: number
+  tag_id: number
 }) => {
-  const { file_id, tag_id } = arg;
+  const { file_id, tag_id } = arg
 
   await FileTag.destroy({
     where: {
-      // @ts-ignore
+      // @ts-expect-error
       file_id,
-      tag_id,
-    },
-  });
+      tag_id
+    }
+  })
 
-  await handleKillOrphanedTags(event);
+  await handleKillOrphanedTags(event)
 
-  event.reply("untagged-file", arg);
+  event.reply('untagged-file', arg)
 }
 
 /**
  * Untags multiple files from a tag
  */
 export const handleUntagFiles = async (event: IpcMainEvent, arg: {
-  file_ids: number[];
-  tag_id: number;
+  file_ids: number[]
+  tag_id: number
 }) => {
-  const { file_ids, tag_id } = arg;
+  const { file_ids, tag_id } = arg
 
   await Promise.all(
     file_ids.map(async (file_id) => {
       await FileTag.destroy({
         where: {
-          // @ts-ignore
+          // @ts-expect-error
           file_id,
-          tag_id,
-        },
-      });
+          tag_id
+        }
+      })
     }
-  ));
+    ))
 
-  await handleKillOrphanedTags(event);
+  await handleKillOrphanedTags(event)
 
-  event.reply("untagged-files", arg);
+  event.reply('untagged-files', arg)
 }
 
 /**
@@ -166,10 +166,10 @@ export const handleKillOrphanedTags = async (event: IpcMainEvent) => {
 
   // get orphaned tags
   const orphanedTags: Tag[] = tags.filter((tag) => {
-    // @ts-ignore
-    const hasTag: boolean = fileTags.some((fileTag) => fileTag.tag_id === tag.id);
-    return !hasTag;
-  });
+    // @ts-expect-error
+    const hasTag: boolean = fileTags.some((fileTag) => fileTag.tag_id === tag.id)
+    return !hasTag
+  })
 
   // use a transaction to ensure that all tags are deleted
   // if one fails to delete, then the entire transaction is rolled back
@@ -178,13 +178,13 @@ export const handleKillOrphanedTags = async (event: IpcMainEvent) => {
       orphanedTags.map(async (tag) => {
         await Tag.destroy({
           where: {
-            id: tag.id,
+            id: tag.id
           },
-          transaction: t,
-        });
+          transaction: t
+        })
       })
-    );
-  });
-  
-  event.reply("killed-orphaned-tags");
+    )
+  })
+
+  event.reply('killed-orphaned-tags')
 }

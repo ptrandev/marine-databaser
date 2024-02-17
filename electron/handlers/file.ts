@@ -170,7 +170,7 @@ export const handleFileRename = async (event: IpcMainEvent, arg: {
   const path: string = file.path.replace(file.name, name)
 
   // first change filename on disk
-  fs.renameSync(file.path as string, path)
+  fs.renameSync(file.path, path)
 
   // then update database ... remember to update name and path
   await File.update(

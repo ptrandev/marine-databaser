@@ -19,7 +19,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
   const onAddTag = async (): Promise<void> => {
     if (!tag) return
 
-    await tagFile(file.id as number, tag).then(fileTag => {
+    await tagFile(file.id, tag).then(fileTag => {
       // @ts-expect-error - this is a hack to get around the fact that the type of file.Tags is readonly
       const newFile: FileWithMetadata = { ...file }
       if (fileTag) {
@@ -75,7 +75,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
             }}
             options={_tags.map(tag => tag.name)}
             value={tag}
-            onChange={(_, value) => { setTag(value as string ?? '') }}
+            onChange={(_, value) => { setTag(value! ?? '') }}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -102,7 +102,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
               </Typography>
               {
                 file?.Tags.map(tag => (
-                  <Chip key={tag.id} label={tag.name} onDelete={() => { void handleDeleteTag(tag.id as number) }} />
+                  <Chip key={tag.id} label={tag.name} onDelete={() => { void handleDeleteTag(tag.id) }} />
                 ))
               }
             </Stack>

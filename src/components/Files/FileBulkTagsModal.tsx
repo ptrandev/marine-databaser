@@ -65,7 +65,7 @@ const FileBulkTagsModal: FC<FileBulkTagsModalProps> = ({ open, handleClose }) =>
   }
 
   useEffect(() => {
-    setFiles(files.filter(file => selectedFiles.includes(file.id as number)))
+    setFiles(files.filter(file => selectedFiles.includes(file.id)))
   }, [files, selectedFiles])
 
   return (
@@ -87,7 +87,7 @@ const FileBulkTagsModal: FC<FileBulkTagsModalProps> = ({ open, handleClose }) =>
             }}
             options={tags.map(tag => tag.name)}
             value={tag}
-            onChange={(_, value) => { setTag(value as string ?? '') }}
+            onChange={(_, value) => { setTag(value! ?? '') }}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -114,7 +114,7 @@ const FileBulkTagsModal: FC<FileBulkTagsModalProps> = ({ open, handleClose }) =>
               </Typography>
               {
                 _tags.map(tag => (
-                  <Chip key={tag.id} label={tag.name} onDelete={() => { void handleDeleteTag(tag.id as number) }} />
+                  <Chip key={tag.id} label={tag.name} onDelete={() => { void handleDeleteTag(tag.id) }} />
                 ))
               }
             </Stack>

@@ -26,7 +26,7 @@ const addFilesToDatabase = async ({ files, directoryId }: {
   files: string[]
   directoryId: number
 }): Promise<File[]> => {
-  return File.bulkCreate(
+  return await File.bulkCreate(
     await Promise.all(
       files.map(async (file) => {
         return await addFileToDatabase({ file, directoryId })
@@ -186,7 +186,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent): Promise<voi
   for (const directory of directories) {
     const currentTime = new Date()
 
-    const files = await getFileList(directory.path as string)
+    const files = await getFileList(directory.path)
 
     // get files that already exist in the database
     // to exist in the database, it must have the same path and birthTime
@@ -202,7 +202,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent): Promise<voi
     // use await fs.stat(file.path) to get the birthTime of the file on disk
     const existingFiles = await Promise.all(
       _existingFiles.map(async (file) => {
-        const { birthtime } = await fs.stat(file.path as string)
+        const { birthtime } = await fs.stat(file.path)
         if (birthtime.getTime() === file.birthTime.getTime()) {
           return file
         }
@@ -213,7 +213,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent): Promise<voi
     // for files that already exist in the database, update metadata based upon the file id
     const updateExistingFiles = await Promise.all(
       existingFiles.map(async (file) => {
-        const { mtime, size } = await fs.stat(file.path as string)
+        const { mtime, size } = await fs.stat(file.path)
         return {
           ...file.toJSON(),
           lastModified: mtime,
@@ -268,7 +268,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent): Promise<voi
               }
             )
 
-            return File.findOne({
+            return await File.findOne({
               where: {
                 id: renamedFile.id
               }

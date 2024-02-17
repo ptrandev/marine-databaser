@@ -10,7 +10,7 @@ interface FileRenameModalProps extends Omit<ModalProps, 'children'> {
 }
 
 const FileRenameModal: FC<FileRenameModalProps> = ({ open, onClose, file, setFile }) => {
-  const [name, setName] = useState<string>(file.name as string)
+  const [name, setName] = useState<string>(file.name)
 
   const onFileRename = (): void => {
     if (!name) return
