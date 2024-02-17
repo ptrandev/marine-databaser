@@ -4,7 +4,7 @@ import { type FindOptions, Op } from 'sequelize'
 import { type FileTypes } from '../../shared/types'
 import fs from 'fs'
 
-export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent) => {
+export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog(win, {
     properties: ['openFile']
   })
@@ -25,7 +25,7 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
   tags?: number[]
   fileTypes?: FileTypes[]
   searchTerm?: string
-}) => {
+}): Promise<void> => {
   const { directories, tags, fileTypes, searchTerm } = arg
 
   const options: FindOptions = {
@@ -41,6 +41,7 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
   }
 
   if (directories?.length > 0) {
+    // @ts-expect-error - we are using the sequelize operator
     options.where.directoryId = directories
   }
 
@@ -59,6 +60,7 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
   }
 
   if (fileTypes?.length > 0) {
+    // @ts-expect-error - we are using the sequelize operator
     options.where.mimeType = {
       [Op.or]: matchMimeTypes(fileTypes).map((mimeType) => { return { [Op.like]: mimeType } })
     }
@@ -162,13 +164,13 @@ const matchMimeTypes = (FileTypes: FileTypes[]): string[] => {
 export const handleFileRename = async (event: IpcMainEvent, arg: {
   file: File
   name: string
-}) => {
+}): Promise<void> => {
   const { file, name } = arg
 
-  const path = file.path.replace(file.name, name)
+  const path: string = file.path.replace(file.name, name)
 
   // first change filename on disk
-  fs.renameSync(file.path, path)
+  fs.renameSync(file.path as string, path)
 
   // then update database ... remember to update name and path
   await File.update(

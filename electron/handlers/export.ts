@@ -1,11 +1,11 @@
 import { type IpcMainEvent, dialog } from 'electron'
 import { DATABASE_PATH } from '../constants'
-const fs = require('fs').promises
+import fs from 'fs/promises'
 
 /**
  * Exports the entire SQL database to a sqlite file and allow the user to save it
  */
-export const handleDatabaseExport = async (event: IpcMainEvent) => {
+export const handleDatabaseExport = async (event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showSaveDialog({
     title: 'Export Database',
     defaultPath: 'database.sqlite'

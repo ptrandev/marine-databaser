@@ -1,8 +1,8 @@
 import { type IpcMainEvent, dialog } from 'electron/main'
 import { DATABASE_PATH } from '../constants'
-const fs = require('fs').promises
+import fs from 'fs/promises'
 
-export const handleDatabaseImport = async (event: IpcMainEvent) => {
+export const handleDatabaseImport = async (event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog({
     title: 'Import Database',
     defaultPath: 'database.sqlite',
