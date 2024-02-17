@@ -4,21 +4,15 @@ import path from 'path'
 import { type AudioFileFormat, type AutoSpliceSettings, type SpliceRegion } from '../../shared/types'
 import fs from 'fs'
 
-const ffmpeg = require('fluent-ffmpeg')
+import ffmpeg from 'fluent-ffmpeg'
 
 // Get the paths to the packaged versions of the binaries we want to use
-const ffmpegPath = require('ffmpeg-static').replace(
-  'app.asar',
-  'app.asar.unpacked'
-)
-const ffprobePath = require('ffprobe-static').path.replace(
-  'app.asar',
-  'app.asar.unpacked'
-)
+import ffmpegPath from 'ffmpeg-static'
+import ffprobePath from 'ffprobe-static'
 
 // tell the ffmpeg package where it can find the needed binaries.
-ffmpeg.setFfmpegPath(ffmpegPath)
-ffmpeg.setFfprobePath(ffprobePath)
+ffmpeg.setFfmpegPath(ffmpegPath.replace('app.asar', 'app.asar.unpacked'))
+ffmpeg.setFfprobePath(ffprobePath.path.replace('app.asar', 'app.asar.unpacked'))
 
 /**
  * extract the audio from a video
@@ -116,7 +110,7 @@ const getVideoDuration = async (videoPath: string): Promise<number> => {
         reject(err)
       }
 
-      const duration = metadata.format.duration
+      const duration: number = metadata.format.duration
 
       resolve(duration)
     })
@@ -207,11 +201,12 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
 
   // if typeof files is string
   // filter mimetype to video
-  const files: string[] = await arg.files.map((file) => {
+  const files: string[] = arg.files.map((file) => {
     if (mime.lookup(file).toString().includes('video')) {
       return file
     }
-  })
+    return null
+  }).filter((file) => file !== null)
 
   // for each file, extract the audio
   for (const file of files) {
@@ -325,8 +320,6 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
     arg.outputDirectory = path.dirname(videoPath)
   }
 
-  const outputDirectory = arg.outputDirectory
-
   const videoDuration = await getVideoDuration(videoPath)
 
   // use a timestamp as the temporary file name
@@ -352,7 +345,7 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
     })
     .on('stderr', (stderrLine) => {
       if (stderrLine.includes('silence_start')) {
-        const start = parseFloat(stderrLine.split('silence_start: ')[1])
+        const start = parseFloat(stderrLine.split('silence_start: ')[1] as string)
         spliceRegions.push({
           name: `${Date.now()}`,
           start,
@@ -361,7 +354,7 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
       }
 
       if (stderrLine.includes('silence_end')) {
-        const end = parseFloat(stderrLine.split('silence_end: ')[1])
+        const end = parseFloat(stderrLine.split('silence_end: ')[1] as string)
         spliceRegions[spliceRegions.length - 1] = {
           ...spliceRegions[spliceRegions.length - 1],
           end
