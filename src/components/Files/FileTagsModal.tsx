@@ -75,7 +75,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
             }}
             options={_tags.map(tag => tag.name)}
             value={tag}
-            onChange={(_, value) => { setTag(value! ?? '') }}
+            onChange={(_, value) => { setTag(value ?? '') }}
             renderInput={(params) => (
               <TextField
                 {...params}

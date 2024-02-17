@@ -7,7 +7,7 @@ import { FileTag, Tag } from '../database/schemas'
  * @param name Name of the tag
  * @returns Tag object
  */
-const createTag = async (name: string) => {
+const createTag = async (name: string): Promise<Tag> => {
   const existingTag: Tag | null = await Tag.findOne({
     where: {
       name
@@ -17,9 +17,8 @@ const createTag = async (name: string) => {
   // tag already exists, so just return it
   if (existingTag) return existingTag
 
-  const tag: Tag = await Tag.create({
-    name
-  })
+  // @ts-expect-error - we are creating a new tag
+  const tag: Tag = await Tag.create({ name })
 
   return tag
 }
@@ -33,7 +32,8 @@ const createTag = async (name: string) => {
 export const handleTagFile = async (event: IpcMainEvent, arg: {
   file_id: number
   tag: string
-}) => {
+}): Promise<void> => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { file_id, tag } = arg
 
   const _tag: Tag = await createTag(tag)
@@ -41,7 +41,7 @@ export const handleTagFile = async (event: IpcMainEvent, arg: {
   // check if file already has tag
   const hasTag: FileTag | null = await FileTag.findOne({
     where: {
-      // @ts-expect-error
+      // @ts-expect-error - we are using the sequelize operator
       file_id,
       tag_id: _tag.id
     }
@@ -67,23 +67,25 @@ export const handleTagFile = async (event: IpcMainEvent, arg: {
 export const handleTagFiles = async (event: IpcMainEvent, arg: {
   file_ids: number[]
   tag: string
-}) => {
+}): Promise<void> => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { file_ids, tag } = arg
 
   const _tag: Tag = await createTag(tag)
 
   // only add tag to files that don't already have it
-  const fileTags: FileTag[] = await Promise.all(
+  const fileTags: FileTag[] = (await Promise.all(
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     file_ids.map(async (file_id) => {
       const hasTag: FileTag | null = await FileTag.findOne({
         where: {
-          // @ts-expect-error
+          // @ts-expect-error - we are using the sequelize operator
           file_id,
           tag_id: _tag.id
         }
       })
 
-      if (hasTag) return
+      if (hasTag) return null
 
       const fileTag: FileTag = await FileTag.create({
         file_id,
@@ -92,7 +94,7 @@ export const handleTagFiles = async (event: IpcMainEvent, arg: {
 
       return fileTag
     })
-  )
+  )).filter((fileTag) => fileTag !== null) as FileTag[]
 
   event.reply('tagged-files', fileTags)
 }
@@ -100,7 +102,7 @@ export const handleTagFiles = async (event: IpcMainEvent, arg: {
 /**
  * Lists all tags
  */
-export const handleListTags = async (event: IpcMainEvent) => {
+export const handleListTags = async (event: IpcMainEvent): Promise<void> => {
   const tags: Tag[] = await Tag.findAll().then((tags) =>
     tags.map((tag) => tag.toJSON())
   )
@@ -113,12 +115,13 @@ export const handleListTags = async (event: IpcMainEvent) => {
 export const handleUntagFile = async (event: IpcMainEvent, arg: {
   file_id: number
   tag_id: number
-}) => {
+}): Promise<void> => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { file_id, tag_id } = arg
 
   await FileTag.destroy({
     where: {
-      // @ts-expect-error
+      // @ts-expect-error - we are using the sequelize operator
       file_id,
       tag_id
     }
@@ -135,14 +138,16 @@ export const handleUntagFile = async (event: IpcMainEvent, arg: {
 export const handleUntagFiles = async (event: IpcMainEvent, arg: {
   file_ids: number[]
   tag_id: number
-}) => {
+}): Promise<void> => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { file_ids, tag_id } = arg
 
   await Promise.all(
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     file_ids.map(async (file_id) => {
       await FileTag.destroy({
         where: {
-          // @ts-expect-error
+          // @ts-expect-error - we are using the sequelize operator
           file_id,
           tag_id
         }
@@ -159,32 +164,34 @@ export const handleUntagFiles = async (event: IpcMainEvent, arg: {
  * Checks to see if any tag is orphaned (i.e. no files are tagged with it)
  * If so, delete the tag
  */
-export const handleKillOrphanedTags = async (event: IpcMainEvent) => {
+export const handleKillOrphanedTags = async (event: IpcMainEvent): Promise<void> => {
   const tags: Tag[] = await Tag.findAll()
 
   const fileTags: FileTag[] = await FileTag.findAll()
 
   // get orphaned tags
   const orphanedTags: Tag[] = tags.filter((tag) => {
-    // @ts-expect-error
+    // @ts-expect-error - we are using the sequelize operator
     const hasTag: boolean = fileTags.some((fileTag) => fileTag.tag_id === tag.id)
     return !hasTag
   })
 
   // use a transaction to ensure that all tags are deleted
   // if one fails to delete, then the entire transaction is rolled back
-  await Tag.sequelize.transaction(async (t) => {
-    await Promise.all(
-      orphanedTags.map(async (tag) => {
-        await Tag.destroy({
-          where: {
-            id: tag.id
-          },
-          transaction: t
+  if (Tag.sequelize) {
+    await Tag.sequelize.transaction(async (t) => {
+      await Promise.all(
+        orphanedTags.map(async (tag) => {
+          await Tag.destroy({
+            where: {
+              id: tag.id
+            },
+            transaction: t
+          })
         })
-      })
-    )
-  })
+      )
+    })
+  }
 
   event.reply('killed-orphaned-tags')
 }

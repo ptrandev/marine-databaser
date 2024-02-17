@@ -142,7 +142,7 @@ ipcMain.handle('open-win', (_, arg) => {
   }
 })
 
-sequelize.sync()
+await sequelize.sync()
 
 // Test connection
 sequelize
@@ -159,7 +159,9 @@ sequelize
 //
 
 ipcMain.on('add-directory', (event) => {
-  void handleAddDirectory(win, event)
+  if (win) {
+    void handleAddDirectory(win, event)
+  }
 })
 
 ipcMain.on('list-directories', (event) => {
@@ -183,7 +185,9 @@ ipcMain.on('refresh-directories', (event) => {
 })
 
 ipcMain.on('select-directory', (event) => {
-  void handleSelectDirectory(win, event)
+  if (win) {
+    void handleSelectDirectory(win, event)
+  }
 })
 
 //
@@ -195,11 +199,15 @@ ipcMain.on('bulk-extract-audio', (event, arg: { files: number[] | string[], file
 })
 
 ipcMain.on('select-extract-audio-files', (event) => {
-  void handleSelectExtractAudioFiles(win, event)
+  if (win) {
+    void handleSelectExtractAudioFiles(win, event)
+  }
 })
 
 ipcMain.on('select-splice-video-file', (event) => {
-  void handleSelectSpliceVideoFile(win, event)
+  if (win) {
+    void handleSelectSpliceVideoFile(win, event)
+  }
 })
 
 ipcMain.on('splice-video', (event, arg: { videoPath: string, spliceRegions: SpliceRegion[], outputDirectory?: string, videoBasename: string }) => {
@@ -227,7 +235,9 @@ ipcMain.on('get-audio-sample-rate', (event, arg: { filePath: string }) => {
 //
 
 ipcMain.on('select-file', (event) => {
-  void handleSelectFile(win, event)
+  if (win) {
+    void handleSelectFile(win, event)
+  }
 })
 
 ipcMain.on('list-files', (event, arg: { directories?: number[], tags?: number[], fileTypes?: FileTypes[], searchTerm?: string }) => {
@@ -246,24 +256,24 @@ ipcMain.on('rename-file', (event, arg: { file: File, name: string }) => {
 // TAG
 //
 
-ipcMain.on('tag-file', (event, arg) => {
-  handleTagFile(event, arg)
+ipcMain.on('tag-file', (event, arg: { file_id: number, tag: string }) => {
+  void handleTagFile(event, arg)
 })
 
-ipcMain.on('tag-files', (event, arg) => {
-  handleTagFiles(event, arg)
+ipcMain.on('tag-files', (event, arg: { file_ids: number[], tag: string }) => {
+  void handleTagFiles(event, arg)
 })
 
 ipcMain.on('list-tags', (event) => {
-  handleListTags(event)
+  void handleListTags(event)
 })
 
-ipcMain.on('untag-file', (event, arg) => {
-  handleUntagFile(event, arg)
+ipcMain.on('untag-file', (event, arg: { file_id: number, tag_id: number }) => {
+  void handleUntagFile(event, arg)
 })
 
-ipcMain.on('untag-files', (event, arg) => {
-  handleUntagFiles(event, arg)
+ipcMain.on('untag-files', (event, arg: { file_ids: number[], tag_id: number }) => {
+  void handleUntagFiles(event, arg)
 })
 
 //

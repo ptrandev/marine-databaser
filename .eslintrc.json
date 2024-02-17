@@ -24,5 +24,12 @@
         "react": {
             "version": "detect"
         }
-    }
+    },
+    "ignorePatterns": [
+        "vite.legacy.config.ts",
+        "vite.config.ts",
+        "vite-env.d.ts",
+        "playwright.config.ts",
+        "electron-env.d.ts"
+    ]
 }

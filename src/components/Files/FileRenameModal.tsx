@@ -16,7 +16,7 @@ const FileRenameModal: FC<FileRenameModalProps> = ({ open, onClose, file, setFil
     if (!name) return
 
     ipcRenderer.send('rename-file', { file, name })
-    ipcRenderer.once('renamed-file', (_, renamedFile) => {
+    ipcRenderer.once('renamed-file', (_, renamedFile: FileWithMetadata) => {
       setFile(renamedFile)
       onClose()
     })

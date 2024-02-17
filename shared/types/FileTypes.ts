@@ -8,4 +8,5 @@ export const FileTypes = [
   'unknown'
 ] as const
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export type FileTypes = typeof FileTypes[number]

@@ -87,7 +87,7 @@ const FileBulkTagsModal: FC<FileBulkTagsModalProps> = ({ open, handleClose }) =>
             }}
             options={tags.map(tag => tag.name)}
             value={tag}
-            onChange={(_, value) => { setTag(value! ?? '') }}
+            onChange={(_, value) => { setTag(value ?? '') }}
             renderInput={(params) => (
               <TextField
                 {...params}
