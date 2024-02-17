@@ -114,7 +114,7 @@ export const handleDirectoriesFileCount = async (event: IpcMainEvent): Promise<v
   const directories = await Directory.findAll({
     attributes: [
       'id',
-      [Sequelize.fn('COUNT', Sequelize.col('files.id')), 'file_count']
+      [Sequelize.fn('COUNT', Sequelize.col('files.id')), 'fileCount']
     ],
     include: [
       {
@@ -125,11 +125,10 @@ export const handleDirectoriesFileCount = async (event: IpcMainEvent): Promise<v
     group: ['directory.id']
   }).then(
     (directories) =>
-      directories.reduce((acc, directory) => {
+      directories.reduce((acc: Record<number, number>, directory) => {
         // @ts-expect-error - directory is an object
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const { id, file_count } = directory.toJSON()
-        acc[id] = file_count
+        const { id, fileCount } = directory.toJSON()
+        acc[id] = fileCount
         return acc
       }, {})
   )
@@ -312,7 +311,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent): Promise<voi
     await FileTag.destroy({
       where: {
         // @ts-expect-error - deletedFiles is an array of objects
-        file_id: deletedFiles.map((file) => file.id)
+        fileId: deletedFiles.map((file) => file.id)
       }
     })
 

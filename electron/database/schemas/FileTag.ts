@@ -7,19 +7,19 @@ import Tag from './Tag'
 class FileTag extends Model<InferAttributes<FileTag>, InferCreationAttributes<FileTag>> { }
 
 FileTag.init({
-  file_id: {
+  fileId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     allowNull: false
   },
-  tag_id: {
+  tagId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     allowNull: false
   }
 }, { sequelize })
 
-File.belongsToMany(Tag, { through: FileTag, foreignKey: 'file_id', constraints: false })
-Tag.belongsToMany(File, { through: FileTag, foreignKey: 'tag_id', constraints: false })
+File.belongsToMany(Tag, { through: FileTag, foreignKey: 'fileId', constraints: false })
+Tag.belongsToMany(File, { through: FileTag, foreignKey: 'tagId', constraints: false })
 
 export default FileTag

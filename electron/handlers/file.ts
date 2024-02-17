@@ -75,7 +75,7 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
       }
     })
 
-    const fileIds = fileNotes.map((fileNote) => fileNote.file_id)
+    const fileIds = fileNotes.map((fileNote) => fileNote.fileId)
 
     // make an or statement for the file ids and path
     options.where = {
