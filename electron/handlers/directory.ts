@@ -3,7 +3,7 @@ import { Directory, File, FileTag } from '../database/schemas'
 import mime from 'mime-types'
 import { Sequelize, Op } from 'sequelize'
 import { handleKillOrphanedTags } from './tag'
-const fs = require('fs').promises
+import fs from 'fs/promises'
 
 const getFileList = async (directory: string): Promise<string[]> => {
   let files = []
@@ -26,7 +26,7 @@ const addFilesToDatabase = async ({ files, directoryId }: {
   files: string[]
   directoryId: number
 }): Promise<File[]> => {
-  return await File.bulkCreate(
+  return File.bulkCreate(
     await Promise.all(
       files.map(async (file) => {
         return await addFileToDatabase({ file, directoryId })
@@ -62,7 +62,7 @@ const addFileToDatabase = async ({ file, directoryId }: {
   }
 }
 
-export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent) => {
+export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog(win, {
     properties: ['openDirectory']
   })
@@ -91,7 +91,7 @@ export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent
  * @param {IpcMainEvent} event - the event to reply to
  * @returns {Promise<void>} - a promise that resolves when the directory has been selected
  */
-export const handleSelectDirectory = async (win: BrowserWindow, event: IpcMainEvent) => {
+export const handleSelectDirectory = async (win: BrowserWindow, event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog(win, {
     properties: ['openDirectory']
   })
@@ -101,7 +101,7 @@ export const handleSelectDirectory = async (win: BrowserWindow, event: IpcMainEv
   event.reply('selected-directory', result.filePaths)
 }
 
-export const handleListDirectories = async (event: IpcMainEvent) => {
+export const handleListDirectories = async (event: IpcMainEvent): Promise<void> => {
   const directories: Directory[] = await Directory.findAll().then(
     (dictionaries) => dictionaries.map((dictionary) => dictionary.toJSON())
   )
@@ -109,7 +109,7 @@ export const handleListDirectories = async (event: IpcMainEvent) => {
   event.reply('listed-directories', directories)
 }
 
-export const handleDirectoriesFileCount = async (event: IpcMainEvent) => {
+export const handleDirectoriesFileCount = async (event: IpcMainEvent): Promise<void> => {
   // get number of files for each directory
   const directories = await Directory.findAll({
     attributes: [
@@ -126,7 +126,8 @@ export const handleDirectoriesFileCount = async (event: IpcMainEvent) => {
   }).then(
     (directories) =>
       directories.reduce((acc, directory) => {
-        // @ts-expect-error
+        // @ts-expect-error - directory is an object
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         const { id, file_count } = directory.toJSON()
         acc[id] = file_count
         return acc
@@ -136,7 +137,7 @@ export const handleDirectoriesFileCount = async (event: IpcMainEvent) => {
   event.reply('listed-directories-file-count', directories)
 }
 
-export const handleOpenDirectory = async (arg: { path: string }) => {
+export const handleOpenDirectory = async (arg: { path: string }): Promise<void> => {
   const { path } = arg
 
   // make sure the directory exists before opening it
@@ -144,10 +145,10 @@ export const handleOpenDirectory = async (arg: { path: string }) => {
     throw new Error('Directory does not exist')
   })
 
-  shell.openPath(path)
+  await shell.openPath(path)
 }
 
-export const handleDeleteDirectory = async (event: IpcMainEvent, arg: { directoryId: number }) => {
+export const handleDeleteDirectory = async (event: IpcMainEvent, arg: { directoryId: number }): Promise<void> => {
   const { directoryId } = arg
 
   await Directory.destroy({
@@ -171,7 +172,7 @@ export const handleDeleteDirectory = async (event: IpcMainEvent, arg: { director
  * @param event
  * @returns
  */
-export const handleRefreshDirectories = async (event: IpcMainEvent) => {
+export const handleRefreshDirectories = async (event: IpcMainEvent): Promise<void> => {
   // get all directories
   const directories = await Directory.findAll().then(
     (dictionaries) => dictionaries.map((dictionary) => dictionary.toJSON())
@@ -185,7 +186,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
   for (const directory of directories) {
     const currentTime = new Date()
 
-    const files = await getFileList(directory.path)
+    const files = await getFileList(directory.path as string)
 
     // get files that already exist in the database
     // to exist in the database, it must have the same path and birthTime
@@ -201,7 +202,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
     // use await fs.stat(file.path) to get the birthTime of the file on disk
     const existingFiles = await Promise.all(
       _existingFiles.map(async (file) => {
-        const { birthtime } = await fs.stat(file.path)
+        const { birthtime } = await fs.stat(file.path as string)
         if (birthtime.getTime() === file.birthTime.getTime()) {
           return file
         }
@@ -212,7 +213,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
     // for files that already exist in the database, update metadata based upon the file id
     const updateExistingFiles = await Promise.all(
       existingFiles.map(async (file) => {
-        const { mtime, size } = await fs.stat(file.path)
+        const { mtime, size } = await fs.stat(file.path as string)
         return {
           ...file.toJSON(),
           lastModified: mtime,
@@ -267,7 +268,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
               }
             )
 
-            return await File.findOne({
+            return File.findOne({
               where: {
                 id: renamedFile.id
               }
@@ -310,7 +311,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent) => {
     // remove file tag associations for deleted files
     await FileTag.destroy({
       where: {
-        // @ts-expect-error
+        // @ts-expect-error - deletedFiles is an array of objects
         file_id: deletedFiles.map((file) => file.id)
       }
     })
