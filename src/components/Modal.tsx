@@ -1,6 +1,6 @@
-import { FC } from "react"
-import { Modal as MUIModal, Box, Card, IconButton } from "@mui/material"
-import { Close } from "@mui/icons-material"
+import { type FC } from 'react'
+import { Modal as MUIModal, Box, Card, IconButton } from '@mui/material'
+import { Close } from '@mui/icons-material'
 
 export interface ModalProps {
   children: React.ReactNode
@@ -18,7 +18,7 @@ export const Modal: FC<ModalProps> = ({ children, open, onClose, disableClose })
             position: 'relative',
             maxWidth: 500,
             width: '100%',
-            p: 4,
+            p: 4
           }}
         >
           <IconButton onClick={onClose} sx={{ position: 'absolute', top: 8, right: 8 }} disabled={disableClose}>

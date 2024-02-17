@@ -1,9 +1,9 @@
-import { Search } from "@mui/icons-material";
-import { InputAdornment, TextField } from "@mui/material";
-import { FC } from "react";
-import useFiles from "@/hooks/useFiles";
+import { Search } from '@mui/icons-material'
+import { InputAdornment, TextField } from '@mui/material'
+import { type FC } from 'react'
+import useFiles from '@/hooks/useFiles'
 
-const FileSearch: FC= () => {
+const FileSearch: FC = () => {
   const { searchTerm, updateSearchTerm } = useFiles()
 
   return (
@@ -19,10 +19,10 @@ const FileSearch: FC= () => {
         }}
         fullWidth
         value={searchTerm}
-        onChange={e => updateSearchTerm(e.target.value)}
+        onChange={e => { updateSearchTerm(e.target.value) }}
       />
     </div>
-  );
-};
+  )
+}
 
-export default FileSearch;
+export default FileSearch

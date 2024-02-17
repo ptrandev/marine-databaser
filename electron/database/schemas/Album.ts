@@ -1,29 +1,28 @@
-const Sequelize = require("sequelize");
-import sequelize from "../initialize";
+import sequelize from '../initialize'
 
-import { Model, InferAttributes, InferCreationAttributes, DataTypes } from 'sequelize';
+import { Model, type InferAttributes, type InferCreationAttributes, DataTypes } from 'sequelize'
 
 class Album extends Model<InferAttributes<Album>, InferCreationAttributes<Album>> {
-  id: number;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
+  id: number
+  name: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 Album.init({
   id: {
-    type: Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
+    primaryKey: true
   },
   name: {
-    type: Sequelize.STRING,
-    allowNull: false,
+    type: DataTypes.STRING,
+    allowNull: false
   },
   createdAt: DataTypes.DATE,
-  updatedAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE
 }, {
-  sequelize,
-});
+  sequelize
+})
 
-export default Album;
+export default Album

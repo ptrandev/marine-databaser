@@ -1,10 +1,10 @@
-import { FileWithMetadata } from "../../../shared/types"
-import { Typography, Box, Chip, Button, Autocomplete, TextField } from "@mui/material"
-import { Stack } from "@mui/system"
-import { ipcRenderer } from "electron"
-import { FC, useEffect, useMemo, useState } from "react"
-import useTags from "@/hooks/useTags"
-import { Modal, ModalProps } from "@/components/Modal"
+import { type FileWithMetadata } from '../../../shared/types'
+import { Typography, Box, Chip, Button, Autocomplete, TextField } from '@mui/material'
+import { Stack } from '@mui/system'
+import { ipcRenderer } from 'electron'
+import { type FC, useEffect, useMemo, useState } from 'react'
+import useTags from '@/hooks/useTags'
+import { Modal, type ModalProps } from '@/components/Modal'
 
 interface FileTagModalProps extends Omit<ModalProps, 'children'> {
   file: FileWithMetadata
@@ -16,13 +16,14 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
 
   const [tag, setTag] = useState<string>('')
 
-  const onAddTag = async () => {
+  const onAddTag = async (): Promise<void> => {
     if (!tag) return
 
     await tagFile(file.id, tag).then(fileTag => {
-      const newFile = { ...file } as FileWithMetadata
+      // @ts-expect-error - this is a hack to get around the fact that the type of file.Tags is readonly
+      const newFile: FileWithMetadata = { ...file }
       if (fileTag) {
-        // @ts-ignore
+        // @ts-expect-error - this is a hack to get around the fact that the type of file.Tags is readonly
         newFile.Tags = [...newFile.Tags, { id: fileTag.tag_id, name: tag }] as any
       }
 
@@ -32,12 +33,13 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
     setTag('')
   }
 
-  const handleDeleteTag = (tag_id: number) => {
-    const file_id: number = file.id
+  const handleDeleteTag = async (tagId: number): Promise<void> => {
+    const fileId: number = file.id
 
-    untagFile(file_id, tag_id).then(() => {
-      const newFile = { ...file } as FileWithMetadata
-      newFile.Tags = newFile.Tags.filter(tag => tag.id !== tag_id) as any
+    await untagFile(fileId, tagId).then(() => {
+      // @ts-expect-error - this is a hack to get around the fact that the type of file.Tags is readonly
+      const newFile: FileWithMetadata = { ...file }
+      newFile.Tags = newFile.Tags.filter(tag => tag.id !== tagId) as any
       setFile(newFile)
     })
   }
@@ -62,30 +64,32 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
         </Typography>
         <Box display='flex' component='form' onSubmit={(e) => {
           e.preventDefault()
-          onAddTag()
+          void onAddTag()
         }} gap={2}>
           <Autocomplete
             freeSolo
             size='small'
             fullWidth
             sx={{
-              whiteSpace: 'nowrap',
+              whiteSpace: 'nowrap'
             }}
             options={_tags.map(tag => tag.name)}
             value={tag}
-            onChange={(_, value) => setTag(value ?? '')}
+            onChange={(_, value) => { setTag(value ?? '') }}
             renderInput={(params) => (
               <TextField
                 {...params}
                 placeholder='Add a tag...'
-                onChange={(e) => setTag(e.target.value)}
+                onChange={(e) => { setTag(e.target.value) }}
               />
             )}
           />
           <Box display='flex' alignItems='center'>
             <Button type='submit' sx={{
-              whiteSpace: 'nowrap',
-            }}>
+              whiteSpace: 'nowrap'
+            }}
+              variant='contained'
+            >
               Add Tag
             </Button>
           </Box>
@@ -98,7 +102,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
               </Typography>
               {
                 file?.Tags.map(tag => (
-                  <Chip key={tag.id} label={tag.name} onDelete={() => handleDeleteTag(tag.id)} />
+                  <Chip key={tag.id} label={tag.name} onDelete={() => { void handleDeleteTag(tag.id) }} />
                 ))
               }
             </Stack>

@@ -1,4 +1,4 @@
-import { FC, useEffect, useState, useMemo } from 'react'
+import { type FC, useEffect, useState, useMemo } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Box, IconButton, Stack, Tooltip } from '@mui/material'
 import { FirstPage, LastPage, PlayArrow, SkipNext, SkipPrevious, Pause, Replay, Replay5, Forward5, Replay10, Forward10 } from '@mui/icons-material'
@@ -23,11 +23,11 @@ const VideoControls: FC = () => {
       return
     }
 
-    const handlePlay = () => {
+    const handlePlay = (): void => {
       setVideoState('playing')
     }
 
-    const handlePause = () => {
+    const handlePause = (): void => {
       setVideoState('paused')
     }
 
@@ -37,43 +37,58 @@ const VideoControls: FC = () => {
     return () => {
       videoRef.removeEventListener('play', handlePlay)
       videoRef.removeEventListener('pause', handlePause)
+
+      // Revoke the object URL to prevent memory leaks
+      if (videoUrl) {
+        URL.revokeObjectURL(videoUrl)
+      }
     }
   }, [videoRef])
 
-  const handleGoToStart = () => {
-    videoRef!.currentTime = 0
+  const handleGoToStart = (): void => {
+    if (videoRef) {
+      videoRef.currentTime = 0
+    }
   }
 
-  const handleGoToEnd = () => {
-    videoRef!.currentTime = videoRef!.duration
+  const handleGoToEnd = (): void => {
+    if (videoRef) {
+      videoRef.currentTime = videoRef.duration
+    }
   }
 
-  const handlePlayPause = () => {
-    if (videoRef!.paused) {
-      videoRef!.play()
+  const handlePlayPause = (): void => {
+    if (!videoRef) {
+      return
+    }
+
+    if (videoRef.paused) {
+      void videoRef.play()
     } else {
-      videoRef!.pause()
+      videoRef.pause()
     }
   }
 
-  const handleGoBackOneFrame = () => {
-    if (!videoFramerate) {
+  const handleGoBackOneFrame = (): void => {
+    if (!videoFramerate || !videoRef) {
       return
     }
 
-    videoRef!.currentTime -= 1 / videoFramerate
+    videoRef.currentTime -= 1 / videoFramerate
   }
 
-  const handleGoForwardOneFrame = () => {
-    if (!videoFramerate) {
+  const handleGoForwardOneFrame = (): void => {
+    if (!videoFramerate || !videoRef) {
       return
     }
 
-    videoRef!.currentTime += 1 / videoFramerate
+    videoRef.currentTime += 1 / videoFramerate
   }
 
-  const handleSecondsOffset = (seconds: number) => {
-    videoRef!.currentTime += seconds
+  const handleSecondsOffset = (seconds: number): void => {
+    if (videoRef) {
+      videoRef.currentTime += seconds
+    }
   }
 
   return (
@@ -99,21 +114,21 @@ const VideoControls: FC = () => {
               </Box>
               <Box>
                 <Tooltip title='Go backward 10 seconds'>
-                  <IconButton onClick={() => handleSecondsOffset(-10)}>
+                  <IconButton onClick={() => { handleSecondsOffset(-10) }}>
                     <Replay10 />
                   </IconButton>
                 </Tooltip>
               </Box>
               <Box>
                 <Tooltip title='Go backward 5 seconds'>
-                  <IconButton onClick={() => handleSecondsOffset(-5)}>
+                  <IconButton onClick={() => { handleSecondsOffset(-5) }}>
                     <Replay5 />
                   </IconButton>
                 </Tooltip>
               </Box>
               <Box>
                 <Tooltip title='Go backward 1 second'>
-                  <IconButton onClick={() => handleSecondsOffset(-1)}>
+                  <IconButton onClick={() => { handleSecondsOffset(-1) }}>
                     <Replay />
                   </IconButton>
                 </Tooltip>
@@ -143,21 +158,21 @@ const VideoControls: FC = () => {
               </Box>
               <Box>
                 <Tooltip title='Go forward 1 second'>
-                  <IconButton onClick={() => handleSecondsOffset(1)}>
+                  <IconButton onClick={() => { handleSecondsOffset(1) }}>
                     <Replay sx={{ transform: 'scaleX(-1)' }} />
                   </IconButton>
                 </Tooltip>
               </Box>
               <Box>
                 <Tooltip title='Go forward 5 seconds'>
-                  <IconButton onClick={() => handleSecondsOffset(5)}>
+                  <IconButton onClick={() => { handleSecondsOffset(5) }}>
                     <Forward5 />
                   </IconButton>
                 </Tooltip>
               </Box>
               <Box>
                 <Tooltip title='Go forward 10 seconds'>
-                  <IconButton onClick={() => handleSecondsOffset(10)}>
+                  <IconButton onClick={() => { handleSecondsOffset(10) }}>
                     <Forward10 />
                   </IconButton>
                 </Tooltip>

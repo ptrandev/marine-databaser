@@ -1,35 +1,33 @@
-const Sequelize = require("sequelize");
-import sequelize from "../initialize";
+import sequelize from '../initialize'
 
-import { Model, InferAttributes, InferCreationAttributes, DataTypes } from 'sequelize';
-
+import { Model, type InferAttributes, type InferCreationAttributes, DataTypes } from 'sequelize'
 
 class Directory extends Model<InferAttributes<Directory>, InferCreationAttributes<Directory>> {
-  id: number;
-  name: string;
-  path: string;
-  createdAt: Date;
-  updatedAt: Date;
+  id: number
+  name: string
+  path: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 Directory.init({
   id: {
-    type: Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
+    primaryKey: true
   },
   name: {
-    type: Sequelize.STRING,
-    allowNull: false,
+    type: DataTypes.STRING,
+    allowNull: false
   },
   path: {
-    type: Sequelize.STRING,
-    allowNull: false,
+    type: DataTypes.STRING,
+    allowNull: false
   },
   createdAt: DataTypes.DATE,
-  updatedAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE
 }, {
-  sequelize,
-});
+  sequelize
+})
 
-export default Directory;
+export default Directory

@@ -1,5 +1,5 @@
-import { FC, useEffect, useMemo, useState } from 'react'
-import { Modal, ModalProps } from '../Modal'
+import { type FC, useEffect, useMemo, useState } from 'react'
+import { Modal, type ModalProps } from '../Modal'
 import { Typography, LinearProgress, Button, Box, Grid, CircularProgress } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import useDirectories from '@/hooks/useDirectories'
@@ -18,11 +18,11 @@ const RefreshButton: FC = () => {
 
   const [isRefreshingDirectories, setIsRefreshingDirectories] = useState<boolean>(false)
 
-  const handleRefresh = () => {
+  const handleRefresh = (): void => {
     setIsRefreshingDirectories(true)
     ipcRenderer.send('refresh-directories')
     ipcRenderer.once('refreshed-directories', () => {
-      loadDirectories()
+      void loadDirectories()
     })
   }
 
@@ -39,7 +39,7 @@ const RefreshButton: FC = () => {
       </Button>
       {
         isRefreshingDirectories &&
-        <RefreshModal open={isRefreshingDirectories} onClose={() => setIsRefreshingDirectories(false)} />
+        <RefreshModal open={isRefreshingDirectories} onClose={() => { setIsRefreshingDirectories(false) }} />
       }
     </>
   )

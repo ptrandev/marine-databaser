@@ -1,6 +1,7 @@
-import { FC, createContext, useState, useMemo, useEffect } from 'react'
+import { type FC, createContext, useState, useMemo, useEffect } from 'react'
 import { ipcRenderer } from 'electron'
-import { AudioFileFormat } from 'shared/types'
+import { type AudioFileFormat } from 'shared/types'
+import { enqueueSnackbar } from 'notistack'
 
 export interface ExtractAudioContextValue {
   selectedFiles: string[]
@@ -10,15 +11,14 @@ export interface ExtractAudioContextValue {
   isExtractingAudio: boolean
   handleExtractAudio: ({
     fileFormat,
-    outputDirectory,
+    outputDirectory
   }: {
     fileFormat?: AudioFileFormat
     outputDirectory?: string
   }) => void
-  errorMessages: string[]
 }
 
-const ExtractAudioContext = createContext<ExtractAudioContextValue>(undefined as any)
+const ExtractAudioContext = createContext<ExtractAudioContextValue | null>(null)
 
 interface ExtractAudioProviderProps {
   children: React.ReactNode
@@ -29,32 +29,29 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
   const [isExtractingAudio, setIsExtractingAudio] = useState<boolean>(false)
   const [numCompletedFiles, setNumCompletedFiles] = useState<number>(0)
 
-  const [errorMessages, setErrorMessages] = useState<string[]>([])
-
-  const updateSelectedFiles = (files: string[]) => {
+  const updateSelectedFiles = (files: string[]): void => {
     // don't allow duplicates
     const newFiles = files.filter((file) => !selectedFiles.includes(file))
     setSelectedFiles([...selectedFiles, ...newFiles])
   }
 
-  const deleteSelectedFiles = (files: string[]) => {
+  const deleteSelectedFiles = (files: string[]): void => {
     setSelectedFiles(selectedFiles.filter((file) => !files.includes(file)))
   }
 
   const handleExtractAudio = ({
     fileFormat,
-    outputDirectory,
+    outputDirectory
   }: {
     fileFormat?: AudioFileFormat
     outputDirectory?: string
-  }) => {
+  }): void => {
     setIsExtractingAudio(true)
 
     ipcRenderer.send('bulk-extract-audio', { files: selectedFiles, fileFormat, outputDirectory })
 
     ipcRenderer.once('bulk-extract-audio', () => {
       setIsExtractingAudio(false)
-      setSelectedFiles([])
       setNumCompletedFiles(0)
     })
   }
@@ -64,13 +61,13 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
       setNumCompletedFiles((prev) => prev + 1)
     })
 
-    ipcRenderer.on('extracted-audio-failed', (_, err) => {
-      setErrorMessages(prev => [...prev, err])
+    ipcRenderer.on('extracted-audio-error', (_, errMessage) => {
+      enqueueSnackbar(`Error extracting audio: ${errMessage}`, { variant: 'error' })
     })
 
     return () => {
       ipcRenderer.removeAllListeners('extracted-audio')
-      ipcRenderer.removeAllListeners('extracted-audio-failed')
+      ipcRenderer.removeAllListeners('extracted-audio-error')
     }
   }, [])
 
@@ -81,10 +78,9 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
       deleteSelectedFiles,
       isExtractingAudio,
       handleExtractAudio,
-      numCompletedFiles,
-      errorMessages,
+      numCompletedFiles
     }
-  }, [selectedFiles, updateSelectedFiles, deleteSelectedFiles, isExtractingAudio, handleExtractAudio, numCompletedFiles, errorMessages])
+  }, [selectedFiles, updateSelectedFiles, deleteSelectedFiles, isExtractingAudio, handleExtractAudio, numCompletedFiles])
 
   return (
     <ExtractAudioContext.Provider value={contextValue}>

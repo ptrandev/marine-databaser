@@ -1,12 +1,12 @@
 import { Box, Autocomplete, TextField } from '@mui/material'
-import { FC } from 'react'
+import { type FC } from 'react'
 
 import useFiles from '@/hooks/useFiles'
 import { FileTypes } from '../../../shared/types'
 import useTags from '@/hooks/useTags'
 import useDirectories from '@/hooks/useDirectories'
 
-const FileFilters : FC = () => {
+const FileFilters: FC = () => {
   const { selectedDirectories, selectedTags, selectedFileTypes, updateSelectedDirectories, updateSelectedTags, updateSelectedFileTypes } = useFiles()
   const { tags } = useTags()
   const { directories } = useDirectories()
@@ -18,7 +18,7 @@ const FileFilters : FC = () => {
         filterSelectedOptions
         defaultValue={selectedDirectories}
         options={directories}
-        onChange={(_, value) => updateSelectedDirectories(value)}
+        onChange={(_, value) => { updateSelectedDirectories(value) }}
         getOptionLabel={(option) => option.name}
         renderInput={(params) => (
           <TextField
@@ -34,7 +34,7 @@ const FileFilters : FC = () => {
         filterSelectedOptions
         defaultValue={selectedTags}
         options={tags}
-        onChange={(_, value) => updateSelectedTags(value)}
+        onChange={(_, value) => { updateSelectedTags(value) }}
         getOptionLabel={(option) => option.name}
         renderInput={(params) => (
           <TextField
@@ -50,7 +50,7 @@ const FileFilters : FC = () => {
         filterSelectedOptions
         defaultValue={selectedFileTypes}
         options={FileTypes}
-        onChange={(_, value) => updateSelectedFileTypes(value)}
+        onChange={(_, value) => { updateSelectedFileTypes(value) }}
         getOptionLabel={(option) => option}
         renderInput={(params) => (
           <TextField

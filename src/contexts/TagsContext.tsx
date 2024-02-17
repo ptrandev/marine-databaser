@@ -1,6 +1,6 @@
-import { createContext, FC, useEffect, useMemo, useState } from 'react'
+import { createContext, type FC, useEffect, useMemo, useState } from 'react'
 import { ipcRenderer } from 'electron'
-import { Tag, FileTag } from '../../electron/database/schemas'
+import { type Tag, type FileTag } from '../../electron/database/schemas'
 import useFiles from '@/hooks/useFiles'
 
 export interface TagsContextValue {
@@ -12,74 +12,74 @@ export interface TagsContextValue {
   untagFiles: (file_ids: number[], tag_id: number) => Promise<void>
 }
 
-const TagsContext = createContext<TagsContextValue>(undefined as any)
+const TagsContext = createContext<TagsContextValue | null>(null)
 
 interface TagsProviderProps {
   children: React.ReactNode
 }
 
-export const TagsProvider : FC<TagsProviderProps> = ({ children }) => {
+export const TagsProvider: FC<TagsProviderProps> = ({ children }) => {
   const { files } = useFiles()
 
   const [tags, setTags] = useState<Tag[]>([])
 
-  const loadTags = () : Promise<void> => {
+  const loadTags = async (): Promise<void> => {
     ipcRenderer.send('list-tags')
 
-    return new Promise((resolve, _) => {
-      ipcRenderer.once('listed-tags', (_, tags) => {
+    await new Promise<void>((resolve, _reject) => {
+      ipcRenderer.once('listed-tags', (_, tags: Tag[]) => {
         setTags(tags)
         resolve()
       })
     })
   }
 
-  const tagFile = (file_id : number, tag: string) : Promise<FileTag> => {
-    ipcRenderer.send('tag-file', { file_id, tag })
-    
-    return new Promise((resolve, _) => {
-      ipcRenderer.once('tagged-file', (_, fileTag) => {
-        loadTags()
+  const tagFile = async (fileId: number, tag: string): Promise<FileTag> => {
+    ipcRenderer.send('tag-file', { file_id: fileId, tag })
+
+    return await new Promise((resolve, _reject) => {
+      ipcRenderer.once('tagged-file', (_, fileTag: FileTag) => {
+        void loadTags()
         resolve(fileTag)
       })
     })
   }
 
-  const untagFile = (file_id : number, tag_id: number) : Promise<void> => {
-    ipcRenderer.send('untag-file', { file_id, tag_id })
+  const untagFile = async (fileId: number, tagId: number): Promise<void> => {
+    ipcRenderer.send('untag-file', { file_id: fileId, tag_id: tagId })
 
-    return new Promise((resolve, _) => {
+    await new Promise<void>((resolve, _reject) => {
       ipcRenderer.once('untagged-file', () => {
-        loadTags()
+        void loadTags()
         resolve()
       })
     })
   }
 
-  const tagFiles = (file_ids : number[], tag: string) : Promise<FileTag[]> => {
-    ipcRenderer.send('tag-files', { file_ids, tag })
+  const tagFiles = async (fileIds: number[], tag: string): Promise<FileTag[]> => {
+    ipcRenderer.send('tag-files', { file_ids: fileIds, tag })
 
-    return new Promise((resolve, _) => {
-      ipcRenderer.once('tagged-files', (_, fileTags) => {
-        loadTags()
+    return await new Promise((resolve, _reject) => {
+      ipcRenderer.once('tagged-files', (_, fileTags: FileTag[]) => {
+        void loadTags()
         resolve(fileTags)
       })
     })
   }
 
-  const untagFiles = (file_ids : number[], tag_id: number) : Promise<void> => {
-    ipcRenderer.send('untag-files', { file_ids, tag_id })
+  const untagFiles = async (fileIds: number[], tagId: number): Promise<void> => {
+    ipcRenderer.send('untag-files', { file_ids: fileIds, tag_id: tagId })
 
-    return new Promise((resolve, _) => {
+    await new Promise<void>((resolve, _reject) => {
       ipcRenderer.once('untagged-files', () => {
-        loadTags()
+        void loadTags()
         resolve()
       })
     })
   }
 
   useEffect(() => {
-    loadTags()
+    void loadTags()
   }, [files])
 
   const contextValue = useMemo<TagsContextValue>(() => {
@@ -89,7 +89,7 @@ export const TagsProvider : FC<TagsProviderProps> = ({ children }) => {
       tagFile,
       untagFile,
       tagFiles,
-      untagFiles,
+      untagFiles
     }
   }, [tags, loadTags, tagFile, untagFile, tagFiles, untagFiles])
 

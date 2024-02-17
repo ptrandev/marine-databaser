@@ -1,11 +1,11 @@
-import { FC, createContext, useState, useEffect, useMemo } from 'react'
+import { type FC, createContext, useState, useEffect, useMemo } from 'react'
 import { ipcRenderer } from 'electron'
-import { Directory } from '../../electron/database/schemas'
+import { type Directory } from '../../electron/database/schemas'
 
 export interface DirectoriesContextValue {
   directories: Directory[]
   directoriesFileCount: Record<number, number>
-  loadDirectories: () => Promise<any>
+  loadDirectories: () => Promise<void>
   isLoadingDirectories: boolean
   isInitializingDirectory: boolean
   isDeletingDirectory: boolean
@@ -13,7 +13,7 @@ export interface DirectoriesContextValue {
   handleDeleteDirectory: (directoryId: number) => void
 }
 
-const DirectoriesContext = createContext<DirectoriesContextValue>(undefined as any)
+const DirectoriesContext = createContext<DirectoriesContextValue | null>(null)
 
 interface DirectoriesProviderProps {
   children: React.ReactNode
@@ -28,47 +28,47 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
   const [isInitializingDirectory, setIsInitializingDirectory] = useState<boolean>(false)
   const [isDeletingDirectory, setIsDeletingDirectory] = useState<boolean>(false)
 
-  const loadDirectories = async () => {
+  const loadDirectories = async (): Promise<void> => {
     setIsLoadingDirectories(true)
 
     ipcRenderer.send('list-directories')
     ipcRenderer.send('list-directories-file-count')
 
-    // return and await two promises for listed-directories and listed-directories-file-count
-    return Promise.all([
-      new Promise((resolve) => {
-        ipcRenderer.once('listed-directories', (_, directories) => {
+    // await two promises for listed-directories and listed-directories-file-count
+    await Promise.all([
+      new Promise<void>((resolve) => {
+        ipcRenderer.once('listed-directories', (_, directories: Directory[]) => {
           setDirectories(directories)
           setIsLoadingDirectories(false)
-          resolve(true)
+          resolve()
         })
       }),
-      new Promise((resolve) => {
-        ipcRenderer.once('listed-directories-file-count', (_, directoriesFileCount) => {
+      new Promise<void>((resolve) => {
+        ipcRenderer.once('listed-directories-file-count', (_, directoriesFileCount: Record<number, number>) => {
           setDirectoriesFileCount(directoriesFileCount)
-          resolve(true)
+          resolve()
         })
       })
     ])
   }
 
-  const handleIsInitializingDirectory = (isInitializingDirectory: boolean) => {
+  const handleIsInitializingDirectory = (isInitializingDirectory: boolean): void => {
     setIsInitializingDirectory(isInitializingDirectory)
   }
 
-  const handleDeleteDirectory = (directoryId: number) => {
+  const handleDeleteDirectory = (directoryId: number): void => {
     setIsDeletingDirectory(true)
 
     ipcRenderer.send('delete-directory', { directoryId })
 
     ipcRenderer.once('deleted-directory', () => {
-      loadDirectories()
+      void loadDirectories()
       setIsDeletingDirectory(false)
     })
   }
 
   useEffect(() => {
-    loadDirectories()
+    void loadDirectories()
   }, [])
 
   const contextValue = useMemo<DirectoriesContextValue>(() => {

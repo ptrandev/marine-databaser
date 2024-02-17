@@ -1,12 +1,13 @@
-import { Box, CircularProgress, Typography } from "@mui/material"
+import { type FC } from 'react'
+import { Box, CircularProgress, Typography } from '@mui/material'
 
-import useFiles from "@/hooks/useFiles"
-import FileList from "@/components/Files/FileList"
-import FileSearch from "@/components/Files/FileSearch"
-import FileFilters from "@/components/Files/FileFilters"
-import FileActions from "@/components/Files/FileActions"
+import useFiles from '@/hooks/useFiles'
+import FileList from '@/components/Files/FileList'
+import FileSearch from '@/components/Files/FileSearch'
+import FileFilters from '@/components/Files/FileFilters'
+import FileActions from '@/components/Files/FileActions'
 
-const Files = () => {
+const Files: FC = () => {
   const { files, isLoadingFiles } = useFiles()
 
   return (

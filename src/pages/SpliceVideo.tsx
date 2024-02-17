@@ -1,9 +1,9 @@
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Box, Button, Typography, Stack, Grid } from '@mui/material'
-import { FC, useEffect } from 'react'
+import { type FC, useEffect } from 'react'
 import { ipcRenderer } from 'electron'
 import Progress from '@/components/SpliceVideo/Progress'
-import SplicePoints from '@/components/SpliceVideo/SplicePoints'
+import SpliceRegions from '@/components/SpliceVideo/SpliceRegions'
 import VideoControls from '@/components/SpliceVideo/VideoControls'
 import AutoSplice from '@/components/SpliceVideo/AutoSplice'
 import SaveProject from '@/components/SpliceVideo/SaveProject'
@@ -13,9 +13,9 @@ import AudioVisualizers from '@/components/SpliceVideo/AudioVisualizers'
 const SpliceVideo: FC = () => {
   const { updateSelectedVideo, selectedVideo } = useSpliceVideo()
 
-  const handleSelectVideo = () => {
+  const handleSelectVideo = (): void => {
     ipcRenderer.send('select-splice-video-file')
-    ipcRenderer.once('selected-splice-video-file', (_, path) => {
+    ipcRenderer.once('selected-splice-video-file', (_, path: string) => {
       if (!path) return
 
       updateSelectedVideo(path)
@@ -53,20 +53,20 @@ const SpliceVideo: FC = () => {
           <Grid item xs={12} md={6}
             style={{
               height: 'calc(100vh - 64px - 128px - 8px)',
-              overflowY: 'auto',
+              overflowY: 'auto'
             }}
           >
             {
               selectedVideo &&
               <Stack spacing={2}>
                 <VideoControls />
-                <AudioVisualizers />
                 <AutoSplice />
               </Stack>
             }
           </Grid>
           <Grid item xs={12} md={6}>
-            <SplicePoints />
+            <SpliceRegions />
+            <AudioVisualizers />
           </Grid>
         </Grid>
       </Box>

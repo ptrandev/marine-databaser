@@ -1,6 +1,6 @@
-import { useContext } from 'react';
-import SpliceVideoContext, { SpliceVideoContextValue } from '../contexts/SpliceVideoContext';
+import { useContext } from 'react'
+import SpliceVideoContext, { type SpliceVideoContextValue } from '../contexts/SpliceVideoContext'
 
-const useSpliceVideo = (): SpliceVideoContextValue => useContext(SpliceVideoContext);
+const useSpliceVideo = (): SpliceVideoContextValue => useContext(SpliceVideoContext)
 
-export default useSpliceVideo;
+export default useSpliceVideo

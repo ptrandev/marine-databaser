@@ -1,5 +1,5 @@
 import { Checkbox, Box, IconButton, Stack } from '@mui/material'
-import { FC, useState } from 'react'
+import { type FC, useState } from 'react'
 
 import useFiles from '@/hooks/useFiles'
 import { AudioFile, Sell } from '@mui/icons-material'
@@ -14,12 +14,12 @@ const FileActions: FC = () => {
 
   const [fileBulkTagsModalOpen, setFileBulkTagsModalOpen] = useState(false)
 
-  const handleFileBulkTagsModalClose = () => {
+  const handleFileBulkTagsModalClose = (): void => {
     setFileBulkTagsModalOpen(false)
     loadFiles()
   }
 
-  const handleBulkExtractAudio = () => {
+  const handleBulkExtractAudio = (): void => {
     // associate selectedFiles with the filePath
     const filePaths: string[] = files?.filter(file => selectedFiles?.includes(file.id))?.map(file => file.path)
 
@@ -40,14 +40,14 @@ const FileActions: FC = () => {
             e.stopPropagation()
 
             updateSelectedFiles(
-              selectedFiles?.length === files?.length ?
-                [] :
-                files?.map(file => file.id)
+              selectedFiles?.length === files?.length
+                ? []
+                : (files?.map(file => file.id))
             )
           }}
         />
         <Stack direction='row'>
-          <IconButton disabled={selectedFiles?.length === 0} onClick={() => setFileBulkTagsModalOpen(true)}>
+          <IconButton disabled={selectedFiles?.length === 0} onClick={() => { setFileBulkTagsModalOpen(true) }}>
             <Sell />
           </IconButton>
           <IconButton onClick={handleBulkExtractAudio} disabled={selectedFiles?.length === 0}>

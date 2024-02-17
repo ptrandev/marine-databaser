@@ -1,27 +1,28 @@
-import { FC, useState, useEffect } from 'react'
-import { Modal, ModalProps } from '../Modal'
-import { Typography, Button, MenuItem, Grid, TextField, Checkbox, Stack, Snackbar, Alert } from '@mui/material'
+import { type FC, useState, useEffect } from 'react'
+import { Modal, type ModalProps } from '../Modal'
+import { Typography, Button, MenuItem, Grid, TextField, Checkbox, Stack } from '@mui/material'
 import useExtractAudio from '@/hooks/useExtractAudio'
 import { ipcRenderer } from 'electron'
-import { AudioFileFormat } from '../../../shared/types'
+import { type AudioFileFormat } from '../../../shared/types'
+import { enqueueSnackbar } from 'notistack'
 
-const fileFormats: {
+const fileFormats: Array<{
   value: AudioFileFormat
   label: string
-}[] = [
-    {
-      value: 'pcm_s16le',
-      label: 'WAV 16-Bit (recommended)'
-    },
-    {
-      value: 'pcm_s24le',
-      label: 'WAV 24-Bit',
-    },
-    {
-      value: 'pcm_s32le',
-      label: 'WAV 32-Bit'
-    },
-  ]
+}> = [
+  {
+    value: 'pcm_s16le',
+    label: 'WAV 16-Bit (recommended)'
+  },
+  {
+    value: 'pcm_s24le',
+    label: 'WAV 24-Bit'
+  },
+  {
+    value: 'pcm_s32le',
+    label: 'WAV 32-Bit'
+  }
+]
 
 const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
   const [fileFormat, setFileFormat] = useState<AudioFileFormat>('pcm_s16le')
@@ -31,19 +32,18 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
 
   const { handleExtractAudio, isExtractingAudio, selectedFiles } = useExtractAudio()
 
-  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false)
-
-  const handleSelectOutputDirectory = () => {
+  const handleSelectOutputDirectory = (): void => {
     ipcRenderer.send('select-directory')
 
-    ipcRenderer.once('selected-directory', (_, directory) => {
+    ipcRenderer.once('selected-directory', (_, directory: string) => {
       setOutputDirectory(directory)
     })
   }
 
   useEffect(() => {
     ipcRenderer.on('bulk-extract-audio', () => {
-      setShowSuccessSnackbar(true)
+      enqueueSnackbar('Audio successfully extracted!', { variant: 'success' })
+
       setOutputDirectory('')
       setUseSameDirectory(true)
       setFileFormat('pcm_s16le')
@@ -62,7 +62,7 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
         </Typography>
         <Grid container my={2} spacing={2}>
           <Grid item xs={12}>
-            <TextField fullWidth label='File Format' variant='outlined' select value={fileFormat} onChange={(e) => setFileFormat(e.target.value as AudioFileFormat)}>
+            <TextField fullWidth label='File Format' variant='outlined' select value={fileFormat} onChange={(e) => { setFileFormat(e.target.value as AudioFileFormat) }}>
               {
                 fileFormats.map(({ value, label }) => (
                   <MenuItem key={value} value={value}>
@@ -89,34 +89,23 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
               )
             }
             <Stack direction='row' alignItems='center' mt={1}>
-              <Checkbox checked={useSameDirectory} onChange={(e) => setUseSameDirectory(e.target.checked)} />
+              <Checkbox checked={useSameDirectory} onChange={(e) => { setUseSameDirectory(e.target.checked) }} />
               <Typography variant='body2'>
                 Use same output directory as source file (recommended)
               </Typography>
             </Stack>
           </Grid>
         </Grid>
-        <Grid container justifyContent='flex-end'>
-          <Button variant='contained' onClick={() => {
-            handleExtractAudio({
-              fileFormat,
-              outputDirectory: useSameDirectory ? undefined : outputDirectory
-            })
-            onClose()
-          }} disabled={isExtractingAudio || selectedFiles.length === 0 || (!useSameDirectory && !outputDirectory)}>
-            Extract Audio
-          </Button>
-        </Grid>
+        <Button fullWidth variant='contained' onClick={() => {
+          handleExtractAudio({
+            fileFormat,
+            outputDirectory: useSameDirectory ? undefined : outputDirectory
+          })
+          onClose()
+        }} disabled={isExtractingAudio || selectedFiles.length === 0 || (!useSameDirectory && !outputDirectory)}>
+          Extract Audio
+        </Button>
       </Modal>
-      <Snackbar
-        open={showSuccessSnackbar}
-        autoHideDuration={3000}
-        onClose={() => setShowSuccessSnackbar(false)}
-      >
-        <Alert severity='success' onClose={() => setShowSuccessSnackbar(false)}>
-          Audio successfully extracted!
-        </Alert>
-      </Snackbar>
     </>
   )
 }

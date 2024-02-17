@@ -1,5 +1,5 @@
 import { dialog } from 'electron'
-const fs = require('fs').promises;
+import fs from 'fs/promises'
 
 /**
  * Saves a JSON file to the user's computer. Prompt the user where to save the file.
@@ -8,29 +8,29 @@ const fs = require('fs').promises;
  * @param {string} [arg.filename] The filename to save the data as.
  * @returns
  */
-export const handleSaveToJSON = async (event, arg) => {
+export const handleSaveToJSON = async (event, arg): Promise<void> => {
   if (!arg.data) {
-    event.reply('save-to-json-error');
-    return;
+    event.reply('save-to-json-error')
+    return
   }
 
   const result = await dialog.showSaveDialog({
     title: 'Save to JSON',
     defaultPath: arg?.filename || 'data.json',
     filters: [{ name: 'JSON', extensions: ['json'] }]
-  });
+  })
 
   if (result.canceled) {
-    event.reply('save-to-json-canceled');
-    return;
+    event.reply('save-to-json-canceled')
+    return
   }
 
   try {
-    await fs.writeFile(result.filePath, JSON.stringify(arg.data));
-    event.reply('save-to-json-success');
+    await fs.writeFile(result.filePath, JSON.stringify(arg.data))
+    event.reply('save-to-json-success')
   } catch (err) {
-    console.error(err);
-    event.reply('save-to-json-error');
+    console.error(err)
+    event.reply('save-to-json-error')
   }
 }
 
@@ -39,22 +39,22 @@ export const handleSaveToJSON = async (event, arg) => {
  * @param event The event that triggered this function.
  * @returns
  */
-export const handleLoadFromJSON = async (event) => {
+export const handleLoadFromJSON = async (event): Promise<void> => {
   const result = await dialog.showOpenDialog({
     title: 'Load from JSON',
     filters: [{ name: 'JSON', extensions: ['json'] }]
-  });
+  })
 
   if (result.canceled) {
-    event.reply('load-from-json-canceled');
-    return;
+    event.reply('load-from-json-canceled')
+    return
   }
 
   try {
-    const data = await fs.readFile(result.filePaths[0]);
-    event.reply('load-from-json-success', JSON.parse(data));
+    const data = await fs.readFile(result.filePaths[0])
+    event.reply('load-from-json-success', JSON.parse(data.toString()))
   } catch (err) {
-    console.error(err);
-    event.reply('load-from-json-error');
+    console.error(err)
+    event.reply('load-from-json-error')
   }
 }

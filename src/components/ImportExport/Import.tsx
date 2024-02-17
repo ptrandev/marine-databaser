@@ -1,9 +1,10 @@
-import { FC, useState } from "react";
-import { Box, Typography, Button, Alert, Snackbar } from "@mui/material";
-import { FileDownload } from "@mui/icons-material";
-import { ipcRenderer } from "electron";
-import useDirectories from "@/hooks/useDirectories";
-import useFiles from "@/hooks/useFiles";
+import { type FC, useState } from 'react'
+import { Box, Typography, Button } from '@mui/material'
+import { FileDownload } from '@mui/icons-material'
+import { ipcRenderer } from 'electron'
+import useDirectories from '@/hooks/useDirectories'
+import useFiles from '@/hooks/useFiles'
+import { enqueueSnackbar } from 'notistack'
 
 const Import: FC = () => {
   const { loadDirectories } = useDirectories()
@@ -11,29 +12,25 @@ const Import: FC = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false)
-  const [showErrorSnackbar, setShowErrorSnackbar] = useState(false)
-  const [showCancelSnackbar, setShowCancelSnackbar] = useState(false)
-
-  const handleDatabaseImport = () => {
+  const handleDatabaseImport = (): void => {
     setIsLoading(true)
 
     ipcRenderer.send('database-import')
 
     ipcRenderer.once('database-import-canceled', () => {
-      setShowCancelSnackbar(true)
+      enqueueSnackbar('Database import canceled.', { variant: 'warning' })
       setIsLoading(false)
     })
 
     ipcRenderer.once('database-import-error', () => {
-      setShowErrorSnackbar(true)
+      enqueueSnackbar('An error occurred while importing the database.', { variant: 'error' })
       setIsLoading(false)
     })
 
     ipcRenderer.once('database-import-success', () => {
-      setShowSuccessSnackbar(true)
+      enqueueSnackbar('Database imported successfully.', { variant: 'success' })
 
-      loadDirectories()
+      void loadDirectories()
       loadFiles()
 
       setIsLoading(false)
@@ -56,26 +53,8 @@ const Import: FC = () => {
           Import
         </Button>
       </Box>
-
-      <Snackbar open={showSuccessSnackbar} autoHideDuration={6000} onClose={() => setShowSuccessSnackbar(false)}>
-        <Alert severity="success" onClose={() => setShowSuccessSnackbar(false)}>
-          Database imported successfully.
-        </Alert>
-      </Snackbar>
-
-      <Snackbar open={showErrorSnackbar} autoHideDuration={6000} onClose={() => setShowErrorSnackbar(false)}>
-        <Alert severity="error" onClose={() => setShowErrorSnackbar(false)}>
-          An error occurred while importing the database.
-        </Alert>
-      </Snackbar>
-
-      <Snackbar open={showCancelSnackbar} autoHideDuration={6000} onClose={() => setShowCancelSnackbar(false)}>
-        <Alert severity="warning" onClose={() => setShowCancelSnackbar(false)}>
-          Database import canceled.
-        </Alert>
-      </Snackbar>
     </>
   )
 }
 
-export default Import;
+export default Import

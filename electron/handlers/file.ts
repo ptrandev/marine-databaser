@@ -1,47 +1,48 @@
-import { BrowserWindow, IpcMainEvent, dialog } from "electron";
-import { Tag, File, FileNote } from "../database/schemas";
-import { FindOptions, Op } from "sequelize";
-import { FileTypes } from "../../shared/types"
-import fs from "fs";
+import { type BrowserWindow, type IpcMainEvent, dialog } from 'electron'
+import { Tag, File, FileNote } from '../database/schemas'
+import { type FindOptions, Op } from 'sequelize'
+import { type FileTypes } from '../../shared/types'
+import fs from 'fs'
 
-export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent) => {
+export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog(win, {
-    properties: ["openFile"],
-  });
+    properties: ['openFile']
+  })
 
   const file: File = await File.create(
     {
-      name: result.filePaths[0].split("/").pop(),
-      path: result.filePaths[0],
+      name: result.filePaths[0].split('/').pop(),
+      path: result.filePaths[0]
     },
     { raw: true }
-  );
+  )
 
-  event.reply("selected-file", file);
-};
+  event.reply('selected-file', file)
+}
 
 export const handleListFiles = async (event: IpcMainEvent, arg: {
-  directories?: number[],
-  tags?: number[],
-  fileTypes?: FileTypes[],
+  directories?: number[]
+  tags?: number[]
+  fileTypes?: FileTypes[]
   searchTerm?: string
-}) => {
-  const { directories, tags, fileTypes, searchTerm } = arg;
+}): Promise<void> => {
+  const { directories, tags, fileTypes, searchTerm } = arg
 
   const options: FindOptions = {
     where: {},
     include: [
       {
-        model: Tag,
+        model: Tag
       },
       {
-        model: FileNote,
+        model: FileNote
       }
-    ],
-  };
+    ]
+  }
 
   if (directories?.length > 0) {
-    options.where["directoryId"] = directories;
+    // @ts-expect-error - we are using the sequelize operator
+    options.where.directoryId = directories
   }
 
   if (tags?.length > 0) {
@@ -49,17 +50,18 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
       {
         model: Tag,
         where: {
-          id: tags,
-        },
+          id: tags
+        }
       },
       {
-        model: FileNote,
+        model: FileNote
       }
-    ];
+    ]
   }
 
   if (fileTypes?.length > 0) {
-    options.where['mimeType'] = {
+    // @ts-expect-error - we are using the sequelize operator
+    options.where.mimeType = {
       [Op.or]: matchMimeTypes(fileTypes).map((mimeType) => { return { [Op.like]: mimeType } })
     }
   }
@@ -68,36 +70,36 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
     const fileNotes = await FileNote.findAll({
       where: {
         note: {
-          [Op.like]: `%${searchTerm.toLowerCase()}%`,
-        },
-      },
-    });
+          [Op.like]: `%${searchTerm.toLowerCase()}%`
+        }
+      }
+    })
 
-    const fileIds = fileNotes.map((fileNote) => fileNote.file_id);
+    const fileIds = fileNotes.map((fileNote) => fileNote.file_id)
 
     // make an or statement for the file ids and path
     options.where = {
       ...options.where,
       [Op.or]: [
         {
-          id: fileIds,
+          id: fileIds
         },
         {
           path: {
-            [Op.like]: `%${searchTerm.toLowerCase()}%`,
-          },
-        },
-      ],
-    };
+            [Op.like]: `%${searchTerm.toLowerCase()}%`
+          }
+        }
+      ]
+    }
   }
 
-  options.limit = 10000;
+  options.limit = 10000
 
   const files: File[] = await File.findAll(options).then((files) =>
     files.map((file) => file.toJSON())
-  );
+  )
 
-  event.reply("listed-files", files);
+  event.reply('listed-files', files)
 }
 
 /**
@@ -110,11 +112,11 @@ const matchMimeTypes = (FileTypes: FileTypes[]): string[] => {
   return FileTypes.map((fileType) => {
     switch (fileType) {
       case 'image':
-        return 'image/%';
+        return 'image/%'
       case 'video':
-        return 'video/%';
+        return 'video/%'
       case 'audio':
-        return 'audio/%';
+        return 'audio/%'
       case 'document':
         return [
           'application/pdf',
@@ -123,7 +125,7 @@ const matchMimeTypes = (FileTypes: FileTypes[]): string[] => {
           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           'application/vnd.ms-powerpoint',
           'text/%'
-        ];
+        ]
       case 'archive':
         return [
           'application/zip',
@@ -139,8 +141,8 @@ const matchMimeTypes = (FileTypes: FileTypes[]): string[] => {
           'application/x-lzop',
           'application/x-snappy-framed',
           'application/xz',
-          'application/x-gtar',
-        ];
+          'application/x-gtar'
+        ]
       case 'executable':
         return [
           'application/x-msdownload',
@@ -151,37 +153,37 @@ const matchMimeTypes = (FileTypes: FileTypes[]): string[] => {
           'application/x-pie-executable',
           'application/x-object',
           'application/x-archive',
-          'application/x-mach-binary',
-        ];
+          'application/x-mach-binary'
+        ]
       default:
-        return 'false';
+        return 'false'
     }
-  }).flat();
+  }).flat()
 }
 
 export const handleFileRename = async (event: IpcMainEvent, arg: {
-  file: File;
-  name: string;
-}) => {
-  const { file, name } = arg;
+  file: File
+  name: string
+}): Promise<void> => {
+  const { file, name } = arg
 
-  const path = file.path.replace(file.name, name)
+  const path: string = file.path.replace(file.name, name)
 
   // first change filename on disk
-  fs.renameSync(file.path, path);
+  fs.renameSync(file.path, path)
 
   // then update database ... remember to update name and path
   await File.update(
     {
       name,
-      path,
+      path
     },
     {
       where: {
-        id: file.id,
-      },
+        id: file.id
+      }
     }
-  );
+  )
 
-  event.reply("renamed-file", file);
+  event.reply('renamed-file', file)
 }

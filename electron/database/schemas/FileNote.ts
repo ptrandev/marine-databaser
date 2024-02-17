@@ -1,40 +1,39 @@
-const Sequelize = require("sequelize");
-import sequelize from "../initialize";
+import sequelize from '../initialize'
 
-import { Model, InferAttributes, InferCreationAttributes, DataTypes } from 'sequelize';
+import { Model, type InferAttributes, type InferCreationAttributes, DataTypes } from 'sequelize'
 
-import File from "./File";
+import File from './File'
 
 class FileNote extends Model<InferAttributes<FileNote>, InferCreationAttributes<FileNote>> {
-  id: number;
-  file_id: number;
-  note: string;
-  createdAt: Date;
-  updatedAt: Date;
+  id: number
+  file_id: number
+  note: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 FileNote.init({
   id: {
-    type: Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
+    primaryKey: true
   },
   file_id: {
-    type: Sequelize.INTEGER,
-    allowNull: false,
+    type: DataTypes.INTEGER,
+    allowNull: false
   },
   note: {
-    type: Sequelize.STRING,
-    allowNull: false,
+    type: DataTypes.STRING,
+    allowNull: false
   },
   createdAt: DataTypes.DATE,
-  updatedAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE
 }, {
-  sequelize,
-});
+  sequelize
+})
 
 File.hasMany(FileNote, {
-  foreignKey: "file_id"
-});
+  foreignKey: 'file_id'
+})
 
-export default FileNote;
+export default FileNote

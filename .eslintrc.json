@@ -1,0 +1,35 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true,
+        "node": true
+    },
+    "extends": [
+        "standard-with-typescript",
+        "plugin:react/recommended"
+    ],
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "plugins": [
+        "react",
+        "electron"
+    ],
+    "rules": {
+        "react/react-in-jsx-scope": "off",
+        "@typescript-eslint/strict-boolean-expressions": "off"
+    },
+    "settings": {    
+        "react": {
+            "version": "detect"
+        }
+    },
+    "ignorePatterns": [
+        "vite.legacy.config.ts",
+        "vite.config.ts",
+        "vite-env.d.ts",
+        "playwright.config.ts",
+        "electron-env.d.ts"
+    ]
+}

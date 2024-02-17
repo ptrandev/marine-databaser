@@ -1,6 +1,6 @@
-import { useContext } from 'react';
-import FilesContext, { FilesContextValue } from '../contexts/FilesContext';
+import { useContext } from 'react'
+import FilesContext, { type FilesContextValue } from '../contexts/FilesContext'
 
-const useFiles = (): FilesContextValue => useContext(FilesContext);
+const useFiles = (): FilesContextValue => useContext(FilesContext)
 
-export default useFiles;
+export default useFiles

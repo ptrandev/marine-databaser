@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { type FC } from 'react'
 import { AppBar, Toolbar, LinearProgress, Grid, Typography, Button } from '@mui/material'
 
 interface ProgressProps {
@@ -9,7 +9,7 @@ interface ProgressProps {
   processText?: string
 }
 
-const Progress : FC<ProgressProps> = ({
+const Progress: FC<ProgressProps> = ({
   numCompleted,
   totalToComplete,
   isProcessing,

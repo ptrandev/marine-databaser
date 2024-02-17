@@ -1,1 +1,1 @@
-export const DATABASE_PATH = "./src/assets/data/database.sqlite";
+export const DATABASE_PATH = './src/assets/data/database.sqlite'

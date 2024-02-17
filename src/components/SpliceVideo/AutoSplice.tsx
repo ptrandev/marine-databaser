@@ -1,9 +1,10 @@
-import { Box, Typography, Button, Input, InputLabel, Stack, Grid, LinearProgress, CircularProgress, Snackbar, Alert } from '@mui/material'
-import { FC, useMemo, useState, useEffect } from 'react'
+import { Box, Typography, Button, Input, InputLabel, Stack, Grid, LinearProgress, CircularProgress } from '@mui/material'
+import { type FC, useState, useEffect } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
-import { AutoSpliceSettings } from '../../../shared/types'
+import { type SpliceRegion, type AutoSpliceSettings } from '../../../shared/types'
 import { ipcRenderer } from 'electron'
-import { Modal, ModalProps } from '../Modal'
+import { Modal, type ModalProps } from '../Modal'
+import { enqueueSnackbar } from 'notistack'
 
 const DEFAULT_AUTO_SPLICE_SETTINGS: AutoSpliceSettings = {
   startSeconds: 0,
@@ -11,7 +12,7 @@ const DEFAULT_AUTO_SPLICE_SETTINGS: AutoSpliceSettings = {
   minFrequency: 0,
   maxFrequency: 20_000,
   minAmplitude: -10,
-  minDuration: 0.1,
+  minDuration: 0.1
 }
 
 interface AutoSpliceModalProps extends Omit<ModalProps, 'children'> {
@@ -19,23 +20,23 @@ interface AutoSpliceModalProps extends Omit<ModalProps, 'children'> {
 }
 
 const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSettings }) => {
-  const { selectedVideo, loadSplicePoints } = useSpliceVideo()
+  const { selectedVideo, loadSpliceRegions } = useSpliceVideo()
 
   const [isDisabled, setIsDisabled] = useState(true)
   const [isSplicing, setIsSplicing] = useState(false)
 
   const [splicingProgress, setSplicingProgress] = useState(0)
 
-  const handleAutoSplice = () => {
+  const handleAutoSplice = (): void => {
     setIsSplicing(true)
 
     ipcRenderer.send('auto-splice', {
       videoPath: selectedVideo,
-      autoSpliceSettings,
+      autoSpliceSettings
     })
 
-    ipcRenderer.once('auto-spliced', (_, splicePoints) => {
-      loadSplicePoints(splicePoints)
+    ipcRenderer.once('auto-spliced', (_, spliceRegions: SpliceRegion[]) => {
+      loadSpliceRegions(spliceRegions)
       setIsSplicing(false)
       onClose()
     })
@@ -45,7 +46,7 @@ const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSe
       setSplicingProgress(progress * 100)
     })
 
-    ipcRenderer.once('auto-splice-failed', () => {
+    ipcRenderer.once('auto-splice-error', () => {
       setIsSplicing(false)
       onClose()
     })
@@ -68,9 +69,9 @@ const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSe
         Are you sure you want to auto splice?
       </Typography>
       <Typography my={2}>
-        This will automatically find all parts of the video containing audio within the specified frequency range and amplitude range. if a silence is detected for longer than the specified duration, it will be considered a splice point.
+        This will automatically find all parts of the video containing audio within the specified frequency range and amplitude range. if a silence is detected for longer than the specified duration, it will be considered a splice region.
         <br /> <br />
-        This will override any existing splice points. This action cannot be undone.
+        This will override any existing splice regions. This action cannot be undone.
         <br /> <br />
         The confirm button will be enabled after 2 seconds to prevent accidental splicing.
       </Typography>
@@ -102,34 +103,30 @@ const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSe
 }
 
 const AutoSplice: FC = () => {
-  const { videoRef } = useSpliceVideo()
-
-  const videoDuration = useMemo(() => {
-    return videoRef?.duration || 0
-  }, [videoRef?.duration])
+  const { videoDuration } = useSpliceVideo()
 
   const [autoSpliceSettings, setAutoSpliceSettings] = useState(DEFAULT_AUTO_SPLICE_SETTINGS)
 
   const [confirmModalOpen, setConfirmModalOpen] = useState(false)
 
-  const [snackbarMessage, setSnackbarMessage] = useState('')
-
   useEffect(() => {
-    setAutoSpliceSettings({
-      ...autoSpliceSettings,
-      endSeconds: videoDuration,
-    })
+    if (videoDuration) {
+      setAutoSpliceSettings({
+        ...autoSpliceSettings,
+        endSeconds: videoDuration
+      })
+    }
   }, [videoDuration])
 
   useEffect(() => {
-    ipcRenderer.on('auto-splice-failed', (_, error) => {
-      setSnackbarMessage(error)
+    ipcRenderer.on('auto-splice-error', (_, errMessage: string) => {
+      enqueueSnackbar(errMessage, { variant: 'error' })
     })
 
     return () => {
       ipcRenderer.removeAllListeners('auto-spliced')
       ipcRenderer.removeAllListeners('auto-spliced-progress')
-      ipcRenderer.removeAllListeners('auto-splice-failed')
+      ipcRenderer.removeAllListeners('auto-splice-error')
     }
   }, [])
 
@@ -146,14 +143,16 @@ const AutoSplice: FC = () => {
               <Input
                 type='number'
                 value={autoSpliceSettings.startSeconds}
-                onChange={(e) => setAutoSpliceSettings({
-                  ...autoSpliceSettings,
-                  startSeconds: Number(e.target.value),
-                })}
+                onChange={(e) => {
+                  setAutoSpliceSettings({
+                    ...autoSpliceSettings,
+                    startSeconds: Number(e.target.value)
+                  })
+                }}
                 componentsProps={{
                   input: {
                     min: 0,
-                    max: autoSpliceSettings.endSeconds,
+                    max: autoSpliceSettings.endSeconds
                   }
                 }}
                 fullWidth
@@ -164,14 +163,16 @@ const AutoSplice: FC = () => {
               <Input
                 type='number'
                 value={autoSpliceSettings.endSeconds}
-                onChange={(e) => setAutoSpliceSettings({
-                  ...autoSpliceSettings,
-                  endSeconds: Number(e.target.value),
-                })}
+                onChange={(e) => {
+                  setAutoSpliceSettings({
+                    ...autoSpliceSettings,
+                    endSeconds: Number(e.target.value)
+                  })
+                }}
                 componentsProps={{
                   input: {
                     min: autoSpliceSettings.startSeconds,
-                    max: videoDuration,
+                    max: videoDuration ?? autoSpliceSettings.startSeconds
                   }
                 }}
                 fullWidth
@@ -182,14 +183,16 @@ const AutoSplice: FC = () => {
               <Input
                 type='number'
                 value={autoSpliceSettings.minFrequency}
-                onChange={(e) => setAutoSpliceSettings({
-                  ...autoSpliceSettings,
-                  minFrequency: Number(e.target.value),
-                })}
+                onChange={(e) => {
+                  setAutoSpliceSettings({
+                    ...autoSpliceSettings,
+                    minFrequency: Number(e.target.value)
+                  })
+                }}
                 componentsProps={{
                   input: {
                     min: 0,
-                    max: autoSpliceSettings.maxFrequency,
+                    max: autoSpliceSettings.maxFrequency
                   }
                 }}
                 fullWidth
@@ -200,13 +203,15 @@ const AutoSplice: FC = () => {
               <Input
                 type='number'
                 value={autoSpliceSettings.maxFrequency}
-                onChange={(e) => setAutoSpliceSettings({
-                  ...autoSpliceSettings,
-                  maxFrequency: Number(e.target.value),
-                })}
+                onChange={(e) => {
+                  setAutoSpliceSettings({
+                    ...autoSpliceSettings,
+                    maxFrequency: Number(e.target.value)
+                  })
+                }}
                 componentsProps={{
                   input: {
-                    min: autoSpliceSettings.minFrequency,
+                    min: autoSpliceSettings.minFrequency
                   }
                 }}
                 fullWidth
@@ -217,14 +222,16 @@ const AutoSplice: FC = () => {
               <Input
                 type='number'
                 value={autoSpliceSettings.minAmplitude}
-                onChange={(e) => setAutoSpliceSettings({
-                  ...autoSpliceSettings,
-                  minAmplitude: Number(e.target.value),
-                })}
+                onChange={(e) => {
+                  setAutoSpliceSettings({
+                    ...autoSpliceSettings,
+                    minAmplitude: Number(e.target.value)
+                  })
+                }}
                 componentsProps={{
                   input: {
                     min: -145,
-                    max: 0,
+                    max: 0
                   }
                 }}
                 fullWidth
@@ -235,14 +242,16 @@ const AutoSplice: FC = () => {
               <Input
                 type='number'
                 value={autoSpliceSettings.minDuration}
-                onChange={(e) => setAutoSpliceSettings({
-                  ...autoSpliceSettings,
-                  minDuration: Number(e.target.value),
-                })}
+                onChange={(e) => {
+                  setAutoSpliceSettings({
+                    ...autoSpliceSettings,
+                    minDuration: Number(e.target.value)
+                  })
+                }}
                 componentsProps={{
                   input: {
                     min: 0,
-                    max: videoDuration,
+                    max: videoDuration ?? 0
                   }
                 }}
                 fullWidth
@@ -251,7 +260,7 @@ const AutoSplice: FC = () => {
           </Grid>
         </Box>
         <Box>
-          <Button variant='contained' onClick={() => setConfirmModalOpen(true)}>
+          <Button variant='contained' onClick={() => { setConfirmModalOpen(true) }}>
             Confirm Auto Splice
           </Button>
         </Box>
@@ -260,22 +269,9 @@ const AutoSplice: FC = () => {
         confirmModalOpen && (
           <AutoSpliceModal
             open={confirmModalOpen}
-            onClose={() => setConfirmModalOpen(false)}
+            onClose={() => { setConfirmModalOpen(false) }}
             autoSpliceSettings={autoSpliceSettings}
           />
-        )
-      }
-      {
-        snackbarMessage && (
-          <Snackbar
-            open={!!snackbarMessage}
-            autoHideDuration={6000}
-            onClose={() => setSnackbarMessage('')}
-          >
-            <Alert severity='error' onClose={() => setSnackbarMessage('')}>
-              {snackbarMessage}
-            </Alert>
-          </Snackbar>
         )
       }
     </>

@@ -1,57 +1,59 @@
-import { IpcMainEvent } from "electron";
-import { FileNote } from "../database/schemas";
+import { type IpcMainEvent } from 'electron'
+import { FileNote } from '../database/schemas'
 
 export const handleListNotes = async (event: IpcMainEvent, arg: {
   file_id: number
-}) => {
-  const { file_id } = arg;
+}): Promise<void> => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const { file_id } = arg
 
   const fileNotes: FileNote[] = await FileNote.findAll({
     where: {
-      file_id,
-    },
-  }).then((fileNotes) => fileNotes.map((fileNote) => fileNote.toJSON()));
+      file_id
+    }
+  }).then((fileNotes) => fileNotes.map((fileNote) => fileNote.toJSON()))
 
-  event.reply("listed-notes", fileNotes);
-};
+  event.reply('listed-notes', fileNotes)
+}
 
 export const handleAddNote = async (event: IpcMainEvent, arg: {
   file_id: number
   note: string
-}) => {
-  const { file_id, note } = arg;
+}): Promise<void> => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const { file_id, note } = arg
 
   const fileNote: FileNote = await FileNote.create({
     file_id,
-    note,
-  });
+    note
+  })
 
-  event.reply("added-note", fileNote);
-};
+  event.reply('added-note', fileNote)
+}
 
 export const handleUpdateNote = async (event: IpcMainEvent, arg: {
   id: number
   note: string
-}) => {
-  const { id, note } = arg;
+}): Promise<void> => {
+  const { id, note } = arg
 
-  const fileNote: FileNote = await FileNote.findByPk(id);
+  const fileNote: FileNote = await FileNote.findByPk(id)
 
-  fileNote.note = note;
+  fileNote.note = note
 
-  await fileNote.save();
+  await fileNote.save()
 
-  event.reply("updated-note", fileNote);
+  event.reply('updated-note', fileNote)
 }
 
 export const handleDeleteNote = async (event: IpcMainEvent, arg: {
   id: number
-}) => {
-  const { id } = arg;
+}): Promise<void> => {
+  const { id } = arg
 
-  const fileNote: FileNote = await FileNote.findByPk(id);
+  const fileNote: FileNote = await FileNote.findByPk(id)
 
-  await fileNote.destroy();
+  await fileNote.destroy()
 
-  event.reply("deleted-note", fileNote);
+  event.reply('deleted-note', fileNote)
 }

@@ -1,6 +1,6 @@
-import { FC, useState, useEffect, useMemo } from 'react'
+import { type FC, useState, useEffect, useMemo } from 'react'
 import { Typography, Button, Stack, Box } from '@mui/material'
-import { Modal, ModalProps } from '../Modal'
+import { Modal, type ModalProps } from '../Modal'
 import useDirectories from '@/hooks/useDirectories'
 
 interface DirectoryDeleteModalProps extends Omit<ModalProps, 'children'> {
@@ -55,7 +55,7 @@ const DirectoryDeleteModal: FC<DirectoryDeleteModalProps> = ({
           </Button>
         </Box>
         <Box>
-          <Button onClick={() => handleDeleteDirectory(directoryId)} disabled={isDeletingDirectory || isDisabled} variant='contained' color='error'>
+          <Button onClick={() => { handleDeleteDirectory(directoryId) }} disabled={isDeletingDirectory || isDisabled} variant='contained' color='error'>
             Delete Directory
           </Button>
         </Box>

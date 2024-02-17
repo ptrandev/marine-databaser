@@ -1,6 +1,6 @@
-import { FileTypes } from "./FileTypes";
+import { type FileTypes } from './FileTypes'
 
-export const MimeTypes : Record<FileTypes, string[]> = {
+export const MimeTypes: Record<FileTypes, string[]> = {
   image: ['image/'],
   video: ['video/'],
   audio: ['audio/'],
@@ -26,7 +26,7 @@ export const MimeTypes : Record<FileTypes, string[]> = {
     'application/x-lzop',
     'application/x-snappy-framed',
     'application/xz',
-    'application/x-gtar',
+    'application/x-gtar'
   ],
   executable: [
     'application/x-msdownload',
@@ -37,7 +37,7 @@ export const MimeTypes : Record<FileTypes, string[]> = {
     'application/x-pie-executable',
     'application/x-object',
     'application/x-archive',
-    'application/x-mach-binary',
+    'application/x-mach-binary'
   ],
   unknown: ['false']
 }
