@@ -142,7 +142,7 @@ ipcMain.handle('open-win', (_, arg) => {
   }
 })
 
-await sequelize.sync()
+void sequelize.sync()
 
 // Test connection
 sequelize
