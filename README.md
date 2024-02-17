@@ -30,6 +30,8 @@ Here is a list of features that are currently implemented:
   - splices points are intelligently inserted by default so that one splice region starts as the
     previous one ends
   - videos are spliced in the same format as the original video, without re-encoding
+  - users can undo/redo up to 100 steps in video splicing tool
+  - users can save/load video splicing projects
 - Audio extraction from videos facilitated by FFMPEG
   - users can choose different export formats and destinations
 - Import/Export the entire database to a sqlite file for easy backup and transfer to new devices
@@ -38,8 +40,6 @@ Here is a list of features that are currently implemented:
 
 Here is a list of features that are currently being worked on:
 - "Collections" system for grouping files together and giving them to other researchers
-- Support for undo/redo operations in video splicing tool
-- support for saving/loading video splicing projects
 - support for bulk rename file operations
 - automatically tracking files created by video splicing operations in the database
 
@@ -55,9 +55,6 @@ The following screenshots demonstrate the current state of the application.
 ![Extract Audio](/public/extract-audio.png)
 
 ![Splice Video](/public/splice-video.png)
-
-![Splice Video Audio Waveform and Spectrogram](/public/splice-video-audio-waveform-and-spectrogram.png)
-
 
 ## 🛫 Quick start
 
