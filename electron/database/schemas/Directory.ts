@@ -1,7 +1,6 @@
 import sequelize from '../initialize'
 
 import { Model, type InferAttributes, type InferCreationAttributes, DataTypes } from 'sequelize'
-const Sequelize = require('sequelize')
 
 class Directory extends Model<InferAttributes<Directory>, InferCreationAttributes<Directory>> {
   id: number
@@ -13,16 +12,16 @@ class Directory extends Model<InferAttributes<Directory>, InferCreationAttribute
 
 Directory.init({
   id: {
-    type: Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true
   },
   name: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     allowNull: false
   },
   path: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     allowNull: false
   },
   createdAt: DataTypes.DATE,

@@ -1,10 +1,9 @@
 import { DATABASE_PATH } from '../constants'
-const Sequelize = require('sequelize')
+import { Sequelize } from 'sequelize'
 
 const sequelize = new Sequelize('database', 'username', 'password', {
   host: 'localhost',
   dialect: 'sqlite',
-  operatorsAliases: false,
   pool: {
     max: 5,
     min: 0,

@@ -1,4 +1,3 @@
-const Sequelize = require("sequelize");
 import sequelize from "../initialize";
 
 import { Model, InferAttributes, InferCreationAttributes, DataTypes } from 'sequelize';
@@ -12,12 +11,12 @@ class Tag extends Model<InferAttributes<Tag>, InferCreationAttributes<Tag>> {
 
 Tag.init({
   id: {
-    type: Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
   name: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     allowNull: false,
   },
   createdAt: DataTypes.DATE,

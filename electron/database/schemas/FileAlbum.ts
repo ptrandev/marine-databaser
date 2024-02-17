@@ -1,6 +1,6 @@
 import sequelize from '../initialize'
 
-import { Model, type InferAttributes, type InferCreationAttributes, DataTypes } from 'sequelize'
+import { Model, type InferAttributes, type InferCreationAttributes } from 'sequelize'
 
 import File from './File'
 import Album from './Album'

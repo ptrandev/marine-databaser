@@ -1,5 +1,5 @@
 import sequelize from '../initialize'
-import { Model, type InferAttributes, type InferCreationAttributes } from 'sequelize'
+import { Model, type InferAttributes, type InferCreationAttributes, DataTypes } from 'sequelize'
 
 import File from './File'
 import Tag from './Tag'
@@ -8,12 +8,12 @@ class FileTag extends Model<InferAttributes<FileTag>, InferCreationAttributes<Fi
 
 FileTag.init({
   file_id: {
-    type: sequelize.Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     primaryKey: true,
     allowNull: false
   },
   tag_id: {
-    type: sequelize.Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     primaryKey: true,
     allowNull: false
   }

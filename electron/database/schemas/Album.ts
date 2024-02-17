@@ -1,7 +1,6 @@
 import sequelize from '../initialize'
 
 import { Model, type InferAttributes, type InferCreationAttributes, DataTypes } from 'sequelize'
-const Sequelize = require('sequelize')
 
 class Album extends Model<InferAttributes<Album>, InferCreationAttributes<Album>> {
   id: number
@@ -12,12 +11,12 @@ class Album extends Model<InferAttributes<Album>, InferCreationAttributes<Album>
 
 Album.init({
   id: {
-    type: Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true
   },
   name: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     allowNull: false
   },
   createdAt: DataTypes.DATE,
