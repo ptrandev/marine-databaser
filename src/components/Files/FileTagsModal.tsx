@@ -24,7 +24,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
       const newFile: FileWithMetadata = { ...file }
       if (fileTag) {
         // @ts-expect-error - this is a hack to get around the fact that the type of file.Tags is readonly
-        newFile.Tags = [...newFile.Tags, { id: fileTag.tag_id, name: tag }] as any
+        newFile.Tags = [...newFile.Tags, { id: fileTag.tagId, name: tag }] as any
       }
 
       setFile(newFile)

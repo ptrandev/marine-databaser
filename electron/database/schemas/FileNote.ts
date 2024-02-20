@@ -6,7 +6,7 @@ import File from './File'
 
 class FileNote extends Model<InferAttributes<FileNote>, InferCreationAttributes<FileNote>> {
   id: number
-  file_id: number
+  fileId: number
   note: string
   createdAt: Date
   updatedAt: Date
@@ -18,7 +18,7 @@ FileNote.init({
     autoIncrement: true,
     primaryKey: true
   },
-  file_id: {
+  fileId: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
@@ -33,7 +33,7 @@ FileNote.init({
 })
 
 File.hasMany(FileNote, {
-  foreignKey: 'file_id'
+  foreignKey: 'fileId'
 })
 
 export default FileNote

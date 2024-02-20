@@ -30,11 +30,10 @@ const createTag = async (name: string): Promise<Tag> => {
  * If the file doesn't have the tag, it will be added
  */
 export const handleTagFile = async (event: IpcMainEvent, arg: {
-  file_id: number
+  fileId: number
   tag: string
 }): Promise<void> => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { file_id, tag } = arg
+  const { fileId, tag } = arg
 
   const _tag: Tag = await createTag(tag)
 
@@ -42,8 +41,8 @@ export const handleTagFile = async (event: IpcMainEvent, arg: {
   const hasTag: FileTag | null = await FileTag.findOne({
     where: {
       // @ts-expect-error - we are using the sequelize operator
-      file_id,
-      tag_id: _tag.id
+      fileId,
+      tagId: _tag.id
     }
   })
 
@@ -54,8 +53,8 @@ export const handleTagFile = async (event: IpcMainEvent, arg: {
 
   // else add tag to file
   const fileTag: FileTag = await FileTag.create({
-    file_id,
-    tag_id: _tag.id
+    fileId,
+    tagId: _tag.id
   }).then((fileTag) => fileTag.toJSON())
 
   event.reply('tagged-file', fileTag)
@@ -65,31 +64,29 @@ export const handleTagFile = async (event: IpcMainEvent, arg: {
  * Tags multiple files with a tag
  */
 export const handleTagFiles = async (event: IpcMainEvent, arg: {
-  file_ids: number[]
+  fileIds: number[]
   tag: string
 }): Promise<void> => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { file_ids, tag } = arg
+  const { fileIds, tag } = arg
 
   const _tag: Tag = await createTag(tag)
 
   // only add tag to files that don't already have it
   const fileTags: FileTag[] = (await Promise.all(
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    file_ids.map(async (file_id) => {
+    fileIds.map(async (fileId) => {
       const hasTag: FileTag | null = await FileTag.findOne({
         where: {
           // @ts-expect-error - we are using the sequelize operator
-          file_id,
-          tag_id: _tag.id
+          fileId,
+          tagId: _tag.id
         }
       })
 
       if (hasTag) return null
 
       const fileTag: FileTag = await FileTag.create({
-        file_id,
-        tag_id: _tag.id
+        fileId,
+        tagId: _tag.id
       }).then((fileTag) => fileTag.toJSON())
 
       return fileTag
@@ -113,17 +110,16 @@ export const handleListTags = async (event: IpcMainEvent): Promise<void> => {
  * Untags a file from a tag
  */
 export const handleUntagFile = async (event: IpcMainEvent, arg: {
-  file_id: number
-  tag_id: number
+  fileId: number
+  tagId: number
 }): Promise<void> => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { file_id, tag_id } = arg
+  const { fileId, tagId } = arg
 
   await FileTag.destroy({
     where: {
       // @ts-expect-error - we are using the sequelize operator
-      file_id,
-      tag_id
+      fileId,
+      tagId
     }
   })
 
@@ -136,20 +132,20 @@ export const handleUntagFile = async (event: IpcMainEvent, arg: {
  * Untags multiple files from a tag
  */
 export const handleUntagFiles = async (event: IpcMainEvent, arg: {
-  file_ids: number[]
-  tag_id: number
+  fileIds: number[]
+  tagId: number
 }): Promise<void> => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { file_ids, tag_id } = arg
+  const { fileIds, tagId } = arg
 
   await Promise.all(
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    file_ids.map(async (file_id) => {
+    fileIds.map(async (fileId) => {
       await FileTag.destroy({
         where: {
           // @ts-expect-error - we are using the sequelize operator
-          file_id,
-          tag_id
+          fileId,
+          tagId
         }
       })
     }
@@ -172,7 +168,7 @@ export const handleKillOrphanedTags = async (event: IpcMainEvent): Promise<void>
   // get orphaned tags
   const orphanedTags: Tag[] = tags.filter((tag) => {
     // @ts-expect-error - we are using the sequelize operator
-    const hasTag: boolean = fileTags.some((fileTag) => fileTag.tag_id === tag.id)
+    const hasTag: boolean = fileTags.some((fileTag) => fileTag.tagId === tag.id)
     return !hasTag
   })
 

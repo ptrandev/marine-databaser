@@ -15,7 +15,7 @@ const FileNotesModal: FC<FileNotesModalProps> = ({ open, onClose, file }) => {
   const [note, setNote] = useState<string>('')
 
   const handleListNotes = (): void => {
-    ipcRenderer.send('list-notes', { file_id: file.id })
+    ipcRenderer.send('list-notes', { fileId: file.id })
 
     ipcRenderer.once('listed-notes', (_, notes: FileNote[]) => {
       setNotes(notes)
@@ -23,7 +23,7 @@ const FileNotesModal: FC<FileNotesModalProps> = ({ open, onClose, file }) => {
   }
 
   const handleAddNote = (): void => {
-    ipcRenderer.send('add-note', { file_id: file.id, note })
+    ipcRenderer.send('add-note', { fileId: file.id, note })
 
     setNote('')
 

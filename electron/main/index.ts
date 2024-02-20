@@ -256,11 +256,11 @@ ipcMain.on('rename-file', (event, arg: { file: File, name: string }) => {
 // TAG
 //
 
-ipcMain.on('tag-file', (event, arg: { file_id: number, tag: string }) => {
+ipcMain.on('tag-file', (event, arg: { fileId: number, tag: string }) => {
   void handleTagFile(event, arg)
 })
 
-ipcMain.on('tag-files', (event, arg: { file_ids: number[], tag: string }) => {
+ipcMain.on('tag-files', (event, arg: { fileIds: number[], tag: string }) => {
   void handleTagFiles(event, arg)
 })
 
@@ -268,11 +268,11 @@ ipcMain.on('list-tags', (event) => {
   void handleListTags(event)
 })
 
-ipcMain.on('untag-file', (event, arg: { file_id: number, tag_id: number }) => {
+ipcMain.on('untag-file', (event, arg: { fileId: number, tagId: number }) => {
   void handleUntagFile(event, arg)
 })
 
-ipcMain.on('untag-files', (event, arg: { file_ids: number[], tag_id: number }) => {
+ipcMain.on('untag-files', (event, arg: { fileIds: number[], tagId: number }) => {
   void handleUntagFiles(event, arg)
 })
 
@@ -280,11 +280,11 @@ ipcMain.on('untag-files', (event, arg: { file_ids: number[], tag_id: number }) =
 // NOTES
 //
 
-ipcMain.on('list-notes', (event, arg: { file_id: number }) => {
+ipcMain.on('list-notes', (event, arg: { fileId: number }) => {
   void handleListNotes(event, arg)
 })
 
-ipcMain.on('add-note', (event, arg: { file_id: number, note: string }) => {
+ipcMain.on('add-note', (event, arg: { fileId: number, note: string }) => {
   void handleAddNote(event, arg)
 })
 

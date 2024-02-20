@@ -2,14 +2,13 @@ import { type IpcMainEvent } from 'electron'
 import { FileNote } from '../database/schemas'
 
 export const handleListNotes = async (event: IpcMainEvent, arg: {
-  file_id: number
+  fileId: number
 }): Promise<void> => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { file_id } = arg
+  const { fileId } = arg
 
   const fileNotes: FileNote[] = await FileNote.findAll({
     where: {
-      file_id
+      fileId
     }
   }).then((fileNotes) => fileNotes.map((fileNote) => fileNote.toJSON()))
 
@@ -17,14 +16,13 @@ export const handleListNotes = async (event: IpcMainEvent, arg: {
 }
 
 export const handleAddNote = async (event: IpcMainEvent, arg: {
-  file_id: number
+  fileId: number
   note: string
 }): Promise<void> => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { file_id, note } = arg
+  const { fileId, note } = arg
 
   const fileNote: FileNote = await FileNote.create({
-    file_id,
+    fileId,
     note
   })
 

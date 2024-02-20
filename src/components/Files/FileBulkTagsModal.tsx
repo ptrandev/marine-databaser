@@ -38,9 +38,9 @@ const FileBulkTagsModal: FC<FileBulkTagsModalProps> = ({ open, handleClose }) =>
       // for each file, add the tag to the file if it doesn't already exist
       const newFiles = _files.map(file => {
         // @ts-expect-error - this is a hack to get around the fact that the type of file is not correct for some reason
-        if (fileTags.find(fileTag => fileTag?.file_id === file.id)) {
+        if (fileTags.find(fileTag => fileTag?.fileId === file.id)) {
           // @ts-expect-error - this is a hack to get around the fact that the type of file is not correct for some reason
-          file.Tags = [...file.Tags, { id: fileTags.find(fileTag => fileTag.file_id === file.id).tag_id, name: tag }] as any
+          file.Tags = [...file.Tags, { id: fileTags.find(fileTag => fileTag.fileId === file.id).tagId, name: tag }] as any
         }
 
         return file
