@@ -9,6 +9,7 @@ import ffmpeg from 'fluent-ffmpeg'
 // Get the paths to the packaged versions of the binaries we want to use
 import ffmpegPath from 'ffmpeg-static'
 import ffprobePath from 'ffprobe-static'
+import os from 'os'
 
 // tell the ffmpeg package where it can find the needed binaries.
 ffmpeg.setFfmpegPath(ffmpegPath.replace('app.asar', 'app.asar.unpacked'))
@@ -110,7 +111,7 @@ const getVideoDuration = async (videoPath: string): Promise<number> => {
         reject(err)
       }
 
-      const duration: number = metadata.format.duration
+      const duration: number = metadata.format.duration ?? 0
 
       resolve(duration)
     })
@@ -189,11 +190,11 @@ const findNoiseTimeStamps = (silenceTimestamps: SpliceRegion[], audioLength: num
 /**
  * extract the audio from multiple videos
  * @param {IpcMainEvent} event - the event to reply to
- * @param {number[] | string[]} arg.files - the files to extract audio from
+ * @param {string[]} arg.files - the files to extract audio from
  * @returns {Promise<void>} - a promise that resolves when the audio has been extracted
  */
 export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
-  files: number[] | string[]
+  files: string[]
   fileFormat: AudioFileFormat
   outputDirectory: string
 }): Promise<void> => {
@@ -206,7 +207,7 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
       return file
     }
     return null
-  }).filter((file) => file !== null)
+  }).filter((file) => file !== null) as string[]
 
   // for each file, extract the audio
   for (const file of files) {
@@ -392,4 +393,37 @@ export const handleGetAudioSampleRate = async (event: IpcMainEvent, arg: { fileP
 
     event.reply('got-audio-sample-rate', sampleRate)
   })
+}
+
+/**
+ * Converts the video to a compatible format; send the progress to the renderer and reply with the path to the converted video
+ * @param {IpcMainEvent} event - the event to reply to
+ * @param {string} arg.videoPath - the path to the video to convert
+ * @returns {Promise<void>} - a promise that resolves when the video has been converted
+ */
+export const handleConvertVideo = async (event: IpcMainEvent, arg: { videoPath: string }): Promise<void> => {
+  if (!arg.videoPath) {
+    event.reply('convert-video-error', 'No video path provided.')
+    return
+  }
+
+  // get video file name without extension
+  const videoBasename = path.basename(arg.videoPath).replace(/\.[^/.]+$/, '')
+
+  // use system temp directory to store the converted video
+  const tempPath = path.join(os.tmpdir(), `${videoBasename}.mp4`)
+
+  // do not touch the audio track, just convert the video track to h264
+  ffmpeg(arg.videoPath)
+    .videoCodec('libx264')
+    .on('progress', (progress) => {
+      event.reply('convert-video-progress', progress.percent)
+    })
+    .on('end', () => {
+      event.reply('converted-video', tempPath)
+    })
+    .on('error', (err) => {
+      event.reply('convert-video-error', err.message)
+    })
+    .save(tempPath)
 }

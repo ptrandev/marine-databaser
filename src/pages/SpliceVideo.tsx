@@ -9,6 +9,7 @@ import AutoSplice from '@/components/SpliceVideo/AutoSplice'
 import SaveProject from '@/components/SpliceVideo/SaveProject'
 import LoadProject from '@/components/SpliceVideo/LoadProject'
 import AudioVisualizers from '@/components/SpliceVideo/AudioVisualizers'
+import ConvertVideoModal from '@/components/SpliceVideo/ConvertVideoModal'
 
 const SpliceVideo: FC = () => {
   const { updateSelectedVideo, selectedVideo } = useSpliceVideo()
@@ -71,6 +72,7 @@ const SpliceVideo: FC = () => {
         </Grid>
       </Box>
       <Progress />
+      <ConvertVideoModal />
     </>
   )
 }
