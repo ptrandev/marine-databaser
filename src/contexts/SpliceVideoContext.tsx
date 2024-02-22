@@ -144,12 +144,18 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   }
 
   const updateVideoUrl = (url: string): void => {
-    // revoke the previous object URL
+    if (!url) {
+      return
+    }
+
     if (videoUrl) {
       URL.revokeObjectURL(videoUrl)
     }
 
-    setVideoUrl(url)
+    const blob = fs.readFileSync(url)
+    const _url = URL.createObjectURL(new Blob([blob]))
+
+    setVideoUrl(_url)
   }
 
   const addEventToEventHistory = (event: Event, {
@@ -461,13 +467,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
   useEffect(() => {
     setVideoBasename(path.basename(selectedVideo).replace(/\.[^/.]+$/, ''))
-
-    if (selectedVideo) {
-      const blob = fs.readFileSync(selectedVideo)
-      const url = URL.createObjectURL(new Blob([blob]))
-
-      updateVideoUrl(url)
-    }
+    updateVideoUrl(selectedVideo)
   }, [selectedVideo])
 
   const contextValue = useMemo<SpliceVideoContextValue>(() => {
