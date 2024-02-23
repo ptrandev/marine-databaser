@@ -71,6 +71,3 @@ npm install
 # Run the application in development mode
 npm run dev
 ```
-
-At the moment, the database is stored in a local file called `src/assets/data/database.sqlite`.
-In a future iteration, this will be configurable by the user.
