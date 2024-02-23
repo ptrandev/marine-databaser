@@ -21,6 +21,7 @@ export const handleAddNote = async (event: IpcMainEvent, arg: {
 }): Promise<void> => {
   const { fileId, note } = arg
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'fileNote' implicitly has an 'any' type.
   const fileNote: FileNote = await FileNote.create({
     fileId,
     note
@@ -35,11 +36,13 @@ export const handleUpdateNote = async (event: IpcMainEvent, arg: {
 }): Promise<void> => {
   const { id, note } = arg
 
-  const fileNote: FileNote = await FileNote.findByPk(id)
+  const fileNote: FileNote | null = await FileNote.findByPk(id)
 
-  fileNote.note = note
+  if (fileNote) {
+    fileNote.note = note
 
-  await fileNote.save()
+    await fileNote.save()
+  }
 
   event.reply('updated-note', fileNote)
 }
@@ -49,9 +52,11 @@ export const handleDeleteNote = async (event: IpcMainEvent, arg: {
 }): Promise<void> => {
   const { id } = arg
 
-  const fileNote: FileNote = await FileNote.findByPk(id)
+  const fileNote: FileNote | null = await FileNote.findByPk(id)
 
-  await fileNote.destroy()
+  if (fileNote) {
+    await fileNote.destroy()
+  }
 
   event.reply('deleted-note', fileNote)
 }

@@ -46,7 +46,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
 
   const _tags = useMemo(() => {
     // only show tags that are not already on the file
-    return tags.filter(tag => !file.Tags.map(t => t.id).includes(tag.id))
+    return tags.filter((tag: { id: number }) => !file.Tags.map(t => t.id).includes(tag.id))
   }, [tags, file])
 
   useEffect(() => {
@@ -73,7 +73,7 @@ const FileTagsModal: FC<FileTagModalProps> = ({ open, onClose, file, setFile }) 
             sx={{
               whiteSpace: 'nowrap'
             }}
-            options={_tags.map(tag => tag.name)}
+            options={_tags.map((tag: { name: string }) => tag.name)}
             value={tag}
             onChange={(_, value) => { setTag(value ?? '') }}
             renderInput={(params) => (

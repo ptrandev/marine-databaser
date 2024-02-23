@@ -12,7 +12,9 @@ import ffprobePath from 'ffprobe-static'
 import os from 'os'
 
 // tell the ffmpeg package where it can find the needed binaries.
-ffmpeg.setFfmpegPath(ffmpegPath.replace('app.asar', 'app.asar.unpacked'))
+if (ffmpegPath) {
+  ffmpeg.setFfmpegPath(ffmpegPath.replace('app.asar', 'app.asar.unpacked'))
+}
 ffmpeg.setFfprobePath(ffprobePath.path.replace('app.asar', 'app.asar.unpacked'))
 
 /**
@@ -153,7 +155,7 @@ const findNoiseTimeStamps = (silenceTimestamps: SpliceRegion[], audioLength: num
   }
 
   // Check for noise before the first silence timestamp
-  if (silenceTimestamps[0][0] > 0) {
+  if (silenceTimestamps[0].start > 0) {
     noiseTimestamps.push({
       name: `${Date.now()}`,
       start: 0,
@@ -300,6 +302,7 @@ export const handleGetVideoFramerate = async (event: IpcMainEvent, arg: { videoP
     }
 
     // find first metadata.stream with codec_type video; get r_frame_rate from that stream
+    // @ts-expect-error - we are using the ffmpeg metadata
     const framerate = metadata.streams.find((stream: { codec_type: string }) => stream.codec_type === 'video')?.r_frame_rate
 
     if (!framerate) {
@@ -334,7 +337,7 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
     .audioCodec('pcm_s16le') // Output audio in PCM format
     .audioFilter(`highpass=f=${minFrequency},lowpass=f=${maxFrequency}`)
     .audioFilters(`silencedetect=n=${minAmplitude}dB:d=${minDuration}`)
-    .on('end', async () => {
+    .on('end', () => {
       const noiseTimestamps = findNoiseTimeStamps(spliceRegions, videoDuration)
 
       fs.unlinkSync(timestamp)
@@ -384,6 +387,7 @@ export const handleGetAudioSampleRate = async (event: IpcMainEvent, arg: { fileP
     }
 
     // find first metadata.stream with codec_type audio; get sample_rate from that stream
+    // @ts-expect-error - we are using the ffmpeg metadata
     const sampleRate = metadata.streams.find((stream: { codec_type: string }) => stream.codec_type === 'audio')?.sample_rate
 
     if (!sampleRate) {

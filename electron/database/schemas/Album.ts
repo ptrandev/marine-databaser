@@ -3,10 +3,10 @@ import sequelize from '../initialize'
 import { Model, type InferAttributes, type InferCreationAttributes, DataTypes } from 'sequelize'
 
 class Album extends Model<InferAttributes<Album>, InferCreationAttributes<Album>> {
-  id: number
-  name: string
-  createdAt: Date
-  updatedAt: Date
+  id!: number
+  name!: string
+  createdAt!: Date
+  updatedAt!: Date
 }
 
 Album.init({

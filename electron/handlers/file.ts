@@ -10,8 +10,9 @@ export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent):
   })
 
   const file: File = await File.create(
+    // @ts-expect-error - result.filePaths is an array of strings
     {
-      name: result.filePaths[0].split('/').pop(),
+      name: result.filePaths[0].split('/').pop() ?? '',
       path: result.filePaths[0]
     },
     { raw: true }
@@ -40,12 +41,12 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
     ]
   }
 
-  if (directories?.length > 0) {
+  if (directories && directories.length > 0) {
     // @ts-expect-error - we are using the sequelize operator
     options.where.directoryId = directories
   }
 
-  if (tags?.length > 0) {
+  if (tags && tags.length > 0) {
     options.include = [
       {
         model: Tag,
@@ -59,14 +60,14 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
     ]
   }
 
-  if (fileTypes?.length > 0) {
+  if (fileTypes && fileTypes.length > 0) {
     // @ts-expect-error - we are using the sequelize operator
     options.where.mimeType = {
       [Op.or]: matchMimeTypes(fileTypes).map((mimeType) => { return { [Op.like]: mimeType } })
     }
   }
 
-  if (searchTerm?.length > 0) {
+  if (searchTerm && searchTerm?.length > 0) {
     const fileNotes = await FileNote.findAll({
       where: {
         note: {

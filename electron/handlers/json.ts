@@ -1,4 +1,4 @@
-import { dialog } from 'electron'
+import { dialog, type IpcMainEvent } from 'electron'
 import fs from 'fs/promises'
 
 /**
@@ -8,7 +8,10 @@ import fs from 'fs/promises'
  * @param {string} [arg.filename] The filename to save the data as.
  * @returns
  */
-export const handleSaveToJSON = async (event, arg): Promise<void> => {
+export const handleSaveToJSON = async (event: IpcMainEvent, arg: {
+  data: any
+  filename?: string
+}): Promise<void> => {
   if (!arg.data) {
     event.reply('save-to-json-error')
     return
@@ -16,12 +19,17 @@ export const handleSaveToJSON = async (event, arg): Promise<void> => {
 
   const result = await dialog.showSaveDialog({
     title: 'Save to JSON',
-    defaultPath: arg?.filename || 'data.json',
+    defaultPath: arg?.filename ?? 'data.json',
     filters: [{ name: 'JSON', extensions: ['json'] }]
   })
 
   if (result.canceled) {
     event.reply('save-to-json-canceled')
+    return
+  }
+
+  if (!result.filePath) {
+    event.reply('save-to-json-error')
     return
   }
 
@@ -39,7 +47,7 @@ export const handleSaveToJSON = async (event, arg): Promise<void> => {
  * @param event The event that triggered this function.
  * @returns
  */
-export const handleLoadFromJSON = async (event): Promise<void> => {
+export const handleLoadFromJSON = async (event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog({
     title: 'Load from JSON',
     filters: [{ name: 'JSON', extensions: ['json'] }]
