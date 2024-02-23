@@ -11,6 +11,7 @@ export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent):
 
   const file: File = await File.create(
     // @ts-expect-error - result.filePaths is an array of strings
+    // TODO - this is a hacky way to get the file name and path
     {
       name: result.filePaths[0].split('/').pop() ?? '',
       path: result.filePaths[0]
