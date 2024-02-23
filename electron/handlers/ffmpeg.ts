@@ -1,4 +1,4 @@
-import { dialog, type BrowserWindow, type IpcMainEvent } from 'electron'
+import { dialog, type BrowserWindow, type IpcMainEvent, app } from 'electron'
 import mime from 'mime-types'
 import path from 'path'
 import { type AudioFileFormat, type AutoSpliceSettings, type SpliceRegion } from '../../shared/types'
@@ -415,7 +415,7 @@ export const handleConvertVideo = async (event: IpcMainEvent, arg: { videoPath: 
   const videoBasename = path.basename(arg.videoPath).replace(/\.[^/.]+$/, '')
 
   // use system temp directory to store the converted video
-  const tempPath = path.join(os.tmpdir(), `${videoBasename}.mp4`)
+  const tempPath = path.join(app.getPath('temp'), `${videoBasename}.mp4`)
 
   // do not touch the audio track, just convert the video track to h264
   ffmpeg(arg.videoPath)

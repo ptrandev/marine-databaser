@@ -1,1 +1,4 @@
-export const DATABASE_PATH = './src/assets/data/database.sqlite'
+import { app } from 'electron'
+import path from 'path'
+
+export const DATABASE_PATH = path.join(app.getPath('userData'), 'database.sqlite')
