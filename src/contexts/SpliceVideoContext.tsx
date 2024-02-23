@@ -3,6 +3,7 @@ import { type FC, createContext, useMemo, useState, useEffect } from 'react'
 import { type SpliceRegion } from '../../shared/types'
 import path from 'path'
 import { enqueueSnackbar } from 'notistack'
+import fs from 'fs'
 
 interface AddEvent {
   type: 'add'
@@ -42,6 +43,8 @@ export interface SpliceVideoContextValue {
   updateSelectedVideo: (video: string) => void
   videoBasename: string
   updateVideoBasename: (basename: string) => void
+  videoUrl: string | null
+  updateVideoUrl: (url: string) => void
   spliceRegions: SpliceRegion[]
   initSpliceRegion: (currentTime: number) => void
   deleteSpliceRegion: (spliceRegion: SpliceRegion, options?: HistoryOptions) => void
@@ -86,6 +89,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
   const [selectedVideo, setSelectedVideo] = useState<string>('')
   const [videoBasename, setVideoBasename] = useState<string>('')
+  const [videoUrl, setVideoUrl] = useState<string | null>(null)
 
   const [videoFramerate, setVideoFramerate] = useState<number | null>(null)
   const [videoDuration, setVideoDuration] = useState<number | null>(null)
@@ -139,11 +143,25 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     setSpliceRegions([])
   }
 
+  const updateVideoUrl = (url: string): void => {
+    if (!url) {
+      return
+    }
+
+    if (videoUrl) {
+      URL.revokeObjectURL(videoUrl)
+    }
+
+    const blob = fs.readFileSync(url)
+    const _url = URL.createObjectURL(new Blob([blob]))
+
+    setVideoUrl(_url)
+  }
+
   const addEventToEventHistory = (event: Event, {
     clearUndoHistory = true,
     addToEventHistory = true
-  }: HistoryOptions = {
-  }): void => {
+  }: HistoryOptions = {}): void => {
     // if there are events in the undo history, clear them
     if (clearUndoHistory && undoHistory.length > 0) {
       setUndoHistory([])
@@ -258,8 +276,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const addSpliceRegion = (spliceRegion: SpliceRegion, {
     clearUndoHistory = true,
     addToEventHistory = true
-  }: HistoryOptions = {
-  }): void => {
+  }: HistoryOptions = {}): void => {
     updateSpliceRegions([...spliceRegions, spliceRegion])
 
     addEventToEventHistory({
@@ -295,8 +312,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const deleteSpliceRegion = (spliceRegion: SpliceRegion, {
     clearUndoHistory = true,
     addToEventHistory = true
-  }: HistoryOptions = {
-  }): void => {
+  }: HistoryOptions = {}): void => {
     // remember to compare values and not references
     // ensure this works with spliceRegions that have the same start and end
     updateSpliceRegions(spliceRegions.filter((spliceRegion_) => spliceRegion_.start !== spliceRegion.start && spliceRegion_.end !== spliceRegion.end))
@@ -318,8 +334,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const modifySpliceRegion = (spliceRegion: SpliceRegion, newSpliceRegion: SpliceRegion, {
     clearUndoHistory = true,
     addToEventHistory = true
-  }: HistoryOptions = {
-  }): void => {
+  }: HistoryOptions = {}): void => {
     // find spliceRegion, replace with newSpliceRegion
     updateSpliceRegions(spliceRegions.map((spliceRegion_) => {
       if (spliceRegion_.start === spliceRegion.start && spliceRegion_.end === spliceRegion.end && spliceRegion.name === spliceRegion_.name) {
@@ -346,8 +361,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const loadSpliceRegions = (spliceRegions: SpliceRegion[], {
     clearUndoHistory = true,
     addToEventHistory = true
-  }: HistoryOptions = {
-  }): void => {
+  }: HistoryOptions = {}): void => {
     updateSpliceRegions(spliceRegions)
 
     if (clearUndoHistory) {
@@ -373,8 +387,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const deleteAllSpliceRegions = ({
     clearUndoHistory = true,
     addToEventHistory = true
-  }: HistoryOptions = {
-  }): void => {
+  }: HistoryOptions = {}): void => {
     addEventToEventHistory({
       type: 'deleteAll',
       spliceRegions
@@ -454,6 +467,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
   useEffect(() => {
     setVideoBasename(path.basename(selectedVideo).replace(/\.[^/.]+$/, ''))
+    updateVideoUrl(selectedVideo)
   }, [selectedVideo])
 
   const contextValue = useMemo<SpliceVideoContextValue>(() => {
@@ -462,6 +476,8 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       updateSelectedVideo,
       videoBasename,
       updateVideoBasename,
+      videoUrl,
+      updateVideoUrl,
       numSpliceRegionsCompleted,
       initSpliceRegion,
       deleteSpliceRegion,
@@ -481,7 +497,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       canUndo,
       canRedo
     }
-  }, [selectedVideo, numSpliceRegionsCompleted, updateSelectedVideo, videoBasename, updateVideoBasename, spliceRegions, isSplicingVideo, handleSpliceVideo, deleteSpliceRegion, deleteAllSpliceRegions, loadSpliceRegions, initSpliceRegion, modifySpliceRegion, videoFramerate, videoRef, updateVideoRef, videoDuration, history, undo, redo, canUndo, canRedo])
+  }, [selectedVideo, numSpliceRegionsCompleted, updateSelectedVideo, videoBasename, updateVideoBasename, videoUrl, updateVideoUrl, spliceRegions, isSplicingVideo, handleSpliceVideo, deleteSpliceRegion, deleteAllSpliceRegions, loadSpliceRegions, initSpliceRegion, modifySpliceRegion, videoFramerate, videoRef, updateVideoRef, videoDuration, history, undo, redo, canUndo, canRedo])
 
   return (
     <SpliceVideoContext.Provider value={contextValue}>

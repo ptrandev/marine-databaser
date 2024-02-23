@@ -3,10 +3,10 @@ import sequelize from '../initialize'
 import { Model, type InferAttributes, type InferCreationAttributes, DataTypes } from 'sequelize'
 
 class Tag extends Model<InferAttributes<Tag>, InferCreationAttributes<Tag>> {
-  id: number
-  name: string
-  createdAt: Date
-  updatedAt: Date
+  id!: number
+  name!: string
+  createdAt!: Date
+  updatedAt!: Date
 }
 
 Tag.init({

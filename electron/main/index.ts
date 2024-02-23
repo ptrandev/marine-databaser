@@ -8,7 +8,7 @@ import '../database/associations'
 import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleAddDirectory, handleRefreshDirectories, handleSelectDirectory } from '../handlers/directory'
 import { handleFileRename, handleListFiles, handleSelectFile } from '../handlers/file'
 import { handleListTags, handleTagFile, handleUntagFile, handleTagFiles, handleUntagFiles } from '../handlers/tag'
-import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo, handleGetVideoFramerate, handleAutoSplice, handleGetAudioSampleRate, handleGetVideoDuration } from '../handlers/ffmpeg'
+import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo, handleGetVideoFramerate, handleAutoSplice, handleGetAudioSampleRate, handleGetVideoDuration, handleConvertVideo } from '../handlers/ffmpeg'
 import { handleListNotes, handleAddNote, handleUpdateNote, handleDeleteNote } from '../handlers/note'
 import { handleDatabaseExport } from '../handlers/export'
 import { handleDatabaseImport } from '../handlers/import'
@@ -194,7 +194,7 @@ ipcMain.on('select-directory', (event) => {
 // FFMPEG
 //
 
-ipcMain.on('bulk-extract-audio', (event, arg: { files: number[] | string[], fileFormat: AudioFileFormat, outputDirectory: string }) => {
+ipcMain.on('bulk-extract-audio', (event, arg: { files: string[], fileFormat: AudioFileFormat, outputDirectory: string }) => {
   void handleBulkExtractAudio(event, arg)
 })
 
@@ -228,6 +228,10 @@ ipcMain.on('auto-splice', (event, arg: { videoPath: string, autoSpliceSettings: 
 
 ipcMain.on('get-audio-sample-rate', (event, arg: { filePath: string }) => {
   void handleGetAudioSampleRate(event, arg)
+})
+
+ipcMain.on('convert-video', (event, arg: { videoPath: string }) => {
+  void handleConvertVideo(event, arg)
 })
 
 //

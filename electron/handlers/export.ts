@@ -16,6 +16,11 @@ export const handleDatabaseExport = async (event: IpcMainEvent): Promise<void> =
     return
   }
 
+  if (!result.filePath) {
+    event.reply('database-export-error', 'No file path provided')
+    return
+  }
+
   // our database is stored in a sqlite file, so we can just copy it
   await fs.copyFile(DATABASE_PATH, result.filePath).catch((err: Error) => {
     event.reply('database-export-error', err.message)

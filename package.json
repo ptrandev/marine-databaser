@@ -1,10 +1,10 @@
 {
-  "name": "electron-vite-react",
-  "version": "2.1.0",
+  "name": "marine-databaser",
+  "version": "0.0.1",
   "main": "dist-electron/main/index.js",
-  "description": "Electron Vite React boilerplate.",
-  "author": "草鞋没号 <308487730@qq.com>",
-  "license": "MIT",
+  "description": "A cross-platform Electron application that allows marine biology researchers to categorize and analyze video, audio, and other files collected in the field entirely on device.",
+  "author": "Phillip Tran",
+  "license": "GPL-3.0",
   "private": true,
   "debug": {
     "env": {
@@ -24,6 +24,9 @@
   "devDependencies": {
     "@playwright/test": "^1.31.0",
     "@types/colormap": "^2.3.4",
+    "@types/ffprobe-static": "^2.0.3",
+    "@types/fluent-ffmpeg": "^2.1.24",
+    "@types/mime-types": "^2.1.4",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "@types/wavesurfer.js": "^6.0.12",

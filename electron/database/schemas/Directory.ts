@@ -3,11 +3,11 @@ import sequelize from '../initialize'
 import { Model, type InferAttributes, type InferCreationAttributes, DataTypes } from 'sequelize'
 
 class Directory extends Model<InferAttributes<Directory>, InferCreationAttributes<Directory>> {
-  id: number
-  name: string
-  path: string
-  createdAt: Date
-  updatedAt: Date
+  id!: number
+  name!: string
+  path!: string
+  createdAt!: Date
+  updatedAt!: Date
 }
 
 Directory.init({

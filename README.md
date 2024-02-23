@@ -32,6 +32,7 @@ Here is a list of features that are currently implemented:
   - videos are spliced in the same format as the original video, without re-encoding
   - users can undo/redo up to 100 steps in video splicing tool
   - users can save/load video splicing projects
+  - incompatible formats can be detected and converted to a compatible format on the fly
 - Audio extraction from videos facilitated by FFMPEG
   - users can choose different export formats and destinations
 - Import/Export the entire database to a sqlite file for easy backup and transfer to new devices
@@ -55,6 +56,8 @@ The following screenshots demonstrate the current state of the application.
 ![Extract Audio](/public/extract-audio.png)
 
 ![Splice Video](/public/splice-video.png)
+
+![Incompatible Format](/public/incompatible-format.png)
 
 ## 🛫 Quick start
 

@@ -6,7 +6,8 @@ import { handleKillOrphanedTags } from './tag'
 import fs from 'fs/promises'
 
 const getFileList = async (directory: string): Promise<string[]> => {
-  let files = []
+  let files: string[] = []
+
   const items = await fs.readdir(directory, { withFileTypes: true }).catch(() => {
     return []
   })
@@ -27,6 +28,7 @@ const addFilesToDatabase = async ({ files, directoryId }: {
   directoryId: number
 }): Promise<File[]> => {
   return await File.bulkCreate(
+    // @ts-expect-error - files is an array of strings
     await Promise.all(
       files.map(async (file) => {
         return await addFileToDatabase({ file, directoryId })
@@ -52,7 +54,8 @@ const addFileToDatabase = async ({ file, directoryId }: {
   const { mtime, birthtime, size } = await fs.stat(file)
 
   return {
-    name: file.split('/').pop(),
+    // TODO - this is a hacky way to get the file name and path
+    name: file.split('/').pop() ?? '',
     path: file,
     directoryId,
     mimeType: mime.lookup(file).toString(),
@@ -72,8 +75,9 @@ export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent
   event.reply('added-directory', result.filePaths)
 
   // add directory to database
+  // @ts-expect-error - result.filePaths is an array of strings
   const directory = await Directory.create({
-    name: result.filePaths[0].split('/').pop(),
+    name: result.filePaths[0].split('/').pop() ?? '',
     path: result.filePaths[0]
   })
 
@@ -199,7 +203,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent): Promise<voi
 
     // filter out files that don't have the same birthTime as the file on disk
     // use await fs.stat(file.path) to get the birthTime of the file on disk
-    const existingFiles = await Promise.all(
+    const existingFiles: File[] = await Promise.all(
       _existingFiles.map(async (file) => {
         const { birthtime } = await fs.stat(file.path)
         if (birthtime.getTime() === file.birthTime.getTime()) {
@@ -207,7 +211,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent): Promise<voi
         }
         return null
       })
-    ).then((files) => files.filter((file) => file !== null))
+    ).then((files) => files.filter((file) => file !== null)) as File[]
 
     // for files that already exist in the database, update metadata based upon the file id
     const updateExistingFiles = await Promise.all(
@@ -236,7 +240,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent): Promise<voi
     // get files that have been renamed
     // to be renamed, the file must have the same birthTime, fileSize, mimeType,
     // and lastModified, but a different path
-    const renamedFiles = await Promise.all(
+    const renamedFiles: File[] = await Promise.all(
       files
         .filter((file) => !existingFilesPaths.includes(file))
         .map(async (file) => {
@@ -276,7 +280,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent): Promise<voi
 
           return null
         })
-    ).then((files) => files.filter((file) => file !== null))
+    ).then((files) => files.filter((file) => file !== null)) as File[]
 
     const renamedFilesPaths = renamedFiles.map((file) => file.path)
 

@@ -1,22 +1,12 @@
-import { type FC, useEffect, useState, useMemo } from 'react'
+import { type FC, useEffect, useState } from 'react'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Box, IconButton, Stack, Tooltip } from '@mui/material'
 import { FirstPage, LastPage, PlayArrow, SkipNext, SkipPrevious, Pause, Replay, Replay5, Forward5, Replay10, Forward10 } from '@mui/icons-material'
-import fs from 'fs'
 
 const VideoControls: FC = () => {
-  const { selectedVideo, videoFramerate, updateVideoRef, videoRef } = useSpliceVideo()
+  const { selectedVideo, videoFramerate, updateVideoRef, videoRef, videoUrl } = useSpliceVideo()
 
   const [videoState, setVideoState] = useState<'playing' | 'paused'>('paused')
-
-  const videoUrl = useMemo(() => {
-    if (!selectedVideo) {
-      return null
-    }
-
-    const blob = fs.readFileSync(selectedVideo)
-    return URL.createObjectURL(new Blob([blob]))
-  }, [selectedVideo])
 
   useEffect(() => {
     if (!videoRef) {
@@ -37,11 +27,6 @@ const VideoControls: FC = () => {
     return () => {
       videoRef.removeEventListener('play', handlePlay)
       videoRef.removeEventListener('pause', handlePause)
-
-      // Revoke the object URL to prevent memory leaks
-      if (videoUrl) {
-        URL.revokeObjectURL(videoUrl)
-      }
     }
   }, [videoRef])
 

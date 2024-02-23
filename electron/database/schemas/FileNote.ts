@@ -5,11 +5,11 @@ import { Model, type InferAttributes, type InferCreationAttributes, DataTypes } 
 import File from './File'
 
 class FileNote extends Model<InferAttributes<FileNote>, InferCreationAttributes<FileNote>> {
-  id: number
-  fileId: number
-  note: string
-  createdAt: Date
-  updatedAt: Date
+  id!: number
+  fileId!: number
+  note!: string
+  createdAt!: Date
+  updatedAt!: Date
 }
 
 FileNote.init({

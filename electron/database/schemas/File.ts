@@ -3,15 +3,15 @@ import sequelize from '../initialize'
 import { Model, type InferAttributes, type InferCreationAttributes, DataTypes } from 'sequelize'
 
 class File extends Model<InferAttributes<File>, InferCreationAttributes<File>> {
-  id: number
-  directoryId: number
-  name: string
-  path: string
-  mimeType: string
-  lastModified: Date
-  birthTime: Date
-  updatedAt: Date
-  fileSize: number
+  id!: number
+  directoryId!: number
+  name!: string
+  path!: string
+  mimeType!: string
+  lastModified!: Date
+  birthTime!: Date
+  updatedAt!: Date
+  fileSize!: number
 }
 
 File.init({
