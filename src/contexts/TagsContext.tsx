@@ -15,7 +15,7 @@ export interface TagsContextValue {
 const TagsContext = createContext<TagsContextValue | null>(null)
 
 interface TagsProviderProps {
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 export const TagsProvider: FC<TagsProviderProps> = ({ children }) => {

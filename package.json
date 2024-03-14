@@ -1,6 +1,6 @@
 {
   "name": "marine-databaser",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist-electron/main/index.js",
   "description": "A cross-platform Electron application that allows marine biology researchers to categorize and analyze video, audio, and other files collected in the field entirely on device.",
   "author": "Phillip Tran",
@@ -13,7 +13,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && electron-builder",
+    "build": "tsc && vite build && electron-builder --config electron-builder.json5",
     "preview": "vite preview",
     "pree2e": "vite build --mode=test",
     "e2e": "playwright test",

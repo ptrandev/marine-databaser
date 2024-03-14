@@ -48,7 +48,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </FilesProvider>
       </DirectoriesProvider>
     </SnackbarProvider>
-  </React.StrictMode >
+  </React.StrictMode>
 )
 
 postMessage({ payload: 'removeLoading' }, '*')

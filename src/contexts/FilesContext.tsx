@@ -24,7 +24,7 @@ export interface FilesContextValue {
 const FilesContext = createContext<FilesContextValue | null>(null)
 
 interface FilesProviderProps {
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {

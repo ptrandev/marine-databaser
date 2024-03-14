@@ -21,7 +21,7 @@ export interface ExtractAudioContextValue {
 const ExtractAudioContext = createContext<ExtractAudioContextValue | null>(null)
 
 interface ExtractAudioProviderProps {
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }) => {

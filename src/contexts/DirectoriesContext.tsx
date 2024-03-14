@@ -16,7 +16,7 @@ export interface DirectoriesContextValue {
 const DirectoriesContext = createContext<DirectoriesContextValue | null>(null)
 
 interface DirectoriesProviderProps {
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) => {

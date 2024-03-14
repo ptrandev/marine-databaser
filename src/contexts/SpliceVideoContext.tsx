@@ -71,7 +71,7 @@ export interface SpliceVideoContextValue {
 const SpliceVideoContext = createContext<SpliceVideoContextValue | null>(null)
 
 interface SpliceVideoProviderProps {
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 const MAXIMUM_EVENT_HISTORY_LENGTH = 100
