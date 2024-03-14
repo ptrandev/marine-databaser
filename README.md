@@ -62,7 +62,8 @@ The following screenshots demonstrate the current state of the application.
 ## 🛫 Quick start
 
 An official build of the application is not yet available. To run the application
-locally, clone the repository and run the following commands:
+locally in a development environment, clone the repository and run the following
+commands:
 
 ```bash
 # Install dependencies
@@ -71,3 +72,13 @@ npm install
 # Run the application in development mode
 npm run dev
 ```
+
+Alternatively, you can create a production build for your platform by running
+the following command:
+
+```bash
+npm run build
+```
+
+This will produce a build in the `release` directory. You can then run the
+executable file in the `release` directory to run the application.
