@@ -19,7 +19,10 @@
     "e2e": "playwright test",
     "postinstall": "install-app-deps",
     "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "eslint . --ext .ts,.tsx --fix"
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "build-mac": "tsc && vite build && electron-builder --mac --universal --config electron-builder.json5",
+    "build-linux": "tsc && vite build && electron-builder --linux --universal --config electron-builder.json5",
+    "build-win": "tsc && vite build && electron-builder --win --universal --config electron-builder.json5"
   },
   "devDependencies": {
     "@playwright/test": "^1.31.0",
