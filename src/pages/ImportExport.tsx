@@ -5,12 +5,11 @@ import Import from '@/components/ImportExport/Import'
 
 const ImportExport: FC = () => {
   return (
-    <Box>
+    <Box mb={2}>
       <Stack gap={2}>
         <Typography variant="h4">
           Import / Export
         </Typography>
-
         <Import/>
         <Divider />
         <Export />
