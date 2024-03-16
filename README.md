@@ -61,9 +61,11 @@ The following screenshots demonstrate the current state of the application.
 
 ## 🛫 Quick start
 
-An official build of the application is not yet available. To run the application
-locally in a development environment, clone the repository and run the following
-commands:
+A pre-built version of the application is available for download on the releases
+page: https://github.com/ptrandev/marine-databaser/releases
+
+To run the application locally in a development environment, clone the repository
+and run the following commands:
 
 ```bash
 # Install dependencies
