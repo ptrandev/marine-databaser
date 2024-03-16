@@ -21,8 +21,8 @@
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "build-mac": "tsc && vite build && electron-builder --mac --universal --config electron-builder.json5",
-    "build-linux": "tsc && vite build && electron-builder --linux --universal --config electron-builder.json5",
-    "build-win": "tsc && vite build && electron-builder --win --universal --config electron-builder.json5"
+    "build-linux": "tsc && vite build && electron-builder --linux --arm64 --x64 --armv7l --config electron-builder.json5",
+    "build-win": "tsc && vite build && electron-builder --win --x64 --arm64 --ia32 --config electron-builder.json5"
   },
   "devDependencies": {
     "@playwright/test": "^1.31.0",
