@@ -286,7 +286,23 @@ export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: Ipc
     ]
   })
 
-  event.reply('selected-splice-video-file', result.filePaths[0])
+  // analyze the video and see if it has any audio; if not, return an error
+  ffmpeg.ffprobe(result.filePaths[0], (err, metadata) => {
+    if (err) {
+      event.reply('selected-splice-video-file-error', err.message)
+      return
+    }
+
+    // find first metadata.stream with codec_type audio; if not found, return an error
+    // @ts-expect-error - we are using the ffmpeg metadata
+    const audioStream = metadata.streams.find((stream: { codec_type: string }) => stream.codec_type === 'audio')
+
+    if (!audioStream) {
+      event.reply('selected-splice-video-file-error', 'Video has no audio, cannot splice.')
+    } else {
+      event.reply('selected-splice-video-file', result.filePaths[0])
+    }
+  })
 }
 
 /**
