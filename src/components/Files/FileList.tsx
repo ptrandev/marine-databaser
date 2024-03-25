@@ -1,5 +1,5 @@
 import { type FC, useState } from 'react'
-import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack, Checkbox } from '@mui/material'
+import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack, Checkbox, Badge } from '@mui/material'
 import { ipcRenderer } from 'electron'
 
 import { Virtuoso } from 'react-virtuoso'
@@ -25,6 +25,11 @@ const FileList: FC = () => {
 
   const handleFileRenameModalClose = (): void => {
     setFileRenameFile(undefined)
+    void loadFiles()
+  }
+
+  const handleFileNotesModalClose = (): void => {
+    setFileNotesFile(undefined)
     void loadFiles()
   }
 
@@ -134,7 +139,9 @@ const FileList: FC = () => {
                     setFileNotesFile(file)
                   }}
                 >
-                  <NoteAlt />
+                  <Badge badgeContent={file?.FileNotes?.length} color='primary'>
+                    <NoteAlt />
+                  </Badge>
                 </IconButton>
                 <IconButton
                   aria-label='tags'
@@ -185,7 +192,7 @@ const FileList: FC = () => {
         fileNotesFile && (
           <FileNotesModal
             open={!!fileNotesFile}
-            onClose={() => { setFileNotesFile(undefined) }}
+            onClose={handleFileNotesModalClose}
             file={fileNotesFile}
           />
         )

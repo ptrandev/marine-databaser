@@ -5,6 +5,7 @@ import { Button, Stack, TextField, ListItem, ListItemText, IconButton, Box, List
 import { type FileWithMetadata } from 'shared/types'
 import { type FileNote } from 'electron/database/schemas'
 import { Delete, Edit } from '@mui/icons-material'
+import useFiles from '@/hooks/useFiles'
 
 interface FileNotesModalProps extends Omit<ModalProps, 'children'> {
   file: FileWithMetadata
