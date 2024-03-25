@@ -9,7 +9,7 @@ const DatabaseSettings: FC = () => {
     <Box mb={2}>
       <Stack gap={2}>
         <Typography variant="h4">
-          Import / Export
+          Database Settings
         </Typography>
         <Import/>
         <Divider />
