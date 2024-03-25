@@ -1,4 +1,4 @@
-import { type FC, useState } from 'react'
+import { type FC, useState, useEffect } from 'react'
 import { Box, Typography, Button } from '@mui/material'
 import { FileDownload } from '@mui/icons-material'
 import { ipcRenderer } from 'electron'
@@ -14,28 +14,39 @@ const Import: FC = () => {
 
   const handleDatabaseImport = (): void => {
     setIsLoading(true)
-
     ipcRenderer.send('database-import')
-
-    ipcRenderer.once('database-import-canceled', () => {
-      enqueueSnackbar('Database import canceled.', { variant: 'warning' })
-      setIsLoading(false)
-    })
-
-    ipcRenderer.once('database-import-error', () => {
-      enqueueSnackbar('An error occurred while importing the database.', { variant: 'error' })
-      setIsLoading(false)
-    })
-
-    ipcRenderer.once('database-import-success', () => {
-      enqueueSnackbar('Database imported successfully.', { variant: 'success' })
-
-      void loadDirectories()
-      void loadFiles()
-
-      setIsLoading(false)
-    })
   }
+
+  const handleDatabaseImportCanceled = (): void => {
+    enqueueSnackbar('Database import canceled.', { variant: 'warning' })
+    setIsLoading(false)
+  }
+
+  const handleDatabaseImportError = (): void => {
+    enqueueSnackbar('An error occurred while importing the database.', { variant: 'error' })
+    setIsLoading(false)
+  }
+
+  const handleDatabaseImportSuccess = (): void => {
+    enqueueSnackbar('Database imported successfully.', { variant: 'success' })
+
+    void loadDirectories()
+    void loadFiles()
+
+    setIsLoading(false)
+  }
+
+  useEffect(() => {
+    ipcRenderer.on('database-import-canceled', handleDatabaseImportCanceled)
+    ipcRenderer.on('database-import-error', handleDatabaseImportError)
+    ipcRenderer.on('database-import-success', handleDatabaseImportSuccess)
+
+    return () => {
+      ipcRenderer.removeListener('database-import-canceled', handleDatabaseImportCanceled)
+      ipcRenderer.removeListener('database-import-error', handleDatabaseImportError)
+      ipcRenderer.removeListener('database-import-success', handleDatabaseImportSuccess)
+    }
+  }, [])
 
   return (
     <>

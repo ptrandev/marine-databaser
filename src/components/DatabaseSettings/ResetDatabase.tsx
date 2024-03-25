@@ -45,22 +45,21 @@ const ResetDatabaseModal: FC<ResetDatabaseModalProps> = ({ open, onClose }) => {
 
   const handleResetDatabase = (): void => {
     setIsDisabled(true)
-
     ipcRenderer.send('database-reset')
+  }
 
-    ipcRenderer.once('database-reset-success', () => {
-      enqueueSnackbar('Database reset successfully.', { variant: 'success' })
+  const handleDatabaseResetSuccess = (): void => {
+    enqueueSnackbar('Database reset successfully.', { variant: 'success' })
 
-      void loadFiles()
-      void loadDirectories()
+    void loadFiles()
+    void loadDirectories()
 
-      onClose()
-    })
+    onClose()
+  }
 
-    ipcRenderer.once('database-reset-error', () => {
-      enqueueSnackbar('An error occurred while resetting the database.', { variant: 'error' })
-      onClose()
-    })
+  const handleDatabaseResetError = (): void => {
+    enqueueSnackbar('An error occurred while resetting the database.', { variant: 'error' })
+    onClose()
   }
 
   useEffect(() => {
@@ -69,10 +68,13 @@ const ResetDatabaseModal: FC<ResetDatabaseModalProps> = ({ open, onClose }) => {
       setIsDisabled(false)
     }, 3000)
 
+    ipcRenderer.on('database-reset-success', handleDatabaseResetSuccess)
+    ipcRenderer.on('database-reset-error', handleDatabaseResetError)
+
     return () => {
       clearTimeout(timeout)
-      ipcRenderer.removeAllListeners('database-reset-success')
-      ipcRenderer.removeAllListeners('database-reset-error')
+      ipcRenderer.removeListener('database-reset-success', handleDatabaseResetSuccess)
+      ipcRenderer.removeListener('database-reset-error', handleDatabaseResetError)
     }
   }, [])
 

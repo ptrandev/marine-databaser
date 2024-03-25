@@ -21,10 +21,19 @@ const RefreshButton: FC = () => {
   const handleRefresh = (): void => {
     setIsRefreshingDirectories(true)
     ipcRenderer.send('refresh-directories')
-    ipcRenderer.once('refreshed-directories', () => {
-      void loadDirectories()
-    })
   }
+
+  const handleRefreshedDirectories = (): void => {
+    void loadDirectories()
+  }
+
+  useEffect(() => {
+    ipcRenderer.on('refreshed-directories', handleRefreshedDirectories)
+
+    return () => {
+      ipcRenderer.removeListener('refreshed-directories', handleRefreshedDirectories)
+    }
+  }, [])
 
   return (
     <>
@@ -54,13 +63,15 @@ const RefreshModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
     return refreshedDirectories.length === directories.length
   }, [refreshedDirectories, directories])
 
+  const handleRefreshedDirectory = (_: unknown, refreshedDirectory: RefreshedDirectories): void => {
+    setRefreshedDirectories(prev => [...prev, refreshedDirectory])
+  }
+
   useEffect(() => {
-    ipcRenderer.on('refreshed-directory', (_, refreshedDirectory) => {
-      setRefreshedDirectories(prev => [...prev, refreshedDirectory])
-    })
+    ipcRenderer.on('refreshed-directory', handleRefreshedDirectory)
 
     return () => {
-      ipcRenderer.removeAllListeners('refreshed-directory')
+      ipcRenderer.removeListener('refreshed-directory', handleRefreshedDirectory)
     }
   }, [])
 

@@ -1,4 +1,4 @@
-import { type FC, useState } from 'react'
+import { type FC, useState, useEffect } from 'react'
 import { ipcRenderer } from 'electron'
 import { Box, Typography, Button } from '@mui/material'
 import { FileUpload } from '@mui/icons-material'
@@ -9,24 +9,35 @@ const Export: FC = () => {
 
   const handleDatabaseExport = (): void => {
     setIsLoading(true)
-
     ipcRenderer.send('database-export')
-
-    ipcRenderer.once('database-export-canceled', () => {
-      enqueueSnackbar('Database export canceled.', { variant: 'warning' })
-      setIsLoading(false)
-    })
-
-    ipcRenderer.once('database-export-error', () => {
-      enqueueSnackbar('An error occurred while exporting the database.', { variant: 'error' })
-      setIsLoading(false)
-    })
-
-    ipcRenderer.once('database-export-success', () => {
-      enqueueSnackbar('Database exported successfully.', { variant: 'success' })
-      setIsLoading(false)
-    })
   }
+
+  const handleDatabaseExportCanceled = (): void => {
+    enqueueSnackbar('Database export canceled.', { variant: 'warning' })
+    setIsLoading(false)
+  }
+
+  const handleDatabaseExportError = (): void => {
+    enqueueSnackbar('An error occurred while exporting the database.', { variant: 'error' })
+    setIsLoading(false)
+  }
+
+  const handleDatabaseExportSuccess = (): void => {
+    enqueueSnackbar('Database exported successfully.', { variant: 'success' })
+    setIsLoading(false)
+  }
+
+  useEffect(() => {
+    ipcRenderer.on('database-export-canceled', handleDatabaseExportCanceled)
+    ipcRenderer.on('database-export-error', handleDatabaseExportError)
+    ipcRenderer.on('database-export-success', handleDatabaseExportSuccess)
+
+    return () => {
+      ipcRenderer.removeListener('database-export-canceled', handleDatabaseExportCanceled)
+      ipcRenderer.removeListener('database-export-error', handleDatabaseExportError)
+      ipcRenderer.removeListener('database-export-success', handleDatabaseExportSuccess)
+    }
+  }, [])
 
   return (
     <>
