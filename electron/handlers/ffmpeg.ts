@@ -230,6 +230,7 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
  * @param {SpliceRegion[]} arg.spliceRegions - the points to splice the video at
  * @param {string} arg.outputDirectory - the directory to save the spliced videos to
  * @param {string} arg.videoBasename - the base name of the video
+ * @param {boolean} arg.trackInDatabase - whether to track the spliced videos in the database
  * @returns {Promise<void>} - a promise that resolves when the video has been spliced
  */
 export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, spliceRegions: SpliceRegion[], outputDirectory?: string, videoBasename: string }): Promise<void> => {
