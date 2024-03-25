@@ -10,8 +10,7 @@ import { handleFileRename, handleListFiles, handleSelectFile } from '../handlers
 import { handleListTags, handleTagFile, handleUntagFile, handleTagFiles, handleUntagFiles } from '../handlers/tag'
 import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo, handleGetVideoFramerate, handleAutoSplice, handleGetAudioSampleRate, handleGetVideoDuration, handleConvertVideo } from '../handlers/ffmpeg'
 import { handleListNotes, handleAddNote, handleUpdateNote, handleDeleteNote } from '../handlers/note'
-import { handleDatabaseExport } from '../handlers/export'
-import { handleDatabaseImport } from '../handlers/import'
+import { handleDatabaseExport, handleDatabaseImport, handleDatabaseReset } from '../handlers/database'
 import { handleSaveToJSON, handleLoadFromJSON } from '../handlers/json'
 import { type AutoSpliceSettings, type AudioFileFormat, type SpliceRegion, type FileTypes } from '../../shared/types'
 import { type File } from '../database/schemas'
@@ -301,17 +300,19 @@ ipcMain.on('delete-note', (event, arg: { id: number }) => {
 })
 
 //
-// EXPORT
+// DATABASE
 //
 
 ipcMain.on('database-export', (event) => {
   void handleDatabaseExport(event)
 })
 
-// IMPORT
-
 ipcMain.on('database-import', (event) => {
   void handleDatabaseImport(event)
+})
+
+ipcMain.on('database-reset', (event) => {
+  void handleDatabaseReset(event)
 })
 
 // JSON
