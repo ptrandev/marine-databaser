@@ -9,7 +9,7 @@ const FileSearch: FC = () => {
   return (
     <div>
       <TextField
-        placeholder='Search'
+        placeholder='Search file name, file path, or notes'
         InputProps={{
           startAdornment: (
             <InputAdornment position='start'>
