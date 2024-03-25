@@ -257,7 +257,7 @@ const AudioVisualizers: FC = () => {
                 frequencyMax,
                 labelsBackground: '#00000066',
                 colorMap: COLORS,
-                splitChannels: false
+                splitChannels: true
               }))
 
               const wsRegions = wavesurfer.registerPlugin(RegionPlugin.create())
