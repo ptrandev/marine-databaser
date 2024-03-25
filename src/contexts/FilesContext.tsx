@@ -9,7 +9,7 @@ export interface FilesContextValue {
   files: FileWithMetadata[]
   selectedFiles: number[]
   updateSelectedFiles: (selectedFiles: number[]) => void
-  loadFiles: () => void
+  loadFiles: () => Promise<void>
   isLoadingFiles: boolean
   searchTerm: string
   updateSearchTerm: (searchTerm: string) => void
@@ -38,7 +38,7 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
   const [selectedTags, setSelectedTags] = useState<Tag[]>([])
   const [selectedFileTypes, setSelectedFileTypes] = useState<FileTypes[]>([])
 
-  const loadFiles = (): void => {
+  const loadFiles = async (): Promise<void> => {
     setIsLoadingFiles(true)
 
     const directories: number[] = selectedDirectories?.map(directory => directory.id)
@@ -46,9 +46,12 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
 
     ipcRenderer.send('list-files', { directories, tags, searchTerm, fileTypes: selectedFileTypes })
 
-    ipcRenderer.once('listed-files', (_, files: FileWithMetadata[]) => {
-      setFiles(files)
-      setIsLoadingFiles(false)
+    await new Promise<void>((resolve) => {
+      ipcRenderer.once('listed-files', (_, files: FileWithMetadata[]) => {
+        setFiles(files)
+        setIsLoadingFiles(false)
+        resolve()
+      })
     })
   }
 
@@ -73,12 +76,12 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
   }
 
   useEffectDebounced(() => {
-    loadFiles()
+    void loadFiles()
     setSelectedFiles([])
   }, [searchTerm], 500)
 
   useEffect(() => {
-    loadFiles()
+    void loadFiles()
   }, [directories, selectedDirectories, selectedTags, selectedFileTypes])
 
   useEffect(() => {

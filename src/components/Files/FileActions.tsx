@@ -16,7 +16,7 @@ const FileActions: FC = () => {
 
   const handleFileBulkTagsModalClose = (): void => {
     setFileBulkTagsModalOpen(false)
-    loadFiles()
+    void loadFiles()
   }
 
   const handleBulkExtractAudio = (): void => {

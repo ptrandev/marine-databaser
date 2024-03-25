@@ -31,7 +31,7 @@ const Import: FC = () => {
       enqueueSnackbar('Database imported successfully.', { variant: 'success' })
 
       void loadDirectories()
-      loadFiles()
+      void loadFiles()
 
       setIsLoading(false)
     })

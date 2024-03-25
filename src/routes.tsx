@@ -3,7 +3,7 @@ import Directories from './pages/Directories'
 import Collections from './pages/Collections'
 import ExtractAudio from './pages/ExtractAudio'
 import SpliceVideo from './pages/SpliceVideo'
-import ImportExport from './pages/DatabaseSettings'
+import DatabaseSettings from './pages/DatabaseSettings'
 import NotFound from './pages/NotFound'
 
 import Navbar from './components/Navbar'
@@ -60,7 +60,7 @@ const router = createHashRouter([
       {
         path: '/database-settings',
         element: (
-          <ImportExport />
+          <DatabaseSettings />
         )
       }
     ]

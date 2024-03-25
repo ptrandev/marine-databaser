@@ -1,9 +1,10 @@
 import { type FC } from 'react'
 import { Box, Typography, Stack, Divider } from '@mui/material'
-import Export from '@/components/ImportExport/Export'
-import Import from '@/components/ImportExport/Import'
+import Export from '@/components/DatabaseSettings/Export'
+import Import from '@/components/DatabaseSettings/Import'
+import ResetDatabase from '@/components/DatabaseSettings/ResetDatabase'
 
-const ImportExport: FC = () => {
+const DatabaseSettings: FC = () => {
   return (
     <Box mb={2}>
       <Stack gap={2}>
@@ -13,9 +14,11 @@ const ImportExport: FC = () => {
         <Import/>
         <Divider />
         <Export />
+        <Divider />
+        <ResetDatabase />
       </Stack>
     </Box>
   )
 }
 
-export default ImportExport
+export default DatabaseSettings

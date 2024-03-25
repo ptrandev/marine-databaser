@@ -20,12 +20,12 @@ const FileList: FC = () => {
 
   const handleFileTagModalClose = (): void => {
     setFileTagFile(undefined)
-    loadFiles()
+    void loadFiles()
   }
 
   const handleFileRenameModalClose = (): void => {
     setFileRenameFile(undefined)
-    loadFiles()
+    void loadFiles()
   }
 
   const handleSetFileTagFile = (file: FileWithMetadata): void => {
