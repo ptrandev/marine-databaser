@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron'
-import { type FC } from 'react'
+import { useEffect, type FC } from 'react'
 import { IconButton } from '@mui/material'
 import { Download } from '@mui/icons-material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
@@ -11,20 +11,30 @@ const LoadProject: FC = () => {
 
   const handleLoad = (): void => {
     ipcRenderer.send('load-from-json')
-
-    ipcRenderer.once('load-from-json-success', (_, data: {
-      selectedVideo: string
-      spliceRegions: SpliceRegion[]
-    }) => {
-      enqueueSnackbar('Project loaded successfully.', { variant: 'success' })
-      updateSelectedVideo(data.selectedVideo)
-      loadSpliceRegions(data.spliceRegions)
-    })
-
-    ipcRenderer.once('load-from-json-error', () => {
-      enqueueSnackbar('Error loading project.', { variant: 'error' })
-    })
   }
+
+  const handleLoadFromJsonSuccess = (_: unknown, data: {
+    selectedVideo: string
+    spliceRegions: SpliceRegion[]
+  }): void => {
+    enqueueSnackbar('Project loaded successfully.', { variant: 'success' })
+    updateSelectedVideo(data.selectedVideo)
+    loadSpliceRegions(data.spliceRegions)
+  }
+
+  const handleLoadFromJsonError = (): void => {
+    enqueueSnackbar('Error loading project.', { variant: 'error' })
+  }
+
+  useEffect(() => {
+    ipcRenderer.on('load-from-json-success', handleLoadFromJsonSuccess)
+    ipcRenderer.on('load-from-json-error', handleLoadFromJsonError)
+
+    return () => {
+      ipcRenderer.removeAllListeners('load-from-json-success')
+      ipcRenderer.removeAllListeners('load-from-json-error')
+    }
+  }, [])
 
   return (
     <IconButton onClick={handleLoad}>
