@@ -60,15 +60,21 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
     setIsDeletingDirectory(true)
 
     ipcRenderer.send('delete-directory', { directoryId })
+  }
 
-    ipcRenderer.once('deleted-directory', () => {
-      void loadDirectories()
-      setIsDeletingDirectory(false)
-    })
+  const handleDeletedDirectory = (): void => {
+    void loadDirectories()
+    setIsDeletingDirectory(false)
   }
 
   useEffect(() => {
     void loadDirectories()
+
+    ipcRenderer.on('deleted-directory', handleDeletedDirectory)
+
+    return () => {
+      ipcRenderer.removeListener('deleted-directory', handleDeletedDirectory)
+    }
   }, [])
 
   const contextValue = useMemo<DirectoriesContextValue>(() => {
