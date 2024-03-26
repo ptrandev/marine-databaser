@@ -1,10 +1,11 @@
-import { Delete, Folder } from '@mui/icons-material'
+import { Delete, Folder, Refresh } from '@mui/icons-material'
 import { IconButton, List, ListItemText, ListItem, Typography, Box, LinearProgress, Tooltip } from '@mui/material'
 import { ipcRenderer } from 'electron'
-import { type FC, useState } from 'react'
+import { type FC, useState, useEffect } from 'react'
 
 import useDirectories from '@/hooks/useDirectories'
 import DirectoryDeleteModal from './DirectoryDeleteModal'
+import { enqueueSnackbar } from 'notistack'
 
 const DirectoryList: FC = () => {
   const { directories, directoriesFileCount, isDeletingDirectory } = useDirectories()
@@ -14,6 +15,24 @@ const DirectoryList: FC = () => {
   }
 
   const [directoryIdToDelete, setDirectoryIdToDelete] = useState<number>()
+
+  const handleRefreshSingleDirectoryError = (_: unknown, errMessage: string): void => {
+    enqueueSnackbar(errMessage, { variant: 'error' })
+  }
+
+  const handleRefreshedSingleDirectory = (): void => {
+    enqueueSnackbar('Directory refreshed', { variant: 'success' })
+  }
+
+  useEffect(() => {
+    ipcRenderer.on('refresh-single-directory-error', handleRefreshSingleDirectoryError)
+    ipcRenderer.on('refreshed-single-directory', handleRefreshedSingleDirectory)
+
+    return () => {
+      ipcRenderer.removeListener('refresh-single-directory-error', handleRefreshSingleDirectoryError)
+      ipcRenderer.removeListener('refreshed-single-directory', handleRefreshedSingleDirectory)
+    }
+  }, [])
 
   return (
     <>
@@ -33,6 +52,17 @@ const DirectoryList: FC = () => {
             <ListItem
               key={directory.id}
             >
+              <Tooltip title='Open directory' sx={{ mr: 1, ml: -2 }}>
+                <IconButton
+                  aria-label='open directory'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleOpenDirectory(directory.path)
+                  }}
+                >
+                  <Folder />
+                </IconButton>
+              </Tooltip>
               <ListItemText
                 primary={
                   <>
@@ -51,15 +81,16 @@ const DirectoryList: FC = () => {
                   </Typography>
                 }
               />
-              <Tooltip title='Open directory'>
+              <Tooltip title='Refresh directory'>
                 <IconButton
-                  aria-label='open directory'
+                  aria-label='refresh'
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleOpenDirectory(directory.path)
+                    ipcRenderer.send('refresh-single-directory', { directoryId: directory.id })
                   }}
+                  color='primary'
                 >
-                  <Folder />
+                  <Refresh />
                 </IconButton>
               </Tooltip>
               <Tooltip title='Delete directory'>

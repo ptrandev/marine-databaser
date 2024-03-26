@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import sequelize from '../database/initialize'
 import '../database/associations'
 
-import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleAddDirectory, handleRefreshDirectories, handleSelectDirectory } from '../handlers/directory'
+import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleAddDirectory, handleRefreshDirectories, handleSelectDirectory, handleRefreshSingleDirectory } from '../handlers/directory'
 import { handleFileRename, handleListFiles, handleSelectFile } from '../handlers/file'
 import { handleListTags, handleTagFile, handleUntagFile, handleTagFiles, handleUntagFiles } from '../handlers/tag'
 import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo, handleGetVideoFramerate, handleAutoSplice, handleGetAudioSampleRate, handleGetVideoDuration, handleConvertVideo } from '../handlers/ffmpeg'
@@ -181,6 +181,10 @@ ipcMain.on('list-directories-file-count', (event) => {
 
 ipcMain.on('refresh-directories', (event) => {
   void handleRefreshDirectories(event)
+})
+
+ipcMain.on('refresh-single-directory', (event, arg: { directoryId: number }) => {
+  void handleRefreshSingleDirectory(event, arg)
 })
 
 ipcMain.on('select-directory', (event) => {

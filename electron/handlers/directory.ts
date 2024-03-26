@@ -65,6 +65,174 @@ const addFileToDatabase = async ({ file, directoryId }: {
   }
 }
 
+const refreshDirectory = async (directoryId: number): Promise<{
+  directoryId: number
+  numExistingFiles: number
+  numRenamedFiles: number
+  numDeletedFiles: number
+  numNewFiles: number
+}> => {
+  const directory = await Directory.findOne({
+    where: {
+      id: directoryId
+    }
+  })
+
+  // if the directory doesn't exist, return an error
+  if (directory === null) {
+    throw new Error('Directory does not exist.')
+  }
+
+  // use fs to see if we have access to the directory
+  try {
+    await fs.access(directory.path)
+  } catch {
+    throw new Error('Directory cannot be found. It may be deleted or exists on an external drive that is not connected.')
+  }
+
+  const currentTime = new Date()
+
+  const files = await getFileList(directory.path)
+
+  // get files that already exist in the database
+  // to exist in the database, it must have the same path and birthTime
+  const _existingFiles = await File.findAll({
+    where: {
+      path: {
+        [Op.in]: files
+      }
+    }
+  })
+
+  // filter out files that don't have the same birthTime as the file on disk
+  // use await fs.stat(file.path) to get the birthTime of the file on disk
+  const existingFiles: File[] = await Promise.all(
+    _existingFiles.map(async (file) => {
+      const { birthtime } = await fs.stat(file.path)
+      if (birthtime.getTime() === file.birthTime.getTime()) {
+        return file
+      }
+      return null
+    })
+  ).then((files) => files.filter((file) => file !== null)) as File[]
+
+  // for files that already exist in the database, update metadata based upon the file id
+  const updateExistingFiles = await Promise.all(
+    existingFiles.map(async (file) => {
+      const { mtime, size } = await fs.stat(file.path)
+      return {
+        ...file.toJSON(),
+        lastModified: mtime,
+        fileSize: size,
+        updatedAt: currentTime
+      }
+    }
+    )
+  )
+
+  await File.bulkCreate(updateExistingFiles, {
+    updateOnDuplicate: [
+      'lastModified',
+      'fileSize',
+      'updatedAt'
+    ]
+  })
+
+  const existingFilesPaths = existingFiles.map((file) => file.path)
+
+  // get files that have been renamed
+  // to be renamed, the file must have the same birthTime, fileSize, mimeType,
+  // and lastModified, but a different path
+  const renamedFiles: File[] = await Promise.all(
+    files
+      .filter((file) => !existingFilesPaths.includes(file))
+      .map(async (file) => {
+        const { birthtime, size, mtime } = await fs.stat(file)
+        const mimeType = mime.lookup(file).toString()
+
+        const renamedFile = await File.findOne({
+          where: {
+            birthTime: birthtime,
+            fileSize: size,
+            lastModified: mtime,
+            mimeType
+          }
+        })
+
+        // if the file was renamed, update the database
+        if (renamedFile !== null) {
+          await File.update(
+            {
+              name: file.split('/').pop(),
+              path: file,
+              updatedAt: currentTime
+            },
+            {
+              where: {
+                id: renamedFile.id
+              }
+            }
+          )
+
+          return await File.findOne({
+            where: {
+              id: renamedFile.id
+            }
+          })
+        }
+
+        return null
+      })
+  ).then((files) => files.filter((file) => file !== null)) as File[]
+
+  const renamedFilesPaths = renamedFiles.map((file) => file.path)
+
+  // add new files to the database
+  await addFilesToDatabase({
+    files: files.filter(
+      (file) =>
+        !existingFilesPaths.includes(file) &&
+        !renamedFilesPaths.includes(file)
+    ),
+    directoryId: directory.id
+  })
+
+  // get all files that are in the database but not in the directory
+  const deletedFiles = await File.findAll({
+    where: {
+      directoryId: directory.id,
+      path: {
+        [Op.notIn]: files
+      }
+    }
+  }).then((files) => files.map((file) => file.toJSON()))
+
+  // delete them
+  await File.destroy({
+    where: {
+      id: deletedFiles.map((file) => file.id)
+    }
+  })
+
+  // remove file tag associations for deleted files
+  await FileTag.destroy({
+    where: {
+      // @ts-expect-error - deletedFiles is an array of objects
+      fileId: deletedFiles.map((file) => file.id)
+    }
+  })
+
+  console.log(files.length, existingFiles.length, renamedFiles.length)
+
+  return {
+    directoryId: directory.id,
+    numExistingFiles: existingFiles.length,
+    numRenamedFiles: renamedFiles.length,
+    numDeletedFiles: deletedFiles.length,
+    numNewFiles: files.length - existingFiles.length - renamedFiles.length
+  }
+}
+
 export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog(win, {
     properties: ['openDirectory']
@@ -171,6 +339,21 @@ export const handleDeleteDirectory = async (event: IpcMainEvent, arg: { director
 }
 
 /**
+ * Refreshed the file in a single directory
+ * @param event
+ * @param arg.directoryId - the id of the directory to refresh
+ * @returns
+ */
+export const handleRefreshSingleDirectory = async (event: IpcMainEvent, arg: { directoryId: number }): Promise<void> => {
+  try {
+    const refreshedDirectory = await refreshDirectory(arg.directoryId)
+    event.reply('refreshed-single-directory', refreshedDirectory)
+  } catch (err) {
+    event.reply('refresh-single-directory-error', (err as Error).message)
+  }
+}
+
+/**
  * Refreshes the files in every directory
  * @param event
  * @returns
@@ -187,145 +370,15 @@ export const handleRefreshDirectories = async (event: IpcMainEvent): Promise<voi
   }
 
   for (const directory of directories) {
-    const currentTime = new Date()
-
-    const files = await getFileList(directory.path)
-
-    // get files that already exist in the database
-    // to exist in the database, it must have the same path and birthTime
-    const _existingFiles = await File.findAll({
-      where: {
-        path: {
-          [Op.in]: files
-        }
-      }
-    })
-
-    // filter out files that don't have the same birthTime as the file on disk
-    // use await fs.stat(file.path) to get the birthTime of the file on disk
-    const existingFiles: File[] = await Promise.all(
-      _existingFiles.map(async (file) => {
-        const { birthtime } = await fs.stat(file.path)
-        if (birthtime.getTime() === file.birthTime.getTime()) {
-          return file
-        }
-        return null
+    try {
+      const refreshedDirectory = await refreshDirectory(directory.id)
+      event.reply('refreshed-directory', refreshedDirectory)
+    } catch (err) {
+      event.reply('refresh-directory-error', {
+        errMessage: (err as Error).message,
+        directoryId: directory.id
       })
-    ).then((files) => files.filter((file) => file !== null)) as File[]
-
-    // for files that already exist in the database, update metadata based upon the file id
-    const updateExistingFiles = await Promise.all(
-      existingFiles.map(async (file) => {
-        const { mtime, size } = await fs.stat(file.path)
-        return {
-          ...file.toJSON(),
-          lastModified: mtime,
-          fileSize: size,
-          updatedAt: currentTime
-        }
-      }
-      )
-    )
-
-    await File.bulkCreate(updateExistingFiles, {
-      updateOnDuplicate: [
-        'lastModified',
-        'fileSize',
-        'updatedAt'
-      ]
-    })
-
-    const existingFilesPaths = existingFiles.map((file) => file.path)
-
-    // get files that have been renamed
-    // to be renamed, the file must have the same birthTime, fileSize, mimeType,
-    // and lastModified, but a different path
-    const renamedFiles: File[] = await Promise.all(
-      files
-        .filter((file) => !existingFilesPaths.includes(file))
-        .map(async (file) => {
-          const { birthtime, size, mtime } = await fs.stat(file)
-          const mimeType = mime.lookup(file).toString()
-
-          const renamedFile = await File.findOne({
-            where: {
-              birthTime: birthtime,
-              fileSize: size,
-              lastModified: mtime,
-              mimeType
-            }
-          })
-
-          // if the file was renamed, update the database
-          if (renamedFile !== null) {
-            await File.update(
-              {
-                name: file.split('/').pop(),
-                path: file,
-                updatedAt: currentTime
-              },
-              {
-                where: {
-                  id: renamedFile.id
-                }
-              }
-            )
-
-            return await File.findOne({
-              where: {
-                id: renamedFile.id
-              }
-            })
-          }
-
-          return null
-        })
-    ).then((files) => files.filter((file) => file !== null)) as File[]
-
-    const renamedFilesPaths = renamedFiles.map((file) => file.path)
-
-    // add new files to the database
-    await addFilesToDatabase({
-      files: files.filter(
-        (file) =>
-          !existingFilesPaths.includes(file) &&
-          !renamedFilesPaths.includes(file)
-      ),
-      directoryId: directory.id
-    })
-
-    // get all files that are in the database but not in the directory
-    const deletedFiles = await File.findAll({
-      where: {
-        directoryId: directory.id,
-        path: {
-          [Op.notIn]: files
-        }
-      }
-    }).then((files) => files.map((file) => file.toJSON()))
-
-    // delete them
-    await File.destroy({
-      where: {
-        id: deletedFiles.map((file) => file.id)
-      }
-    })
-
-    // remove file tag associations for deleted files
-    await FileTag.destroy({
-      where: {
-        // @ts-expect-error - deletedFiles is an array of objects
-        fileId: deletedFiles.map((file) => file.id)
-      }
-    })
-
-    event.reply('refreshed-directory', {
-      directoryId: directory.id,
-      numExistingFiles: existingFiles.length,
-      numRenamedFiles: renamedFiles.length,
-      numDeletedFiles: deletedFiles.length,
-      numNewFiles: files.length - existingFiles.length - renamedFiles.length
-    })
+    }
   }
 
   // remove tags that no longer have any associations
