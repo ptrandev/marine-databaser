@@ -3,7 +3,7 @@ import WavesurferPlayer from '@wavesurfer/react'
 import SpectrogramPlugin from 'wavesurfer.js/dist/plugins/spectrogram.js'
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.js'
 import RegionPlugin, { type Region } from 'wavesurfer.js/dist/plugins/regions.js'
-import { Box, IconButton, Slider, Stack, Typography, TextField, Button } from '@mui/material'
+import { Box, IconButton, Slider, Stack, Typography, TextField, Button, Tooltip } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import colormap from 'colormap'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
@@ -203,29 +203,37 @@ const AudioVisualizers: FC = () => {
                   <b>Selected Splice Region:</b> {selectedRegion.name}
                 </Typography>
                 <Box>
-                  <IconButton size='small' onClick={() => { setEditNameModalOpen(true) }}>
-                    <Edit fontSize='small' />
-                  </IconButton>
+                  <Tooltip title='Edit selected splice region name'>
+                    <IconButton size='small' onClick={() => { setEditNameModalOpen(true) }}>
+                      <Edit fontSize='small' />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
               </>
             }
           </Stack>
           <Box>
-            <IconButton onClick={handlePlayPause}
-              disabled={!selectedRegion}
-            >
-              {isPlaying ? <Pause /> : <PlayArrow />}
-            </IconButton>
-            <IconButton
-              onClick={() => { setIsLoop(!isLoop) }}
-              disabled={!selectedRegion}
-              color={isLoop ? 'primary' : 'default'}
-            >
-              <Loop />
-            </IconButton>
-            <IconButton onClick={handleDeleteSelectedRegion} disabled={!selectedRegion} color='error'>
-              <Delete />
-            </IconButton>
+            <Tooltip title="play/pause selected splice region">
+              <IconButton onClick={handlePlayPause}
+                disabled={!selectedRegion}
+              >
+                {isPlaying ? <Pause /> : <PlayArrow />}
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Toggle loop">
+              <IconButton
+                onClick={() => { setIsLoop(!isLoop) }}
+                disabled={!selectedRegion}
+                color={isLoop ? 'primary' : 'default'}
+              >
+                <Loop />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete selected splice region">
+              <IconButton onClick={handleDeleteSelectedRegion} disabled={!selectedRegion} color='error'>
+                <Delete />
+              </IconButton>
+            </Tooltip>
           </Box>
         </Stack>
         <Box

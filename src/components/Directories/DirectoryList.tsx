@@ -1,5 +1,5 @@
-import { Delete } from '@mui/icons-material'
-import { IconButton, List, ListItemText, ListItemButton, Typography, Box, LinearProgress } from '@mui/material'
+import { Delete, Folder } from '@mui/icons-material'
+import { IconButton, List, ListItemText, ListItem, Typography, Box, LinearProgress, Tooltip } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import { type FC, useState } from 'react'
 
@@ -30,9 +30,8 @@ const DirectoryList: FC = () => {
       <List>
         {
           directories?.map((directory) => (
-            <ListItemButton
+            <ListItem
               key={directory.id}
-              onClick={() => { handleOpenDirectory(directory.path) }}
             >
               <ListItemText
                 primary={
@@ -52,18 +51,31 @@ const DirectoryList: FC = () => {
                   </Typography>
                 }
               />
-              <IconButton
-                aria-label='delete'
-                color='error'
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setDirectoryIdToDelete(directory.id)
-                }}
-                disabled={isDeletingDirectory}
-              >
-                <Delete />
-              </IconButton>
-            </ListItemButton>
+              <Tooltip title='Open directory'>
+                <IconButton
+                  aria-label='open directory'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleOpenDirectory(directory.path)
+                  }}
+                >
+                  <Folder />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title='Delete directory'>
+                <IconButton
+                  aria-label='delete'
+                  color='error'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setDirectoryIdToDelete(directory.id)
+                  }}
+                  disabled={isDeletingDirectory}
+                >
+                  <Delete />
+                </IconButton>
+              </Tooltip>
+            </ListItem>
           ))
         }
       </List>

@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 import { useEffect, type FC } from 'react'
-import { IconButton } from '@mui/material'
+import { IconButton, Tooltip } from '@mui/material'
 import { Download } from '@mui/icons-material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { enqueueSnackbar } from 'notistack'
@@ -37,9 +37,11 @@ const LoadProject: FC = () => {
   }, [])
 
   return (
-    <IconButton onClick={handleLoad}>
-      <Download />
-    </IconButton>
+    <Tooltip title='Load project'>
+      <IconButton onClick={handleLoad}>
+        <Download />
+      </IconButton>
+    </Tooltip>
   )
 }
 

@@ -251,6 +251,11 @@ ipcMain.on('open-file', (_, arg: string) => {
   void shell.openPath(arg)
 })
 
+ipcMain.on('open-file-folder', (_, arg: string) => {
+  console.log(arg)
+  shell.showItemInFolder(arg)
+})
+
 ipcMain.on('rename-file', (event, arg: { file: File, name: string }) => {
   void handleFileRename(event, arg)
 })

@@ -1,4 +1,4 @@
-import { Checkbox, Box, IconButton, Stack } from '@mui/material'
+import { Checkbox, Box, IconButton, Stack, Tooltip } from '@mui/material'
 import { type FC, useState } from 'react'
 
 import useFiles from '@/hooks/useFiles'
@@ -47,12 +47,16 @@ const FileActions: FC = () => {
           }}
         />
         <Stack direction='row'>
-          <IconButton disabled={selectedFiles?.length === 0} onClick={() => { setFileBulkTagsModalOpen(true) }}>
-            <Sell />
-          </IconButton>
-          <IconButton onClick={handleBulkExtractAudio} disabled={selectedFiles?.length === 0}>
-            <AudioFile />
-          </IconButton>
+          <Tooltip title='Edit tags for selected files'>
+            <IconButton disabled={selectedFiles?.length === 0} onClick={() => { setFileBulkTagsModalOpen(true) }} color='primary'>
+              <Sell />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title='Extract audio for selected files'>
+            <IconButton onClick={handleBulkExtractAudio} disabled={selectedFiles?.length === 0} color='secondary'>
+              <AudioFile />
+            </IconButton>
+          </Tooltip>
         </Stack>
       </Box>
       <FileBulkTagsModal open={fileBulkTagsModalOpen} handleClose={handleFileBulkTagsModalClose} />

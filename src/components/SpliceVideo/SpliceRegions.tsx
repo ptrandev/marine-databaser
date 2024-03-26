@@ -1,5 +1,5 @@
 import { type FC, useState } from 'react'
-import { Box, Button, IconButton, Stack, Typography } from '@mui/material'
+import { Box, Button, IconButton, Stack, Tooltip, Typography } from '@mui/material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Add, Delete, Undo, Redo } from '@mui/icons-material'
 import { Modal, type ModalProps } from '../Modal'
@@ -71,12 +71,16 @@ const SpliceRegions: FC = () => {
           >
             Add Splice Region
           </Button>
-          <IconButton onClick={undo} disabled={!canUndo || !selectedVideo}>
-            <Undo />
-          </IconButton>
-          <IconButton onClick={redo} disabled={!canRedo || !selectedVideo}>
-            <Redo />
-          </IconButton>
+          <Tooltip title='Undo'>
+            <IconButton onClick={undo} disabled={!canUndo || !selectedVideo}>
+              <Undo />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title='Redo'>
+            <IconButton onClick={redo} disabled={!canRedo || !selectedVideo}>
+              <Redo />
+            </IconButton>
+          </Tooltip>
         </Box>
         <Box>
           <Button

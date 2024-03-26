@@ -1,9 +1,9 @@
 import { type FC, useState } from 'react'
-import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack, Checkbox, Badge } from '@mui/material'
+import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack, Checkbox, Badge, Tooltip } from '@mui/material'
 import { ipcRenderer } from 'electron'
 
 import { Virtuoso } from 'react-virtuoso'
-import { FileOpen, Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter, NoteAlt } from '@mui/icons-material'
+import { FileOpen, Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter, NoteAlt, Folder } from '@mui/icons-material'
 import FileTagsModal from './FileTagsModal'
 import FileRenameModal from './FileRenameModal'
 import FileNotesModal from './FileNotesModal'
@@ -122,47 +122,67 @@ const FileList: FC = () => {
                     )
                   }
                 </Box>
-                <IconButton
-                  aria-label='rename'
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setFileRenameFile(file)
-                  }}
-                >
-                  <DriveFileRenameOutline />
-                </IconButton>
-                <IconButton
-                  aria-label='notes'
-                  color='success'
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setFileNotesFile(file)
-                  }}
-                >
-                  <Badge badgeContent={file?.FileNotes?.length} color='primary'>
-                    <NoteAlt />
-                  </Badge>
-                </IconButton>
-                <IconButton
-                  aria-label='tags'
-                  color='primary'
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setFileTagFile(file)
-                  }}
-                >
-                  <Sell />
-                </IconButton>
-                <IconButton
-                  aria-label='open'
-                  color='secondary'
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    ipcRenderer.send('open-file', file.path)
-                  }}
-                >
-                  <FileOpen />
-                </IconButton>
+                <Tooltip title='Rename file'>
+                  <IconButton
+                    aria-label='rename'
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setFileRenameFile(file)
+                    }}
+                  >
+                    <DriveFileRenameOutline />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title='Edit notes'>
+                  <IconButton
+                    aria-label='notes'
+                    color='success'
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setFileNotesFile(file)
+                    }}
+                  >
+                    <Badge badgeContent={file?.FileNotes?.length} color='primary'>
+                      <NoteAlt />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title='Edit tags'>
+                  <IconButton
+                    aria-label='tags'
+                    color='primary'
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setFileTagFile(file)
+                    }}
+                  >
+                    <Sell />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title='Open file folder'>
+                  <IconButton
+                    aria-label='open open folder'
+                    color='warning'
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      ipcRenderer.send('open-file-folder', file.path)
+                    }}
+                  >
+                    <Folder />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title='Open file'>
+                  <IconButton
+                    aria-label='open file'
+                    color='secondary'
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      ipcRenderer.send('open-file', file.path)
+                    }}
+                  >
+                    <FileOpen />
+                  </IconButton>
+                </Tooltip>
               </ListItem>
             )
           }}

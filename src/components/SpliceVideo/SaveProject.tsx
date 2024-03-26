@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 import { useEffect, type FC } from 'react'
-import { IconButton } from '@mui/material'
+import { IconButton, Tooltip } from '@mui/material'
 import { Save } from '@mui/icons-material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { enqueueSnackbar } from 'notistack'
@@ -39,9 +39,11 @@ const SaveProject: FC = () => {
   }, [])
 
   return (
-    <IconButton onClick={handleSave} disabled={!selectedVideo}>
-      <Save />
-    </IconButton>
+    <Tooltip title='Save project'>
+      <IconButton onClick={handleSave} disabled={!selectedVideo}>
+        <Save />
+      </IconButton>
+    </Tooltip>
   )
 }
 
