@@ -80,7 +80,7 @@ export const handleLoadFromJSON = async (event: IpcMainEvent): Promise<void> => 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       await fs.access(data.selectedVideo)
     } catch {
-      throw new Error('Selected video does not exist.')
+      throw new Error('Selected video cannot be found.')
     }
 
     event.reply('load-from-json-success', data)
