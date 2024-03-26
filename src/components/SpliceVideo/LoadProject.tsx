@@ -22,8 +22,8 @@ const LoadProject: FC = () => {
     loadSpliceRegions(data.spliceRegions)
   }
 
-  const handleLoadFromJsonError = (): void => {
-    enqueueSnackbar('Error loading project.', { variant: 'error' })
+  const handleLoadFromJsonError = (_: unknown, errMessage: string): void => {
+    enqueueSnackbar(`Error loading project: ${errMessage}`, { variant: 'error' })
   }
 
   useEffect(() => {

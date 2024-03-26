@@ -59,10 +59,33 @@ export const handleLoadFromJSON = async (event: IpcMainEvent): Promise<void> => 
   }
 
   try {
-    const data = await fs.readFile(result.filePaths[0])
-    event.reply('load-from-json-success', JSON.parse(data.toString()))
+    const data = JSON.parse((await fs.readFile(result.filePaths[0])).toString())
+
+    if (!data?.selectedVideo || !data?.spliceRegions || typeof data?.selectedVideo !== 'string' || !Array.isArray(data?.spliceRegions)) {
+      throw new Error('Invalid JSON data.')
+    }
+
+    // throw error if spliceRegions does not match SpliceRegion[] type
+    if (data.spliceRegions.some((spliceRegion: any) => {
+      return (
+        !spliceRegion?.start || !spliceRegion?.end || !spliceRegion?.label ||
+        typeof spliceRegion?.start !== 'number' || typeof spliceRegion?.end !== 'number' || typeof spliceRegion?.label !== 'string'
+      )
+    })) {
+      throw new Error('Invalid spliceRegions data.')
+    }
+
+    // check if selectedVideo exists using fs
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      await fs.access(data.selectedVideo)
+    } catch {
+      throw new Error('Selected video does not exist.')
+    }
+
+    event.reply('load-from-json-success', data)
   } catch (err) {
     console.error(err)
-    event.reply('load-from-json-error')
+    event.reply('load-from-json-error', (err as Error).message)
   }
 }
