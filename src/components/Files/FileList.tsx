@@ -1,9 +1,9 @@
 import { type FC, useState } from 'react'
-import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack, Checkbox, Badge, Tooltip } from '@mui/material'
+import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack, Checkbox, Badge, Tooltip, Menu, MenuItem, ListItemIcon } from '@mui/material'
 import { ipcRenderer } from 'electron'
 
 import { Virtuoso } from 'react-virtuoso'
-import { FileOpen, Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter, NoteAlt, Folder } from '@mui/icons-material'
+import { Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description, Archive, SettingsApplications, HelpCenter, NoteAlt, MoreVert, FileOpen, Folder } from '@mui/icons-material'
 import FileTagsModal from './FileTagsModal'
 import FileRenameModal from './FileRenameModal'
 import FileNotesModal from './FileNotesModal'
@@ -17,6 +17,8 @@ const FileList: FC = () => {
   const [fileTagFile, setFileTagFile] = useState<FileWithMetadata>()
   const [fileRenameFile, setFileRenameFile] = useState<FileWithMetadata>()
   const [fileNotesFile, setFileNotesFile] = useState<FileWithMetadata>()
+
+  const [fileContextMenuAnchorEl, setFileContextMenuAnchorEl] = useState<null | HTMLElement>(null)
 
   const handleFileTagModalClose = (): void => {
     setFileTagFile(undefined)
@@ -122,17 +124,6 @@ const FileList: FC = () => {
                     )
                   }
                 </Box>
-                <Tooltip title='Rename file'>
-                  <IconButton
-                    aria-label='rename'
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setFileRenameFile(file)
-                    }}
-                  >
-                    <DriveFileRenameOutline />
-                  </IconButton>
-                </Tooltip>
                 <Tooltip title='Edit notes'>
                   <IconButton
                     aria-label='notes'
@@ -159,35 +150,58 @@ const FileList: FC = () => {
                     <Sell />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title='Open file folder'>
+                <Tooltip title='More options'>
                   <IconButton
-                    aria-label='open open folder'
-                    color='warning'
+                    aria-label='more options'
                     onClick={(e) => {
                       e.stopPropagation()
-                      ipcRenderer.send('open-file-folder', file.path)
+                      setFileContextMenuAnchorEl(e.currentTarget)
                     }}
                   >
-                    <Folder />
+                    <MoreVert />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title='Open file'>
-                  <IconButton
-                    aria-label='open file'
-                    color='secondary'
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      ipcRenderer.send('open-file', file.path)
-                    }}
-                  >
-                    <FileOpen />
-                  </IconButton>
-                </Tooltip>
+                <Menu
+                  id='file-context-menu'
+                  anchorEl={fileContextMenuAnchorEl}
+                  open={Boolean(fileContextMenuAnchorEl)}
+                  onClose={() => {
+                    setFileContextMenuAnchorEl(null)
+                  }}
+                >
+                  <MenuItem onClick={() => {
+                    setFileRenameFile(file)
+                    setFileContextMenuAnchorEl(null)
+                  }}>
+                    <ListItemIcon>
+                      <DriveFileRenameOutline />
+                    </ListItemIcon>
+                    Rename file
+                  </MenuItem>
+                  <MenuItem onClick={() => {
+                    ipcRenderer.send('open-file-folder', file.path)
+                    setFileContextMenuAnchorEl(null)
+                  }}>
+                    <ListItemIcon>
+                      <Folder />
+                    </ListItemIcon>
+                    Open file folder
+                  </MenuItem>
+                  <MenuItem onClick={() => {
+                    ipcRenderer.send('open-file', file.path)
+                    setFileContextMenuAnchorEl(null)
+                  }}>
+                    <ListItemIcon>
+                      <FileOpen />
+                    </ListItemIcon>
+                    Open file
+                  </MenuItem>
+                </Menu>
               </ListItem>
             )
           }}
         />
-      </List>
+      </List >
       {
         fileTagFile && (
           <FileTagsModal
