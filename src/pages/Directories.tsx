@@ -12,25 +12,27 @@ const Directories: FC = () => {
 
   const handleAddDirectory = (): void => {
     ipcRenderer.send('add-directory')
+  }
 
-    ipcRenderer.once('added-directory', () => {
-      handleIsInitializingDirectory(true)
+  const handleAddedDirectory = (): void => {
+    handleIsInitializingDirectory(true)
+  }
+
+  const handleInitializeDirectory = (): void => {
+    loadDirectories().then(() => {
+      handleIsInitializingDirectory(false)
+    }).catch(() => {
+      handleIsInitializingDirectory(false)
     })
   }
 
   useEffect(() => {
-    ipcRenderer.on('initialized-directory', () => {
-      loadDirectories().then(() => {
-        handleIsInitializingDirectory(false)
-      }).catch(() => {
-        handleIsInitializingDirectory(false)
-      })
-    })
+    ipcRenderer.on('initialized-directory', handleInitializeDirectory)
+    ipcRenderer.on('added-directory', handleAddedDirectory)
 
     return () => {
-      ipcRenderer.removeAllListeners('added-directory')
-      ipcRenderer.removeAllListeners('initialized-directory')
-      ipcRenderer.removeAllListeners('refreshed-directories')
+      ipcRenderer.removeListener('initialized-directory', handleInitializeDirectory)
+      ipcRenderer.removeListener('added-directory', handleAddedDirectory)
     }
   }, [])
 

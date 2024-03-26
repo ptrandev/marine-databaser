@@ -61,6 +61,10 @@ const AudioVisualizers: FC = () => {
     }
   }
 
+  const handleGotAudioSampleRate = (_: unknown, sampleRate: number) => {
+    setAudioSampleRate(sampleRate)
+  }
+
   useEffect(() => {
     if (!wsRegions) {
       return
@@ -166,10 +170,6 @@ const AudioVisualizers: FC = () => {
     ipcRenderer.send('get-audio-sample-rate', {
       filePath: selectedVideo
     })
-
-    ipcRenderer.once('got-audio-sample-rate', (_, sampleRate: number) => {
-      setAudioSampleRate(sampleRate)
-    })
   }, [selectedVideo])
 
   useEffect(() => {
@@ -190,6 +190,14 @@ const AudioVisualizers: FC = () => {
       })
     })
   }, [videoRef, regions])
+
+  useEffect(() => {
+    ipcRenderer.on('got-audio-sample-rate', handleGotAudioSampleRate)
+
+    return () => {
+      ipcRenderer.removeListener('got-audio-sample-rate', handleGotAudioSampleRate)
+    }
+  }, [selectedRegion])
 
   return (
     <>

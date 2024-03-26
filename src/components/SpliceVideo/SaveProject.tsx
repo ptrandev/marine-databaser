@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron'
-import { type FC } from 'react'
+import { useEffect, type FC } from 'react'
 import { IconButton } from '@mui/material'
 import { Save } from '@mui/icons-material'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
@@ -18,15 +18,25 @@ const SaveProject: FC = () => {
       data,
       filename: 'project.json'
     })
-
-    ipcRenderer.once('save-to-json-success', () => {
-      enqueueSnackbar('Project saved successfully.', { variant: 'success' })
-    })
-
-    ipcRenderer.once('save-to-json-error', () => {
-      enqueueSnackbar('Error saving project.', { variant: 'error' })
-    })
   }
+
+  const handleSaveToJsonSuccess = (): void => {
+    enqueueSnackbar('Project saved successfully.', { variant: 'success' })
+  }
+
+  const handleSaveToJsonError = (): void => {
+    enqueueSnackbar('Error saving project.', { variant: 'error' })
+  }
+
+  useEffect(() => {
+    ipcRenderer.on('save-to-json-success', handleSaveToJsonSuccess)
+    ipcRenderer.on('save-to-json-error', handleSaveToJsonError)
+
+    return () => {
+      ipcRenderer.removeListener('save-to-json-success', handleSaveToJsonSuccess)
+      ipcRenderer.removeListener('save-to-json-error', handleSaveToJsonError)
+    }
+  }, [])
 
   return (
     <IconButton onClick={handleSave} disabled={!selectedVideo}>
