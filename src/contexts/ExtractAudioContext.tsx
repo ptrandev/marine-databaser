@@ -49,30 +49,25 @@ export const ExtractAudioProvider: FC<ExtractAudioProviderProps> = ({ children }
     setIsExtractingAudio(true)
 
     ipcRenderer.send('bulk-extract-audio', { files: selectedFiles, fileFormat, outputDirectory })
-  }
 
-  const handleBulkExtractAudio = (): void => {
-    setIsExtractingAudio(false)
-    setNumCompletedFiles(0)
-  }
-
-  const handleExtractedAudio = (): void => {
-    setNumCompletedFiles((prev) => prev + 1)
-  }
-
-  const handleExtractedAudioError = (_: unknown, errMessage: string): void => {
-    enqueueSnackbar(`Error extracting audio: ${errMessage}`, { variant: 'error' })
+    ipcRenderer.once('bulk-extract-audio', () => {
+      setIsExtractingAudio(false)
+      setNumCompletedFiles(0)
+    })
   }
 
   useEffect(() => {
-    ipcRenderer.on('bulk-extract-audio', handleBulkExtractAudio)
-    ipcRenderer.on('extracted-audio', handleExtractedAudio)
-    ipcRenderer.on('extracted-audio-error', handleExtractedAudioError)
+    ipcRenderer.on('extracted-audio', () => {
+      setNumCompletedFiles((prev) => prev + 1)
+    })
+
+    ipcRenderer.on('extracted-audio-error', (_, errMessage) => {
+      enqueueSnackbar(`Error extracting audio: ${errMessage}`, { variant: 'error' })
+    })
 
     return () => {
-      ipcRenderer.removeListener('bulk-extract-audio', handleBulkExtractAudio)
-      ipcRenderer.removeListener('extracted-audio', handleExtractedAudio)
-      ipcRenderer.removeListener('extracted-audio-error', handleExtractedAudioError)
+      ipcRenderer.removeAllListeners('extracted-audio')
+      ipcRenderer.removeAllListeners('extracted-audio-error')
     }
   }, [])
 

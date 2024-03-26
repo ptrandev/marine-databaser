@@ -34,27 +34,23 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
 
   const handleSelectOutputDirectory = (): void => {
     ipcRenderer.send('select-directory')
-  }
 
-  const handleSelectedDirectory = (_, directory: string): void => {
-    setOutputDirectory(directory)
-  }
-
-  const handleBulkExtractAudio = (): void => {
-    enqueueSnackbar('Audio successfully extracted!', { variant: 'success' })
-
-    setOutputDirectory('')
-    setUseSameDirectory(true)
-    setFileFormat('pcm_s16le')
+    ipcRenderer.once('selected-directory', (_, directory: string) => {
+      setOutputDirectory(directory)
+    })
   }
 
   useEffect(() => {
-    ipcRenderer.on('bulk-extract-audio', handleBulkExtractAudio)
-    ipcRenderer.on('selected-directory', handleSelectedDirectory)
+    ipcRenderer.on('bulk-extract-audio', () => {
+      enqueueSnackbar('Audio successfully extracted!', { variant: 'success' })
+
+      setOutputDirectory('')
+      setUseSameDirectory(true)
+      setFileFormat('pcm_s16le')
+    })
 
     return () => {
-      ipcRenderer.removeListener('bulk-extract-audio', handleBulkExtractAudio)
-      ipcRenderer.removeListener('selected-directory', handleSelectedDirectory)
+      ipcRenderer.removeAllListeners('bulk-extract-audio')
     }
   }, [])
 

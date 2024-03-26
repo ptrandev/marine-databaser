@@ -9,6 +9,7 @@ import ffmpeg from 'fluent-ffmpeg'
 // Get the paths to the packaged versions of the binaries we want to use
 import ffmpegPath from 'ffmpeg-static'
 import ffprobePath from 'ffprobe-static'
+import os from 'os'
 
 // tell the ffmpeg package where it can find the needed binaries.
 if (ffmpegPath) {

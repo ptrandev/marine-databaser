@@ -11,17 +11,14 @@ const ExtractAudio: FC = () => {
 
   const handleSelectFiles = (): void => {
     ipcRenderer.send('select-extract-audio-files')
-  }
-
-  const handleSelectedExtractAudioFiles = (_: unknown, files: string[]): void => {
-    updateSelectedFiles(files)
+    ipcRenderer.once('selected-extract-audio-files', (_, files: string[]) => {
+      updateSelectedFiles(files)
+    })
   }
 
   useEffect(() => {
-    ipcRenderer.on('selected-extract-audio-files', handleSelectedExtractAudioFiles)
-
     return () => {
-      ipcRenderer.removeListener('selected-extract-audio-files', handleSelectedExtractAudioFiles)
+      ipcRenderer.removeAllListeners('selected-extract-audio-files')
     }
   }, [])
 
