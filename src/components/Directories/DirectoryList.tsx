@@ -1,38 +1,31 @@
 import { Delete, Folder, Refresh } from '@mui/icons-material'
-import { IconButton, List, ListItemText, ListItem, Typography, Box, LinearProgress, Tooltip } from '@mui/material'
+import { IconButton, List, ListItemText, ListItem, Typography, Box, LinearProgress, Tooltip, CircularProgress } from '@mui/material'
 import { ipcRenderer } from 'electron'
-import { type FC, useState, useEffect } from 'react'
+import { type FC, useState } from 'react'
 
 import useDirectories from '@/hooks/useDirectories'
 import DirectoryDeleteModal from './DirectoryDeleteModal'
-import { enqueueSnackbar } from 'notistack'
+import { type Directory } from 'electron/database/schemas'
 
 const DirectoryList: FC = () => {
-  const { directories, directoriesFileCount, isDeletingDirectory } = useDirectories()
-
-  const handleOpenDirectory = (path: string): void => {
-    ipcRenderer.send('open-directory', { path })
-  }
+  const { directories, isDeletingDirectory, isRefreshingDirectories, handleRefreshDirectories, isLoadingDirectories } = useDirectories()
 
   const [directoryIdToDelete, setDirectoryIdToDelete] = useState<number>()
 
-  const handleRefreshSingleDirectoryError = (_: unknown, errMessage: string): void => {
-    enqueueSnackbar(errMessage, { variant: 'error' })
+  const handleRefresh = (directoryId: number): void => {
+    handleRefreshDirectories([directoryId])
   }
 
-  const handleRefreshedSingleDirectory = (): void => {
-    enqueueSnackbar('Directory refreshed', { variant: 'success' })
+  if (isLoadingDirectories) {
+    return (
+      <Box display='flex' flexDirection='column' mt={4} alignItems='center' justifyContent='center' width='100%' gap={2}>
+      <CircularProgress />
+      <Typography>
+        Loading directories...
+      </Typography>
+    </Box>
+    )
   }
-
-  useEffect(() => {
-    ipcRenderer.on('refresh-single-directory-error', handleRefreshSingleDirectoryError)
-    ipcRenderer.on('refreshed-single-directory', handleRefreshedSingleDirectory)
-
-    return () => {
-      ipcRenderer.removeListener('refresh-single-directory-error', handleRefreshSingleDirectoryError)
-      ipcRenderer.removeListener('refreshed-single-directory', handleRefreshedSingleDirectory)
-    }
-  }, [])
 
   return (
     <>
@@ -49,64 +42,14 @@ const DirectoryList: FC = () => {
       <List>
         {
           directories?.map((directory) => (
-            <ListItem
+            <DirectoryListItem
               key={directory.id}
-            >
-              <Tooltip title='Open directory' sx={{ mr: 1, ml: -2 }}>
-                <IconButton
-                  aria-label='open directory'
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleOpenDirectory(directory.path)
-                  }}
-                >
-                  <Folder />
-                </IconButton>
-              </Tooltip>
-              <ListItemText
-                primary={
-                  <>
-                    {directory.name}
-                    <Typography variant='caption' display='inline'>
-                      {directoriesFileCount[directory.id]
-                        ? ` (${new Intl.NumberFormat().format(directoriesFileCount[directory.id])
-                        } file${directoriesFileCount[directory.id] === 1 ? '' : 's'})`
-                        : ''}
-                    </Typography>
-                  </>
-                }
-                secondary={
-                  <Typography variant='body2' color='text.secondary' noWrap>
-                    {directory.path}
-                  </Typography>
-                }
-              />
-              <Tooltip title='Refresh directory'>
-                <IconButton
-                  aria-label='refresh'
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    ipcRenderer.send('refresh-single-directory', { directoryId: directory.id })
-                  }}
-                  color='primary'
-                >
-                  <Refresh />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title='Delete directory'>
-                <IconButton
-                  aria-label='delete'
-                  color='error'
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setDirectoryIdToDelete(directory.id)
-                  }}
-                  disabled={isDeletingDirectory}
-                >
-                  <Delete />
-                </IconButton>
-              </Tooltip>
-            </ListItem>
+              directory={directory}
+              updateDirectoryIdToDelete={setDirectoryIdToDelete}
+              isDeletingDirectory={isDeletingDirectory}
+              handleRefresh={handleRefresh}
+              isRefreshingDirectory={isRefreshingDirectories}
+            />
           ))
         }
       </List>
@@ -116,6 +59,84 @@ const DirectoryList: FC = () => {
         )
       }
     </>
+  )
+}
+
+interface DirectoryListItemProps {
+  directory: Directory
+  updateDirectoryIdToDelete: (directoryId: number) => void
+  isDeletingDirectory: boolean
+  handleRefresh: (directoryId: number) => void
+  isRefreshingDirectory: boolean
+}
+
+const DirectoryListItem: FC<DirectoryListItemProps> = ({ directory, updateDirectoryIdToDelete, isDeletingDirectory, handleRefresh, isRefreshingDirectory }) => {
+  const { directoriesFileCount } = useDirectories()
+
+  const handleOpenDirectory = (path: string): void => {
+    ipcRenderer.send('open-directory', { path })
+  }
+
+  return (
+    <ListItem
+      key={directory.id}
+    >
+      <Tooltip title='Open directory' sx={{ mr: 1, ml: -2 }}>
+        <IconButton
+          aria-label='open directory'
+          onClick={(e) => {
+            e.stopPropagation()
+            handleOpenDirectory(directory.path)
+          }}
+        >
+          <Folder />
+        </IconButton>
+      </Tooltip>
+      <ListItemText
+        primary={
+          <>
+            {directory.name}
+            <Typography variant='caption' display='inline'>
+              {directoriesFileCount[directory.id]
+                ? ` (${new Intl.NumberFormat().format(directoriesFileCount[directory.id])
+                } file${directoriesFileCount[directory.id] === 1 ? '' : 's'})`
+                : ''}
+            </Typography>
+          </>
+        }
+        secondary={
+          <Typography variant='body2' color='text.secondary' noWrap>
+            {directory.path}
+          </Typography>
+        }
+      />
+      <Tooltip title='Refresh directory'>
+        <IconButton
+          aria-label='refresh'
+          onClick={(e) => {
+            e.stopPropagation()
+            handleRefresh(directory.id)
+          }}
+          color='primary'
+          disabled={isRefreshingDirectory}
+        >
+          <Refresh />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title='Delete directory'>
+        <IconButton
+          aria-label='delete'
+          color='error'
+          onClick={(e) => {
+            e.stopPropagation()
+            updateDirectoryIdToDelete(directory.id)
+          }}
+          disabled={isDeletingDirectory}
+        >
+          <Delete />
+        </IconButton>
+      </Tooltip>
+    </ListItem>
   )
 }
 

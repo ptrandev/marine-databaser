@@ -4,6 +4,7 @@ import mime from 'mime-types'
 import { Sequelize, Op } from 'sequelize'
 import { handleKillOrphanedTags } from './tag'
 import fs from 'fs/promises'
+import { type RefreshedDirectories } from 'shared/types'
 
 const getFileList = async (directory: string): Promise<string[]> => {
   let files: string[] = []
@@ -65,13 +66,7 @@ const addFileToDatabase = async ({ file, directoryId }: {
   }
 }
 
-const refreshDirectory = async (directoryId: number): Promise<{
-  directoryId: number
-  numExistingFiles: number
-  numRenamedFiles: number
-  numDeletedFiles: number
-  numNewFiles: number
-}> => {
+const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectories> => {
   const directory = await Directory.findOne({
     where: {
       id: directoryId
@@ -222,8 +217,6 @@ const refreshDirectory = async (directoryId: number): Promise<{
     }
   })
 
-  console.log(files.length, existingFiles.length, renamedFiles.length)
-
   return {
     directoryId: directory.id,
     numExistingFiles: existingFiles.length,
@@ -339,30 +332,19 @@ export const handleDeleteDirectory = async (event: IpcMainEvent, arg: { director
 }
 
 /**
- * Refreshed the file in a single directory
- * @param event
- * @param arg.directoryId - the id of the directory to refresh
- * @returns
- */
-export const handleRefreshSingleDirectory = async (event: IpcMainEvent, arg: { directoryId: number }): Promise<void> => {
-  try {
-    const refreshedDirectory = await refreshDirectory(arg.directoryId)
-    event.reply('refreshed-single-directory', refreshedDirectory)
-  } catch (err) {
-    event.reply('refresh-single-directory-error', (err as Error).message)
-  }
-}
-
-/**
  * Refreshes the files in every directory
  * @param event
  * @returns
  */
-export const handleRefreshDirectories = async (event: IpcMainEvent): Promise<void> => {
-  // get all directories
-  const directories = await Directory.findAll().then(
-    (dictionaries) => dictionaries.map((dictionary) => dictionary.toJSON())
-  )
+export const handleRefreshDirectories = async (event: IpcMainEvent, arg: { directoryIds: number[] }): Promise<void> => {
+  // get all directories to refresh
+  const directories = await Directory.findAll({
+    where: {
+      id: {
+        [Op.in]: arg.directoryIds
+      }
+    }
+  }).then((directories) => directories.map((directory) => directory.toJSON()))
 
   if (directories.length === 0) {
     event.reply('refreshed-directories')

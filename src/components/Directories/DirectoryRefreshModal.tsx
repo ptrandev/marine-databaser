@@ -1,68 +1,23 @@
 import { type FC, useEffect, useMemo, useState } from 'react'
 import { Modal, type ModalProps } from '../Modal'
-import { Typography, LinearProgress, Button, Box, Grid, CircularProgress, Divider, Stack } from '@mui/material'
+import { Typography, LinearProgress, Box, Grid, CircularProgress, Divider, Stack } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import useDirectories from '@/hooks/useDirectories'
-import { Refresh } from '@mui/icons-material'
+import { type RefreshedDirectories } from 'shared/types'
 
-interface RefreshedDirectories {
-  directoryId: number
-  numExistingFiles: number
-  numRenamedFiles: number
-  numDeletedFiles: number
-  numNewFiles: number
+interface DirectoryRefreshModalProps extends Omit<ModalProps, 'children'> {
+  directoryIds: number[]
 }
 
-const RefreshButton: FC = () => {
-  const { loadDirectories } = useDirectories()
-
-  const [isRefreshingDirectories, setIsRefreshingDirectories] = useState<boolean>(false)
-
-  const handleRefresh = (): void => {
-    setIsRefreshingDirectories(true)
-    ipcRenderer.send('refresh-directories')
-  }
-
-  const handleRefreshedDirectories = (): void => {
-    void loadDirectories()
-  }
-
-  useEffect(() => {
-    ipcRenderer.on('refreshed-directories', handleRefreshedDirectories)
-
-    return () => {
-      ipcRenderer.removeListener('refreshed-directories', handleRefreshedDirectories)
-    }
-  }, [])
-
-  return (
-    <>
-      <Button
-        color='primary'
-        startIcon={<Refresh />}
-        size='small'
-        onClick={handleRefresh}
-        disabled={isRefreshingDirectories}
-      >
-        Refresh All Directories
-      </Button>
-      {
-        isRefreshingDirectories &&
-        <RefreshModal open={isRefreshingDirectories} onClose={() => { setIsRefreshingDirectories(false) }} />
-      }
-    </>
-  )
-}
-
-const RefreshModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
+const DirectoryRefreshModal: FC<DirectoryRefreshModalProps> = ({ open, onClose, directoryIds }) => {
   const { directories } = useDirectories()
 
   const [refreshedDirectories, setRefreshedDirectories] = useState<RefreshedDirectories[]>([])
   const [skippedDirectories, setSkippedDirectories] = useState<number[]>([])
 
   const allDirectoriesRefreshed = useMemo(() => {
-    return refreshedDirectories.length + skippedDirectories.length === directories.length
-  }, [refreshedDirectories, skippedDirectories, directories])
+    return refreshedDirectories.length + skippedDirectories.length === directoryIds.length
+  }, [refreshedDirectories, skippedDirectories, directoryIds])
 
   const handleRefreshedDirectory = (_: unknown, refreshedDirectory: RefreshedDirectories): void => {
     setRefreshedDirectories(prev => [...prev, refreshedDirectory])
@@ -70,6 +25,12 @@ const RefreshModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
 
   const handleRefreshDirectoryError = (_: unknown, { errMessage, directoryId }: { errMessage: string, directoryId: number }): void => {
     setSkippedDirectories(prev => [...prev, directoryId])
+  }
+
+  const onCloseModal = (): void => {
+    setRefreshedDirectories([])
+    setSkippedDirectories([])
+    onClose()
   }
 
   useEffect(() => {
@@ -83,7 +44,7 @@ const RefreshModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
   }, [])
 
   return (
-    <Modal open={open} onClose={onClose} disableClose={!allDirectoriesRefreshed}>
+    <Modal open={open} onClose={onCloseModal} disableClose={!allDirectoriesRefreshed}>
       {
         !allDirectoriesRefreshed && (
           <Typography mb={2}>
@@ -155,14 +116,14 @@ const RefreshModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
           <LinearProgress
             variant='determinate'
             value={
-              (refreshedDirectories.length + skippedDirectories.length) / directories.length * 100
+              (refreshedDirectories.length + skippedDirectories.length) / directoryIds.length * 100
             }
             sx={{ flexGrow: 1 }}
           />
         </Grid>
         <Grid item>
           <Typography color='textPrimary'>
-            {`${refreshedDirectories.length + skippedDirectories.length} / ${directories.length} completed`}
+            {`${refreshedDirectories.length + skippedDirectories.length} / ${directoryIds.length} completed`}
           </Typography>
         </Grid>
       </Grid>
@@ -170,4 +131,4 @@ const RefreshModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
   )
 }
 
-export default RefreshButton
+export default DirectoryRefreshModal

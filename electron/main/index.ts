@@ -179,8 +179,8 @@ ipcMain.on('list-directories-file-count', (event) => {
   void handleDirectoriesFileCount(event)
 })
 
-ipcMain.on('refresh-directories', (event) => {
-  void handleRefreshDirectories(event)
+ipcMain.on('refresh-directories', (event, arg: { directoryIds: number[] }) => {
+  void handleRefreshDirectories(event, arg)
 })
 
 ipcMain.on('refresh-single-directory', (event, arg: { directoryId: number }) => {
