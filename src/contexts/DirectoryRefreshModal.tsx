@@ -1,5 +1,5 @@
 import { type FC, useEffect, useMemo, useState } from 'react'
-import { Modal, type ModalProps } from '../Modal'
+import { Modal, type ModalProps } from '../components/Modal'
 import { Typography, LinearProgress, Box, Grid, CircularProgress, Divider, Stack } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import useDirectories from '@/hooks/useDirectories'

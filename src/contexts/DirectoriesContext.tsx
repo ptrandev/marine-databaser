@@ -1,7 +1,7 @@
 import { type FC, createContext, useState, useEffect, useMemo } from 'react'
 import { ipcRenderer } from 'electron'
 import { type Directory } from '../../electron/database/schemas'
-import DirectoryRefreshModal from '@/components/Directories/DirectoryRefreshModal'
+import DirectoryRefreshModal from '@/contexts/DirectoryRefreshModal'
 
 export interface DirectoriesContextValue {
   directories: Directory[]
