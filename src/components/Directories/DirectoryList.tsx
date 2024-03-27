@@ -70,7 +70,7 @@ const DirectoryList: FC = () => {
                     <Typography variant='caption' display='inline'>
                       {directoriesFileCount[directory.id]
                         ? ` (${new Intl.NumberFormat().format(directoriesFileCount[directory.id])
-                        } files)`
+                        } file${directoriesFileCount[directory.id] === 1 ? '' : 's'})`
                         : ''}
                     </Typography>
                   </>

@@ -1,6 +1,6 @@
 import { type FC, useEffect, useMemo, useState } from 'react'
 import { Modal, type ModalProps } from '../Modal'
-import { Typography, LinearProgress, Button, Box, Grid, CircularProgress, Divider, Stack, List, ListItem, ListItemText } from '@mui/material'
+import { Typography, LinearProgress, Button, Box, Grid, CircularProgress, Divider, Stack } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import useDirectories from '@/hooks/useDirectories'
 import { Refresh } from '@mui/icons-material'
@@ -44,7 +44,7 @@ const RefreshButton: FC = () => {
         onClick={handleRefresh}
         disabled={isRefreshingDirectories}
       >
-        Refresh
+        Refresh All Directories
       </Button>
       {
         isRefreshingDirectories &&
