@@ -24,4 +24,6 @@ FileParent.init({
 File.hasMany(FileParent, { foreignKey: 'fileParentId' })
 File.hasMany(FileParent, { foreignKey: 'fileChildId' })
 
+FileParent.hasMany(File, { foreignKey: 'id' })
+
 export default FileParent

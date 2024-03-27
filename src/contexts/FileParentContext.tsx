@@ -3,12 +3,12 @@ import { type File } from '../../electron/database/schemas'
 import useFiles from '@/hooks/useFiles'
 import { ipcRenderer } from 'electron'
 
-interface FileParent extends File {
+interface FileParentFile extends File {
   fileChildrenCount: number
 }
 
 export interface FileParentContextValue {
-  fileParents: FileParent[]
+  fileParentFiles: FileParentFile[]
 }
 
 const FileParentContext = createContext<FileParentContextValue | null>(null)
@@ -20,19 +20,23 @@ interface FileParentProviderProps {
 export const FileParentProvider: FC<FileParentProviderProps> = ({ children }) => {
   const { files } = useFiles()
 
-  const [fileParents, setFileParents] = useState<FileParent[]>([])
+  const [fileParentFiles, setFileParentFiles] = useState<FileParentFile[]>([])
 
   const handleListFileParents = async (): Promise<void> => {
     ipcRenderer.send('list-file-parents')
   }
 
-  const handleListedFileParents = (_: unknown, fileParents: FileParent[]): void => {
-    setFileParents(fileParents)
+  const handleListedFileParents = (_: unknown, fileParents: FileParentFile[]): void => {
+    setFileParentFiles(fileParents)
   }
 
   useEffect(() => {
     void handleListFileParents()
   }, [files])
+
+  useEffect(() => {
+    console.log('fileParents', fileParentFiles)
+  }, [fileParentFiles])
 
   useEffect(() => {
     ipcRenderer.on('listed-file-parents', handleListedFileParents)
@@ -43,7 +47,7 @@ export const FileParentProvider: FC<FileParentProviderProps> = ({ children }) =>
   }, [])
 
   return (
-    <FileParentContext.Provider value={{ fileParents }}>
+    <FileParentContext.Provider value={{ fileParentFiles }}>
       {children}
     </FileParentContext.Provider>
   )

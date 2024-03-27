@@ -14,7 +14,7 @@ import useFileParent from '@/hooks/useFileParent'
 
 const FileList: FC = () => {
   const { files, loadFiles, selectedFiles, updateSelectedFiles, searchTerm } = useFiles()
-  const { fileParents } = useFileParent()
+  const { fileParentFiles } = useFileParent()
 
   const [fileTagFile, setFileTagFile] = useState<FileWithMetadata>()
   const [fileRenameFile, setFileRenameFile] = useState<FileWithMetadata>()
@@ -74,7 +74,8 @@ const FileList: FC = () => {
 
             const matchingNote = searchTerm ? file?.FileNotes?.find(note => note.note.includes(searchTerm))?.note : null
 
-            const fileChildren = fileParents?.find(parent => parent.id === file.id)?.fileChildrenCount
+            const fileChildren = fileParentFiles?.find(parent => parent.id === file.id)?.fileChildrenCount
+
             return (
               <ListItem key={file.id}>
                 <Checkbox

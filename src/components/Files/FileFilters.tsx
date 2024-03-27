@@ -11,7 +11,7 @@ const FileFilters: FC = () => {
   const { selectedDirectories, selectedTags, selectedFileTypes, updateSelectedDirectories, updateSelectedTags, updateSelectedFileTypes, updateSelectedFileParents } = useFiles()
   const { tags } = useTags()
   const { directories } = useDirectories()
-  const { fileParents } = useFileParent()
+  const { fileParentFiles } = useFileParent()
 
   return (
     <Box mt={2} display='flex' gap={2}>
@@ -66,7 +66,7 @@ const FileFilters: FC = () => {
       <Autocomplete
         multiple
         filterSelectedOptions
-        options={fileParents}
+        options={fileParentFiles}
         getOptionLabel={(option) => option.name}
         renderInput={(params) => (
           <TextField

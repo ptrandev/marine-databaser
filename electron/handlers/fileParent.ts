@@ -23,18 +23,33 @@ export const addFileParent = async ({ fileParentId, fileChildrenIds }: {
  * Gets a list of files represented by all fileParentIds
  */
 export const handleListFileParents = async (event: IpcMainEvent): Promise<void> => {
-  // get all unique fileParentId values from the fileParents table
-  const fileParents: FileParent[] = await FileParent.findAll({
+  // get all fileParents, join File and get count of fileChildren
+  const fileParentFiles = await FileParent.findAll({
+    include: [
+      {
+        model: File
+      }
+    ],
     attributes: ['fileParentId', [fn('COUNT', col('fileChildId')), 'fileChildrenCount']],
-    group: ['fileParentId']
+    group: ['fileParentId'],
+    raw: true
+  }).then((fileParents) => {
+    return fileParents.map((fileParent) => {
+      // for each key prefixed with Files., remove the prefix
+      const fileParentFile = Object.keys(fileParent).reduce((acc, key) => {
+        if (key.startsWith('Files.')) {
+          // @ts-expect-error - we are removing the prefix
+          acc[key.slice(6)] = fileParent[key]
+        } else {
+          // @ts-expect-error - we are removing the prefix
+          acc[key] = fileParent[key]
+        }
+        return acc
+      }, {})
+
+      return fileParentFile
+    })
   })
 
-  // associate these with the File table
-  const files: File[] = await File.findAll({
-    where: {
-      id: fileParents.map((fileParent) => fileParent.fileParentId)
-    }
-  }).then((files) => files.map((file) => file.toJSON()))
-
-  event.reply('listed-file-parents', files)
+  event.reply('listed-file-parents', fileParentFiles)
 }
