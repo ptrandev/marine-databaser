@@ -35,10 +35,6 @@ export const FileParentProvider: FC<FileParentProviderProps> = ({ children }) =>
   }, [files])
 
   useEffect(() => {
-    console.log('fileParents', fileParents)
-  }, [fileParents])
-
-  useEffect(() => {
     ipcRenderer.on('listed-file-parents', handleListedFileParents)
 
     return () => {

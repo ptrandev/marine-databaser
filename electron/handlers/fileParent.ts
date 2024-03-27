@@ -31,17 +31,10 @@ export const handleListFileParents = async (event: IpcMainEvent): Promise<void> 
 
   // associate these with the File table
   const files: File[] = await File.findAll({
-    include: [
-      {
-        model: FileParent,
-        where: {
-          fileParentId: fileParents.map((fileParent) => fileParent.fileParentId)
-        }
-      }
-    ]
-  })
-
-  console.log('files', files)
+    where: {
+      id: fileParents.map((fileParent) => fileParent.fileParentId)
+    }
+  }).then((files) => files.map((file) => file.toJSON()))
 
   event.reply('listed-file-parents', files)
 }
