@@ -8,7 +8,7 @@ import { fn, col } from 'sequelize'
  * @param fileChildrenIds - The ids of the children files
  * @returns The created fileParents
  */
-export const handleAddFileParent = async ({ fileParentId, fileChildrenIds }: {
+export const addFileParent = async ({ fileParentId, fileChildrenIds }: {
   fileParentId: number
   fileChildrenIds: number[]
 }): Promise<FileParent[]> => {

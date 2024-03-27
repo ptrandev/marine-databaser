@@ -186,6 +186,17 @@ const matchMimeTypes = (FileTypes: FileTypes[]): string[] => {
   }).flat()
 }
 
+/**
+ * Given a path, find the File that matches the path and return the File
+ */
+export const findFileByPath = async (path: string): Promise<File | null> => {
+  return await File.findOne({
+    where: {
+      path
+    }
+  })
+}
+
 export const handleFileRename = async (event: IpcMainEvent, arg: {
   file: File
   name: string

@@ -3,16 +3,15 @@ import mime from 'mime-types'
 import path from 'path'
 import { type AudioFileFormat, type AutoSpliceSettings, type SpliceRegion } from '../../shared/types'
 import fs from 'fs'
-import { File, Directory } from '../database/schemas'
-import { Op } from 'sequelize'
 
 import ffmpeg from 'fluent-ffmpeg'
 
 // Get the paths to the packaged versions of the binaries we want to use
 import ffmpegPath from 'ffmpeg-static'
 import ffprobePath from 'ffprobe-static'
-import { addFilesToDatabase } from './directory'
-import { handleAddFileParent } from './fileParent'
+import { addFilesToDatabase, findDirectoryByPath } from './directory'
+import { addFileParent } from './fileParent'
+import { findFileByPath } from './file'
 
 // tell the ffmpeg package where it can find the needed binaries.
 if (ffmpegPath) {
@@ -34,23 +33,20 @@ const extractAudio = async ({
 }: {
   fileFormat?: AudioFileFormat
   inputPath: string
-  outputDirectory?: string
-}): Promise<void> => {
-  await new Promise<void>((resolve, reject) => {
+  outputDirectory: string
+}): Promise<string> => {
+  return await new Promise<string>((resolve, reject) => {
     const date = new Date()
 
-    // if outputDirectory is not defined, save the audio in the same directory as the input file
-    if (!outputDirectory) {
-      outputDirectory = path.dirname(inputPath)
-    }
+    const audioPath = `${outputDirectory}/${path.basename(inputPath).replace(/\.[^/.]+$/, '')}-audio-${date.getTime()}.wav`
 
     ffmpeg(inputPath)
       .outputOptions('-acodec', fileFormat)
       .toFormat('wav')
       // save in the same directory as the input file, but with a .wav extension and audio appended to the name
-      .save(`${outputDirectory}/${path.basename(inputPath).replace(/\.[^/.]+$/, '')}-audio-${date.getTime()}.wav`)
+      .save(audioPath)
       .on('end', () => {
-        resolve()
+        resolve(audioPath)
       })
       .on('error', (err) => {
         console.error('Error extracting audio:', err)
@@ -212,7 +208,27 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
 
   // for each file, extract the audio
   for (const file of files) {
-    await extractAudio({ inputPath: file, fileFormat: arg.fileFormat, outputDirectory: arg.outputDirectory }).catch((err) => {
+    const outputDirectory = arg.outputDirectory ?? path.dirname(file)
+
+    await extractAudio({ inputPath: file, fileFormat: arg.fileFormat, outputDirectory }).then(async (audioPath) => {
+      // check if file is in the database of Files, and if outputDirectory is tracked in the database of directories
+      const parentFile = await findFileByPath(file)
+      const childDirectory = await findDirectoryByPath(outputDirectory)
+
+      if (!parentFile || !childDirectory) return
+
+      // track created file in database
+      const files = await addFilesToDatabase({
+        files: [audioPath],
+        directoryId: childDirectory.id
+      })
+
+      // create relationship between parent video and extracted audio
+      await addFileParent({
+        fileParentId: parentFile.id,
+        fileChildrenIds: files.map((file) => file.id)
+      })
+    }).catch((err) => {
       event.reply('extracted-audio-error', err.message)
     })
 
@@ -237,18 +253,10 @@ export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: s
   const outputDirectory = arg.outputDirectory ?? path.dirname(videoPath)
 
   // check if videoPath is in the database of Files
-  const parentVideo = await File.findOne({ where: { path: videoPath } })
+  const parentVideo = await findFileByPath(videoPath)
 
   // check if outputDirectory is tracked in the database of directories; sort by length of the path string in descending order
-  const parentDirectory = await Directory.findAll({
-    where: {
-      path: {
-        [Op.startsWith]: outputDirectory
-      }
-    }
-  }).then((directories) => {
-    return directories.sort((a, b) => b.path.length - a.path.length)[0]
-  })
+  const childDirectory = await findDirectoryByPath(outputDirectory)
 
   // for each splice region, splice the video; ensure this happens synchronously
   for (const spliceRegion of spliceRegions) {
@@ -259,26 +267,25 @@ export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: s
       name: spliceRegion.name,
       outputDirectory,
       videoBasename
+    }).then(async () => {
+      if (!parentVideo || !childDirectory) return
+
+      // track created file in database
+      const files = await addFilesToDatabase({
+        files: [`${outputDirectory}/${videoBasename}${spliceRegion.name}${path.extname(videoPath)}`],
+        directoryId: childDirectory.id
+      })
+
+      // create relationship between parent video and spliced video
+      await addFileParent({
+        fileParentId: parentVideo.id,
+        fileChildrenIds: files.map((file) => file.id)
+      })
     }).catch((err) => {
       event.reply('splice-point-video-error', err.message)
     })
 
     event.reply('spliced-point-video')
-  }
-
-  // track in database if parentVideo and parentDirectory are defined
-  if (parentVideo && parentDirectory) {
-    const filePaths = spliceRegions.map((spliceRegion) => `${outputDirectory}/${videoBasename}${spliceRegion.name}${path.extname(videoPath)}`)
-
-    const files = await addFilesToDatabase({
-      files: filePaths,
-      directoryId: parentDirectory.id
-    })
-
-    await handleAddFileParent({
-      fileParentId: parentVideo.id,
-      fileChildrenIds: files.map((file) => file.id)
-    })
   }
 
   event.reply('spliced-video')

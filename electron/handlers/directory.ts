@@ -39,6 +39,21 @@ export const addFilesToDatabase = async ({ files, directoryId }: {
   )
 }
 
+/**
+ * Give a path, finds the directory that matches it
+ */
+export const findDirectoryByPath = async (path: string): Promise<Directory | null> => {
+  return await Directory.findAll({
+    where: {
+      path: {
+        [Op.startsWith]: path
+      }
+    }
+  }).then((directories) => {
+    return directories.sort((a, b) => b.path.length - a.path.length)[0]
+  })
+}
+
 const addFileToDatabase = async ({ file, directoryId }: {
   file: string
   directoryId: number
