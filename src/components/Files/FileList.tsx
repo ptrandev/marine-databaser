@@ -10,9 +10,11 @@ import FileNotesModal from './FileNotesModal'
 
 import { type FileWithMetadata, MimeTypes } from '../../../shared/types'
 import useFiles from '@/hooks/useFiles'
+import useFileParent from '@/hooks/useFileParent'
 
 const FileList: FC = () => {
   const { files, loadFiles, selectedFiles, updateSelectedFiles, searchTerm } = useFiles()
+  const { fileParents } = useFileParent()
 
   const [fileTagFile, setFileTagFile] = useState<FileWithMetadata>()
   const [fileRenameFile, setFileRenameFile] = useState<FileWithMetadata>()
@@ -72,6 +74,7 @@ const FileList: FC = () => {
 
             const matchingNote = searchTerm ? file?.FileNotes?.find(note => note.note.includes(searchTerm))?.note : null
 
+            const fileChildren = fileParents?.find(parent => parent.id === file.id)?.fileChildrenCount
             return (
               <ListItem key={file.id}>
                 <Checkbox
@@ -87,8 +90,12 @@ const FileList: FC = () => {
                   }}
                 />
                 <Box width='100%'>
-                  <Stack direction='row' gap={1} alignItems='center'>
-                    {fileIcon()}
+                  <Stack direction='row' gap={2} alignItems='center'>
+                    <Tooltip title={`${file.mimeType} ${fileChildren ? `with ${fileChildren} child file${fileChildren > 1 ? 's' : ''} created` : ''}`}>
+                      <Badge badgeContent={fileChildren} color='primary'>
+                        {fileIcon()}
+                      </Badge>
+                    </Tooltip>
                     <ListItemText
                       primary={file.name}
                       secondary={file.path}

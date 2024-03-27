@@ -5,9 +5,11 @@ import { ipcRenderer } from 'electron'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import path from 'path'
 import { enqueueSnackbar } from 'notistack'
+import useDirectories from '@/hooks/useDirectories'
 
 const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
   const { selectedVideo, spliceRegions, videoBasename, updateVideoBasename } = useSpliceVideo()
+  const { loadDirectories } = useDirectories()
 
   const [outputDirectory, setOutputDirectory] = useState('')
   const [useSameDirectory, setUseSameDirectory] = useState(true)
@@ -32,6 +34,7 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
 
   const handleSplicedVideo = (): void => {
     enqueueSnackbar('Video spliced successfully.', { variant: 'success' })
+    void loadDirectories()
   }
 
   useEffect(() => {

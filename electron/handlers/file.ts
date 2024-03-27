@@ -1,5 +1,5 @@
 import { type BrowserWindow, type IpcMainEvent, dialog } from 'electron'
-import { Tag, File, FileNote } from '../database/schemas'
+import { Tag, File, FileNote, FileParent } from '../database/schemas'
 import { type FindOptions, Op } from 'sequelize'
 import { type FileTypes } from '../../shared/types'
 import fs from 'fs'
@@ -27,8 +27,9 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
   tags?: number[]
   fileTypes?: FileTypes[]
   searchTerm?: string
+  fileParents?: number[]
 }): Promise<void> => {
-  const { directories, tags, fileTypes, searchTerm } = arg
+  const { directories, tags, fileTypes, searchTerm, fileParents } = arg
 
   const options: FindOptions = {
     where: {},
@@ -38,6 +39,9 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
       },
       {
         model: FileNote
+      },
+      {
+        model: FileParent
       }
     ]
   }
@@ -90,6 +94,25 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
           path: {
             [Op.like]: `%${searchTerm.toLowerCase()}%`
           }
+        }
+      ]
+    }
+  }
+
+  if (fileParents && fileParents.length > 0) {
+    const parents = await FileParent.findAll({
+      where: {
+        fileParentId: fileParents
+      }
+    })
+
+    const fileIds = parents.map((fileParent) => fileParent.fileChildId)
+
+    options.where = {
+      ...options.where,
+      [Op.or]: [
+        {
+          id: fileIds
         }
       ]
     }

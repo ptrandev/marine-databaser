@@ -143,7 +143,6 @@ export const handleUntagFiles = async (event: IpcMainEvent, arg: {
     fileIds.map(async (fileId) => {
       await FileTag.destroy({
         where: {
-          // @ts-expect-error - we are using the sequelize operator
           fileId,
           tagId
         }
@@ -167,7 +166,6 @@ export const handleKillOrphanedTags = async (event: IpcMainEvent): Promise<void>
 
   // get orphaned tags
   const orphanedTags: Tag[] = tags.filter((tag) => {
-    // @ts-expect-error - we are using the sequelize operator
     const hasTag: boolean = fileTags.some((fileTag) => fileTag.tagId === tag.id)
     return !hasTag
   })

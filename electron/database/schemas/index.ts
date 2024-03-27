@@ -5,6 +5,7 @@ import Album from './Album'
 import FileAlbum from './FileAlbum'
 import FileNote from './FileNote'
 import Directory from './Directory'
+import FileParent from './FileParent'
 
 export {
   File,
@@ -13,5 +14,6 @@ export {
   Album,
   FileAlbum,
   FileNote,
-  Directory
+  Directory,
+  FileParent
 }

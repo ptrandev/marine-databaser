@@ -3,12 +3,16 @@ import mime from 'mime-types'
 import path from 'path'
 import { type AudioFileFormat, type AutoSpliceSettings, type SpliceRegion } from '../../shared/types'
 import fs from 'fs'
+import { File, Directory } from '../database/schemas'
+import { Op } from 'sequelize'
 
 import ffmpeg from 'fluent-ffmpeg'
 
 // Get the paths to the packaged versions of the binaries we want to use
 import ffmpegPath from 'ffmpeg-static'
 import ffprobePath from 'ffprobe-static'
+import { addFilesToDatabase } from './directory'
+import { handleAddFileParent } from './fileParent'
 
 // tell the ffmpeg package where it can find the needed binaries.
 if (ffmpegPath) {
@@ -77,14 +81,10 @@ const spliceVideo = async ({
   startTime: number
   endTime: number
   name: string
-  outputDirectory?: string
+  outputDirectory: string
   videoBasename: string
 }): Promise<void> => {
   await new Promise<void>((resolve, reject) => {
-    if (!outputDirectory) {
-      outputDirectory = path.dirname(inputPath)
-    }
-
     ffmpeg(inputPath)
       .setStartTime(startTime)
       .setDuration(endTime - startTime)
@@ -233,7 +233,22 @@ export const handleBulkExtractAudio = async (event: IpcMainEvent, arg: {
  * @returns {Promise<void>} - a promise that resolves when the video has been spliced
  */
 export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: string, spliceRegions: SpliceRegion[], outputDirectory?: string, videoBasename: string }): Promise<void> => {
-  const { videoPath, spliceRegions, outputDirectory, videoBasename } = arg
+  const { videoPath, spliceRegions, videoBasename } = arg
+  const outputDirectory = arg.outputDirectory ?? path.dirname(videoPath)
+
+  // check if videoPath is in the database of Files
+  const parentVideo = await File.findOne({ where: { path: videoPath } })
+
+  // check if outputDirectory is tracked in the database of directories; sort by length of the path string in descending order
+  const parentDirectory = await Directory.findAll({
+    where: {
+      path: {
+        [Op.startsWith]: outputDirectory
+      }
+    }
+  }).then((directories) => {
+    return directories.sort((a, b) => b.path.length - a.path.length)[0]
+  })
 
   // for each splice region, splice the video; ensure this happens synchronously
   for (const spliceRegion of spliceRegions) {
@@ -249,6 +264,21 @@ export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: s
     })
 
     event.reply('spliced-point-video')
+  }
+
+  // track in database if parentVideo and parentDirectory are defined
+  if (parentVideo && parentDirectory) {
+    const filePaths = spliceRegions.map((spliceRegion) => `${outputDirectory}/${videoBasename}${spliceRegion.name}${path.extname(videoPath)}`)
+
+    const files = await addFilesToDatabase({
+      files: filePaths,
+      directoryId: parentDirectory.id
+    })
+
+    await handleAddFileParent({
+      fileParentId: parentVideo.id,
+      fileChildrenIds: files.map((file) => file.id)
+    })
   }
 
   event.reply('spliced-video')

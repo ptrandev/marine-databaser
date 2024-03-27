@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import sequelize from '../database/initialize'
 import '../database/associations'
 
-import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleAddDirectory, handleRefreshDirectories, handleSelectDirectory, handleRefreshSingleDirectory } from '../handlers/directory'
+import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleAddDirectory, handleRefreshDirectories, handleSelectDirectory } from '../handlers/directory'
 import { handleFileRename, handleListFiles, handleSelectFile } from '../handlers/file'
 import { handleListTags, handleTagFile, handleUntagFile, handleTagFiles, handleUntagFiles } from '../handlers/tag'
 import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo, handleGetVideoFramerate, handleAutoSplice, handleGetAudioSampleRate, handleGetVideoDuration, handleConvertVideo } from '../handlers/ffmpeg'
@@ -14,6 +14,7 @@ import { handleDatabaseExport, handleDatabaseImport, handleDatabaseReset } from 
 import { handleSaveToJSON, handleLoadFromJSON } from '../handlers/json'
 import { type AutoSpliceSettings, type AudioFileFormat, type SpliceRegion, type FileTypes } from '../../shared/types'
 import { type File } from '../database/schemas'
+import { handleListFileParents } from '../handlers/fileParent'
 
 // The built directory structure
 //
@@ -183,10 +184,6 @@ ipcMain.on('refresh-directories', (event, arg: { directoryIds: number[] }) => {
   void handleRefreshDirectories(event, arg)
 })
 
-ipcMain.on('refresh-single-directory', (event, arg: { directoryId: number }) => {
-  void handleRefreshSingleDirectory(event, arg)
-})
-
 ipcMain.on('select-directory', (event) => {
   if (win) {
     void handleSelectDirectory(win, event)
@@ -247,7 +244,7 @@ ipcMain.on('select-file', (event) => {
   }
 })
 
-ipcMain.on('list-files', (event, arg: { directories?: number[], tags?: number[], fileTypes?: FileTypes[], searchTerm?: string }) => {
+ipcMain.on('list-files', (event, arg: { directories?: number[], tags?: number[], fileTypes?: FileTypes[], searchTerm?: string, fileParents?: number[] }) => {
   void handleListFiles(event, arg)
 })
 
@@ -332,4 +329,10 @@ ipcMain.on('save-to-json', (event, arg) => {
 
 ipcMain.on('load-from-json', (event) => {
   void handleLoadFromJSON(event)
+})
+
+// FILE PARENT
+
+ipcMain.on('list-file-parents', (event) => {
+  void handleListFileParents(event)
 })

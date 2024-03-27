@@ -24,7 +24,7 @@ const getFileList = async (directory: string): Promise<string[]> => {
   return files
 }
 
-const addFilesToDatabase = async ({ files, directoryId }: {
+export const addFilesToDatabase = async ({ files, directoryId }: {
   files: string[]
   directoryId: number
 }): Promise<File[]> => {

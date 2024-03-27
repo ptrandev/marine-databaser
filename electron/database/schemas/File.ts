@@ -12,6 +12,7 @@ class File extends Model<InferAttributes<File>, InferCreationAttributes<File>> {
   birthTime!: Date
   updatedAt!: Date
   fileSize!: number
+  parentFileId?: number
 }
 
 File.init({
@@ -39,7 +40,8 @@ File.init({
   lastModified: DataTypes.DATE, // last time the FILE was modified
   birthTime: DataTypes.DATE, // the time the file was CREATED
   updatedAt: DataTypes.DATE, // the time at which our PROGRAM updated the file
-  fileSize: DataTypes.INTEGER // the size of the file in bytes
+  fileSize: DataTypes.INTEGER, // the size of the file in bytes
+  parentFileId: DataTypes.INTEGER // the id of the parent file
 }, {
   sequelize
 })
