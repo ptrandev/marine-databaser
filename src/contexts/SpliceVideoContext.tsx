@@ -44,7 +44,7 @@ export interface SpliceVideoContextValue {
   videoBasename: string
   updateVideoBasename: (basename: string) => void
   videoUrl: string | null
-  updateVideoUrl: (url: string) => void
+  updateVideoUrl: (url: string) => Promise<void>
   spliceRegions: SpliceRegion[]
   initSpliceRegion: (currentTime: number) => void
   deleteSpliceRegion: (spliceRegion: SpliceRegion, options?: HistoryOptions) => void
@@ -467,7 +467,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
   useEffect(() => {
     setVideoBasename(path.basename(selectedVideo).replace(/\.[^/.]+$/, ''))
-    updateVideoUrl(selectedVideo)
+    void updateVideoUrl(selectedVideo)
   }, [selectedVideo])
 
   const contextValue = useMemo<SpliceVideoContextValue>(() => {

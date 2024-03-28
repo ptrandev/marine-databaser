@@ -46,7 +46,7 @@ const ConvertVideoModal: FC = () => {
     ipcRenderer.on('converted-video', (_, videoPath: string) => {
       setIsModalOpen(false)
       setIsConverting(false)
-      updateVideoUrl(videoPath)
+      void updateVideoUrl(videoPath)
     })
 
     ipcRenderer.on('convert-video-error', (_, errorMessage: string) => {
