@@ -15,6 +15,7 @@ import { handleSaveToJSON, handleLoadFromJSON } from '../handlers/json'
 import { type AutoSpliceSettings, type AudioFileFormat, type SpliceRegion, type FileTypes } from '../../shared/types'
 import { type File } from '../database/schemas'
 import { handleListFileParents } from '../handlers/fileParent'
+import { handleOpenFile, handleOpenFileFolder } from '../handlers/filesystem'
 
 // The built directory structure
 //
@@ -248,15 +249,6 @@ ipcMain.on('list-files', (event, arg: { directories?: number[], tags?: number[],
   void handleListFiles(event, arg)
 })
 
-ipcMain.on('open-file', (_, arg: string) => {
-  void shell.openPath(arg)
-})
-
-ipcMain.on('open-file-folder', (_, arg: string) => {
-  console.log(arg)
-  shell.showItemInFolder(arg)
-})
-
 ipcMain.on('rename-file', (event, arg: { file: File, name: string }) => {
   void handleFileRename(event, arg)
 })
@@ -323,7 +315,7 @@ ipcMain.on('database-reset', (event) => {
 
 // JSON
 
-ipcMain.on('save-to-json', (event, arg) => {
+ipcMain.on('save-to-json', (event, arg: { data: any, filename?: string }) => {
   void handleSaveToJSON(event, arg)
 })
 
@@ -335,4 +327,14 @@ ipcMain.on('load-from-json', (event) => {
 
 ipcMain.on('list-file-parents', (event) => {
   void handleListFileParents(event)
+})
+
+// FILESYSTEM
+
+ipcMain.on('open-file', (event, arg: string) => {
+  void handleOpenFile(event, arg)
+})
+
+ipcMain.on('open-file-folder', (event, arg: string) => {
+  void handleOpenFileFolder(event, arg)
 })

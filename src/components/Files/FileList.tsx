@@ -1,4 +1,4 @@
-import { type FC, useState } from 'react'
+import { type FC, useState, useEffect } from 'react'
 import { List, ListItem, ListItemText, IconButton, Box, Chip, Typography, Stack, Checkbox, Badge, Tooltip, Menu, MenuItem, ListItemIcon } from '@mui/material'
 import { ipcRenderer } from 'electron'
 
@@ -11,6 +11,7 @@ import FileNotesModal from './FileNotesModal'
 import { type FileWithMetadata, MimeTypes } from '../../../shared/types'
 import useFiles from '@/hooks/useFiles'
 import useFileParent from '@/hooks/useFileParent'
+import { enqueueSnackbar } from 'notistack'
 
 const FileList: FC = () => {
   const { files, loadFiles, selectedFiles, updateSelectedFiles, searchTerm } = useFiles()
@@ -44,6 +45,24 @@ const FileList: FC = () => {
   const handleSetFileRenameFile = (file: FileWithMetadata): void => {
     setFileRenameFile(file)
   }
+
+  const handleOpenFileError = (_: unknown, errMessage: string): void => {
+    enqueueSnackbar(`Error opening file: ${errMessage}`, { variant: 'error' })
+  }
+
+  const handleOpenFileFolderError = (_: unknown, errMessage: string): void => {
+    enqueueSnackbar(`Error opening file folder: ${errMessage}`, { variant: 'error' })
+  }
+
+  useEffect(() => {
+    ipcRenderer.on('open-file-error', handleOpenFileError)
+    ipcRenderer.on('open-file-folder-error', handleOpenFileFolderError)
+
+    return () => {
+      ipcRenderer.removeListener('open-file-error', handleOpenFileError)
+      ipcRenderer.removeListener('open-file-folder-error', handleOpenFileFolderError)
+    }
+  }, [])
 
   return (
     <>

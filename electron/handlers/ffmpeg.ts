@@ -394,6 +394,7 @@ export const handleAutoSplice = async (event: IpcMainEvent, arg: { videoPath: st
       const noiseTimestamps = findNoiseTimeStamps(spliceRegions, videoDuration)
 
       fs.unlinkSync(timestamp)
+
       event.reply('auto-spliced', noiseTimestamps)
     })
     .on('error', (err) => {
