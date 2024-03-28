@@ -1,6 +1,6 @@
 {
   "name": "marine-databaser",
-  "version": "0.0.1-beta",
+  "version": "0.0.2-beta",
   "main": "dist-electron/main/index.js",
   "description": "A cross-platform Electron application that allows marine biology researchers to categorize and analyze video, audio, and other files collected in the field entirely on device.",
   "author": "Phillip Tran",
@@ -22,7 +22,7 @@
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "build-mac": "tsc && vite build && electron-builder --mac --universal --config electron-builder.json5",
     "build-linux": "tsc && vite build && electron-builder --linux --arm64 --x64 --armv7l --config electron-builder.json5",
-    "build-win": "tsc && vite build && electron-builder --win --x64 --arm64 --ia32 --config electron-builder.json5"
+    "build-win": "tsc && vite build && electron-builder --win --x64 --ia32 --config electron-builder.json5"
   },
   "devDependencies": {
     "@playwright/test": "^1.31.0",
@@ -73,7 +73,7 @@
     "react-router-dom": "^6.8.2",
     "react-virtuoso": "^4.1.0",
     "sequelize": "^6.29.1",
-    "sqlite3": "^5.1.4",
+    "sqlite3": "^5.0.0",
     "wavesurfer.js": "^7.6.4"
   },
   "build": {
