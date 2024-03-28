@@ -1,6 +1,6 @@
 {
   "name": "marine-databaser",
-  "version": "0.0.1-beta",
+  "version": "0.0.2-beta",
   "main": "dist-electron/main/index.js",
   "description": "A cross-platform Electron application that allows marine biology researchers to categorize and analyze video, audio, and other files collected in the field entirely on device.",
   "author": "Phillip Tran",
