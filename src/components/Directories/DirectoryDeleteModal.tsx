@@ -16,6 +16,16 @@ const DirectoryDeleteModal: FC<DirectoryDeleteModalProps> = ({
 
   const [isDisabled, setIsDisabled] = useState(true)
 
+  const directoryName = useMemo(() => {
+    const directory = directories?.find((directory) => directory.id === directoryId)
+    return directory?.name
+  }, [directories, directoryId])
+
+  const handleDelete = async (): Promise<void> => {
+    await handleDeleteDirectory(directoryId)
+    onClose()
+  }
+
   useEffect(() => {
     // enable the delete button after 3 seconds
     const timeout = setTimeout(() => {
@@ -26,11 +36,6 @@ const DirectoryDeleteModal: FC<DirectoryDeleteModalProps> = ({
       clearTimeout(timeout)
     }
   }, [])
-
-  const directoryName = useMemo(() => {
-    const directory = directories?.find((directory) => directory.id === directoryId)
-    return directory?.name
-  }, [directories, directoryId])
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -51,7 +56,7 @@ const DirectoryDeleteModal: FC<DirectoryDeleteModalProps> = ({
           </Button>
         </Box>
         <Box>
-          <Button onClick={() => { handleDeleteDirectory(directoryId) }} disabled={isDeletingDirectory || isDisabled} variant='contained' color='error'>
+          <Button onClick={() => { void handleDelete() }} disabled={isDeletingDirectory || isDisabled} variant='contained' color='error'>
             Delete Directory
           </Button>
         </Box>

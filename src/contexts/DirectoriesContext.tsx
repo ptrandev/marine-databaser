@@ -12,7 +12,7 @@ export interface DirectoriesContextValue {
   isDeletingDirectory: boolean
   isRefreshingDirectories: boolean
   handleIsInitializingDirectory: (initializingDirectory: boolean) => void
-  handleDeleteDirectory: (directoryId: number) => void
+  handleDeleteDirectory: (directoryId: number) => Promise<void>
   handleRefreshDirectories: (directoryIds: number[]) => void
 }
 
@@ -63,10 +63,16 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
     setIsInitializingDirectory(isInitializingDirectory)
   }
 
-  const handleDeleteDirectory = (directoryId: number): void => {
+  const handleDeleteDirectory = async (directoryId: number): Promise<void> => {
     setIsDeletingDirectory(true)
 
-    ipcRenderer.send('delete-directory', { directoryId })
+    await new Promise<void>((resolve) => {
+      ipcRenderer.send('delete-directory', { directoryId })
+
+      ipcRenderer.once('deleted-directory', () => {
+        resolve()
+      })
+    })
   }
 
   const handleDeletedDirectory = (): void => {
