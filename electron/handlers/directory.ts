@@ -227,7 +227,6 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
   // remove file tag associations for deleted files
   await FileTag.destroy({
     where: {
-      // @ts-expect-error - deletedFiles is an array of objects
       fileId: deletedFiles.map((file) => file.id)
     }
   })
