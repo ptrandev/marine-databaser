@@ -2,7 +2,7 @@ import { type BrowserWindow, type IpcMainEvent, dialog } from 'electron'
 import { Tag, File, FileNote, FileParent } from '../database/schemas'
 import { type FindOptions, Op } from 'sequelize'
 import { type FileTypes } from '../../shared/types'
-import fs from 'fs'
+import fs from 'fs/promises'
 
 export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog(win, {
@@ -206,7 +206,7 @@ export const handleFileRename = async (event: IpcMainEvent, arg: {
   const path: string = file.path.replace(file.name, name)
 
   // first change filename on disk
-  fs.renameSync(file.path, path)
+  await fs.rename(file.path, path)
 
   // then update database ... remember to update name and path
   await File.update(

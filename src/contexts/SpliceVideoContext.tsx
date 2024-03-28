@@ -3,7 +3,7 @@ import { type FC, createContext, useMemo, useState, useEffect } from 'react'
 import { type SpliceRegion } from '../../shared/types'
 import path from 'path'
 import { enqueueSnackbar } from 'notistack'
-import fs from 'fs'
+import fs from 'fs/promises'
 
 interface AddEvent {
   type: 'add'
@@ -143,7 +143,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     setSpliceRegions([])
   }
 
-  const updateVideoUrl = (url: string): void => {
+  const updateVideoUrl = async (url: string): Promise<void> => {
     if (!url) {
       return
     }
@@ -152,7 +152,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       URL.revokeObjectURL(videoUrl)
     }
 
-    const blob = fs.readFileSync(url)
+    const blob = await fs.readFile(url)
     const _url = URL.createObjectURL(new Blob([blob]))
 
     setVideoUrl(_url)
