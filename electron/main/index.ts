@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain, protocol } from 'electron'
+import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import { release } from 'node:os'
 import { join } from 'node:path'
 
@@ -65,7 +65,8 @@ async function createWindow (): Promise<void> {
       // Consider using contextBridge.exposeInMainWorld
       // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      webSecurity: false
     }
   })
 
@@ -91,16 +92,6 @@ async function createWindow (): Promise<void> {
 }
 
 void app.whenReady().then(() => {
-  protocol.registerFileProtocol('media-loader', (request, callback) => {
-    const url = request.url.replace('media-loader://', '')
-    try {
-      callback(url)
-    } catch (error) {
-      console.error(error)
-      callback(join(__dirname, '../index.html'))
-    }
-  })
-
   void createWindow()
 })
 

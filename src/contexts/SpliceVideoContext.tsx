@@ -148,14 +148,8 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       return
     }
 
-    if (videoUrl) {
-      URL.revokeObjectURL(videoUrl)
-    }
-
-    const blob = await fs.readFile(url)
-    const _url = URL.createObjectURL(new Blob([blob]))
-
-    setVideoUrl(_url)
+    // necessary for loading the video in the video element
+    setVideoUrl(`file://${url}`)
   }
 
   const addEventToEventHistory = (event: Event, {
