@@ -1,8 +1,7 @@
-import { type FC, useState, useEffect, useCallback } from 'react'
+import { type FC, useState, useEffect, useCallback, useRef } from 'react'
 import WavesurferPlayer from '@wavesurfer/react'
 import SpectrogramPlugin from 'wavesurfer.js/dist/plugins/spectrogram.js'
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.js'
-import ZoomPlugin from 'wavesurfer.js/dist/plugins/zoom.js'
 import RegionPlugin, { type Region } from 'wavesurfer.js/dist/plugins/regions.js'
 import { Box, IconButton, Slider, Stack, Typography, TextField, Button, Tooltip } from '@mui/material'
 import { ipcRenderer } from 'electron'
@@ -25,9 +24,10 @@ const REGION_COLOR = 'rgba(0, 0, 255, 0.1)'
 const SELECTED_REGION_COLOR = 'rgba(0, 0, 255, 0.2)'
 
 const AudioVisualizers: FC = () => {
-  const { selectedVideo, videoRef, spliceRegions, modifySpliceRegion, deleteSpliceRegion } = useSpliceVideo()
+  const { selectedVideo, videoRef, spliceRegions, modifySpliceRegion, deleteSpliceRegion, zoom, updateZoom, updateWavesurferWidth } = useSpliceVideo()
 
-  const [zoom, setZoom] = useState<number>(1)
+  const audioVisualizerRef = useRef<HTMLDivElement>(null)
+
   const [frequencyMax, setFrequencyMax] = useState<number>(22_050)
   const [frequencyMaxDebounced, setFrequencyMaxDebounced] = useState<number>(22_050)
   const [audioSampleRate, setAudioSampleRate] = useState<number>(44_100)
@@ -167,7 +167,7 @@ const AudioVisualizers: FC = () => {
     }
 
     // restore values to default
-    setZoom(1)
+    updateZoom(1)
     setFrequencyMax(22_050)
     setAudioSampleRate(44_100)
 
@@ -212,6 +212,22 @@ const AudioVisualizers: FC = () => {
   useEffectDebounced(() => {
     setFrequencyMaxDebounced(frequencyMax)
   }, [frequencyMax], 500)
+
+  // create a listener for the resize event and when the component mounts
+  useEffect(() => {
+    const handleResize = (): void => {
+      if (audioVisualizerRef.current) {
+        updateWavesurferWidth(audioVisualizerRef.current.clientWidth)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    handleResize()
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [updateWavesurferWidth])
 
   return (
     <>
@@ -264,6 +280,7 @@ const AudioVisualizers: FC = () => {
             overflowY: 'auto',
             pb: 12
           }}
+          ref={audioVisualizerRef}
         >
           <WavesurferPlayer
             height={256}
@@ -304,7 +321,7 @@ const AudioVisualizers: FC = () => {
               </Typography>
               <Slider
                 value={zoom}
-                onChange={(_, value) => { setZoom(value as number) }}
+                onChange={(_, value) => { updateZoom(value as number) }}
                 min={1}
                 max={1000}
                 disabled={!selectedVideo || isLoading}
