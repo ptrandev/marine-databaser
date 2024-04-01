@@ -19,20 +19,31 @@ const SpliceVideo: FC = () => {
     ipcRenderer.send('select-splice-video-file')
   }
 
+  const handleSelectedVideoFileError = (_: unknown, error: string): void => {
+    enqueueSnackbar(error, { variant: 'error' })
+  }
+
+  const handleSelectedVideoFileWarning = (_: unknown, warning: string): void => {
+    enqueueSnackbar(warning, { variant: 'warning' })
+  }
+
+  const handleSelectedSpliceVideoFile = (_: unknown, path: string): void => {
+    if (!path) return
+
+    updateSelectedVideo(path)
+  }
+
   useEffect(() => {
-    ipcRenderer.on('selected-splice-video-file', (_, path: string) => {
-      if (!path) return
+    ipcRenderer.on('selected-splice-video-file', handleSelectedSpliceVideoFile)
 
-      updateSelectedVideo(path)
-    })
+    ipcRenderer.on('selected-splice-video-file-error', handleSelectedVideoFileError)
 
-    ipcRenderer.on('selected-splice-video-file-error', (_, error: string) => {
-      enqueueSnackbar(error, { variant: 'error' })
-    })
+    ipcRenderer.on('selected-splice-video-file-warning', handleSelectedVideoFileWarning)
 
     return () => {
-      ipcRenderer.removeAllListeners('selected-splice-video-file')
-      ipcRenderer.removeAllListeners('selected-splice-video-file-error')
+      ipcRenderer.removeListener('selected-splice-video-file', handleSelectedSpliceVideoFile)
+      ipcRenderer.removeListener('selected-splice-video-file-error', handleSelectedVideoFileError)
+      ipcRenderer.removeListener('selected-splice-video-file-warning', handleSelectedVideoFileWarning)
     }
   }, [])
 

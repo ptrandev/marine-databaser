@@ -329,6 +329,11 @@ export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: Ipc
     ]
   })
 
+  if (result.filePaths.length === 0) {
+    event.reply('selected-splice-video-file-warning', 'No video selected.')
+    return
+  }
+
   // analyze the video and see if it has any audio; if not, return an error
   ffmpeg.ffprobe(result.filePaths[0], (err, metadata) => {
     if (err) {
