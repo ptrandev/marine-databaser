@@ -3,6 +3,7 @@ import { Tag, File, FileNote, FileParent } from '../database/schemas'
 import { type FindOptions, Op } from 'sequelize'
 import { type FileTypes } from '../../shared/types'
 import fs from 'fs/promises'
+import path from 'path'
 
 export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog(win, {
@@ -13,7 +14,7 @@ export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent):
     // @ts-expect-error - result.filePaths is an array of strings
     // TODO - this is a hacky way to get the file name and path
     {
-      name: result.filePaths[0].split('/').pop() ?? '',
+      name: path.basename(result.filePaths[0]),
       path: result.filePaths[0]
     },
     { raw: true }

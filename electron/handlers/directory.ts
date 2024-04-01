@@ -5,6 +5,7 @@ import { Sequelize, Op } from 'sequelize'
 import { handleKillOrphanedTags } from './tag'
 import fs from 'fs/promises'
 import { type RefreshedDirectories } from 'shared/types'
+import path from 'path'
 
 const getFileList = async (directory: string): Promise<string[]> => {
   let files: string[] = []
@@ -70,8 +71,7 @@ const addFileToDatabase = async ({ file, directoryId }: {
   const { mtime, birthtime, size } = await fs.stat(file)
 
   return {
-    // TODO - this is a hacky way to get the file name and path
-    name: file.split('/').pop() ?? '',
+    name: path.basename(file),
     path: file,
     directoryId,
     mimeType: mime.lookup(file).toString(),
@@ -252,7 +252,7 @@ export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent
   // add directory to database
   // @ts-expect-error - result.filePaths is an array of strings
   const directory = await Directory.create({
-    name: result.filePaths[0].split('/').pop() ?? '',
+    name: path.basename(result.filePaths[0]),
     path: result.filePaths[0]
   })
 
