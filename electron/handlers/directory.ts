@@ -247,7 +247,17 @@ export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent
 
   if (result.filePaths.length === 0) return
 
-  event.reply('added-directory', result.filePaths)
+  // ensure that directory is not already in database
+  const existingDirectory = await Directory.findOne({
+    where: {
+      path: result.filePaths[0]
+    }
+  })
+
+  if (existingDirectory !== null) {
+    event.reply('add-directory-error', 'The directory is already in the database.')
+    return
+  }
 
   // add directory to database
   // @ts-expect-error - result.filePaths is an array of strings
@@ -255,6 +265,8 @@ export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent
     name: path.basename(result.filePaths[0]),
     path: result.filePaths[0]
   })
+
+  event.reply('added-directory', result.filePaths)
 
   // look at files in directory; make sure to crawl subdirectories
   const files = await getFileList(result.filePaths[0])

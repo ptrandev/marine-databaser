@@ -6,6 +6,7 @@ import useDirectories from '@/hooks/useDirectories'
 import { ipcRenderer } from 'electron'
 import { type FC, useEffect } from 'react'
 import DirectoryRefreshButton from '@/components/Directories/DirectoryRefreshButton'
+import { enqueueSnackbar } from 'notistack'
 
 const Directories: FC = () => {
   const { isInitializingDirectory, handleIsInitializingDirectory, loadDirectories } = useDirectories()
@@ -26,13 +27,20 @@ const Directories: FC = () => {
     })
   }
 
+  const handleAddDirectoryError = (_, errMessage: string): void => {
+    enqueueSnackbar(errMessage, { variant: 'error' })
+    handleIsInitializingDirectory(false)
+  }
+
   useEffect(() => {
     ipcRenderer.on('initialized-directory', handleInitializedDirectory)
     ipcRenderer.on('added-directory', handleAddedDirectory)
+    ipcRenderer.on('add-directory-error', handleAddDirectoryError)
 
     return () => {
       ipcRenderer.removeListener('added-directory', handleAddedDirectory)
       ipcRenderer.removeListener('initialized-directory', handleInitializedDirectory)
+      ipcRenderer.removeListener('add-directory-error', handleAddDirectoryError)
     }
   }, [])
 
