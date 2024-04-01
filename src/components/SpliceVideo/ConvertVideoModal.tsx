@@ -5,7 +5,7 @@ import { Typography, Stack, Box, Button, CircularProgress, LinearProgress } from
 import { ipcRenderer } from 'electron'
 
 const ConvertVideoModal: FC = () => {
-  const { videoRef, selectedVideo, updateVideoUrl } = useSpliceVideo()
+  const { videoRef, selectedVideo, updateVideoUrl, updateSelectedVideo } = useSpliceVideo()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -35,6 +35,7 @@ const ConvertVideoModal: FC = () => {
 
   const onClose = (): void => {
     setIsModalOpen(false)
+    updateSelectedVideo('')
   }
 
   const handleConvertVideo = (): void => {
