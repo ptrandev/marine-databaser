@@ -27,7 +27,7 @@ const Directories: FC = () => {
     })
   }
 
-  const handleAddDirectoryError = (_, errMessage: string): void => {
+  const handleAddDirectoryError = (_: unknown, errMessage: string): void => {
     enqueueSnackbar(errMessage, { variant: 'error' })
     handleIsInitializingDirectory(false)
   }
