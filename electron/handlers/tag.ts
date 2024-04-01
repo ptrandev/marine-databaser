@@ -40,7 +40,6 @@ export const handleTagFile = async (event: IpcMainEvent, arg: {
   // check if file already has tag
   const hasTag: FileTag | null = await FileTag.findOne({
     where: {
-      // @ts-expect-error - we are using the sequelize operator
       fileId,
       tagId: _tag.id
     }
@@ -55,7 +54,7 @@ export const handleTagFile = async (event: IpcMainEvent, arg: {
   const fileTag: FileTag = await FileTag.create({
     fileId,
     tagId: _tag.id
-  }).then((fileTag) => fileTag.toJSON())
+  }).then((fileTag) => fileTag.toJSON()) as FileTag
 
   event.reply('tagged-file', fileTag)
 }
@@ -76,7 +75,6 @@ export const handleTagFiles = async (event: IpcMainEvent, arg: {
     fileIds.map(async (fileId) => {
       const hasTag: FileTag | null = await FileTag.findOne({
         where: {
-          // @ts-expect-error - we are using the sequelize operator
           fileId,
           tagId: _tag.id
         }
@@ -87,7 +85,7 @@ export const handleTagFiles = async (event: IpcMainEvent, arg: {
       const fileTag: FileTag = await FileTag.create({
         fileId,
         tagId: _tag.id
-      }).then((fileTag) => fileTag.toJSON())
+      }).then((fileTag) => fileTag.toJSON()) as FileTag
 
       return fileTag
     })
@@ -117,7 +115,6 @@ export const handleUntagFile = async (event: IpcMainEvent, arg: {
 
   await FileTag.destroy({
     where: {
-      // @ts-expect-error - we are using the sequelize operator
       fileId,
       tagId
     }
