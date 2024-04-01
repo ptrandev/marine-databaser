@@ -7,19 +7,26 @@ import { Sell, DriveFileRenameOutline, Image, VideoFile, AudioFile, Description,
 import FileTagsModal from './FileTagsModal'
 import FileRenameModal from './FileRenameModal'
 import FileNotesModal from './FileNotesModal'
+import FileSpliceVideoModal from './FileSpliceVideoModal'
 
 import { type FileWithMetadata, MimeTypes } from '../../../shared/types'
 import useFiles from '@/hooks/useFiles'
 import useFileParent from '@/hooks/useFileParent'
 import { enqueueSnackbar } from 'notistack'
+import useSpliceVideo from '@/hooks/useSpliceVideo'
+import { useNavigate } from 'react-router-dom'
 
 const FileList: FC = () => {
+  const nagivate = useNavigate()
+
   const { files, loadFiles, selectedFiles, updateSelectedFiles, searchTerm } = useFiles()
   const { fileParentFiles } = useFileParent()
+  const { selectedVideo, updateSelectedVideo } = useSpliceVideo()
 
   const [fileTagFile, setFileTagFile] = useState<FileWithMetadata>()
   const [fileRenameFile, setFileRenameFile] = useState<FileWithMetadata>()
   const [fileNotesFile, setFileNotesFile] = useState<FileWithMetadata>()
+  const [fileSpliceVideoFile, setFileSpliceVideoFile] = useState<FileWithMetadata>()
 
   const [fileContextMenuAnchorEl, setFileContextMenuAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -52,6 +59,17 @@ const FileList: FC = () => {
 
   const handleOpenFileFolderError = (_: unknown, errMessage: string): void => {
     enqueueSnackbar(`Error opening file folder: ${errMessage}`, { variant: 'error' })
+  }
+
+  const handleSpliceVideo = (file: FileWithMetadata): void => {
+    if (!selectedVideo) {
+      updateSelectedVideo(file.path)
+
+      // navigate to the video splice page
+      nagivate('/splice-video')
+    } else {
+      setFileSpliceVideoFile(file)
+    }
   }
 
   useEffect(() => {
@@ -177,6 +195,16 @@ const FileList: FC = () => {
                     <Sell />
                   </IconButton>
                 </Tooltip>
+                <Tooltip title='Splice video'>
+                  <IconButton
+                    aria-label='splice video'
+                    color='secondary'
+                    disabled={!MimeTypes.video.some(type => file.mimeType?.includes(type))}
+                    onClick={() => { handleSpliceVideo(file) }}
+                  >
+                    <VideoFile />
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title='More options'>
                   <IconButton
                     aria-label='more options'
@@ -255,6 +283,17 @@ const FileList: FC = () => {
             open={!!fileNotesFile}
             onClose={handleFileNotesModalClose}
             file={fileNotesFile}
+          />
+        )
+      }
+      {
+        fileSpliceVideoFile && (
+          <FileSpliceVideoModal
+            open={!!fileSpliceVideoFile}
+            onClose={() => {
+              setFileSpliceVideoFile(undefined)
+            }}
+            file={fileSpliceVideoFile}
           />
         )
       }
