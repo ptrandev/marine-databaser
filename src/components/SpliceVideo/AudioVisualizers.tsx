@@ -2,6 +2,7 @@ import { type FC, useState, useEffect, useCallback } from 'react'
 import WavesurferPlayer from '@wavesurfer/react'
 import SpectrogramPlugin from 'wavesurfer.js/dist/plugins/spectrogram.js'
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.js'
+import ZoomPlugin from 'wavesurfer.js/dist/plugins/zoom.js'
 import RegionPlugin, { type Region } from 'wavesurfer.js/dist/plugins/regions.js'
 import { Box, IconButton, Slider, Stack, Typography, TextField, Button, Tooltip } from '@mui/material'
 import { ipcRenderer } from 'electron'
@@ -10,6 +11,8 @@ import useSpliceVideo from '@/hooks/useSpliceVideo'
 import { Delete, Loop, PlayArrow, Pause, Edit } from '@mui/icons-material'
 import { type SpliceRegion } from '../../../shared/types'
 import Modal from '../Modal'
+import type WaveSurfer from 'wavesurfer.js'
+import { useEffectDebounced } from '@/hooks/useEffectDebounced'
 
 const COLORS = colormap({
   colormap: 'hot',
@@ -26,15 +29,20 @@ const AudioVisualizers: FC = () => {
 
   const [zoom, setZoom] = useState<number>(1)
   const [frequencyMax, setFrequencyMax] = useState<number>(22_050)
+  const [frequencyMaxDebounced, setFrequencyMaxDebounced] = useState<number>(22_050)
   const [audioSampleRate, setAudioSampleRate] = useState<number>(44_100)
 
   const [wsRegions, setWsRegions] = useState<RegionPlugin>()
   const [selectedRegion, setSelectedRegion] = useState<SpliceRegion>()
 
+  const [ws, setWs] = useState<WaveSurfer>()
+
   const [regions, setRegions] = useState<Region[]>([])
   const [activeRegion, setActiveRegion] = useState<Region>()
+
   const [isLoop, setIsLoop] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   const [editNameModalOpen, setEditNameModalOpen] = useState(false)
 
@@ -191,6 +199,20 @@ const AudioVisualizers: FC = () => {
     })
   }, [videoRef, regions])
 
+  useEffect(() => {
+    setIsLoading(true)
+  }, [videoRef])
+
+  useEffectDebounced(() => {
+    if (ws) {
+      ws.zoom(zoom)
+    }
+  }, [ws, zoom], 500)
+
+  useEffectDebounced(() => {
+    setFrequencyMaxDebounced(frequencyMax)
+  }, [frequencyMax], 500)
+
   return (
     <>
       <Box>
@@ -247,13 +269,12 @@ const AudioVisualizers: FC = () => {
             height={256}
             media={videoRef ?? undefined}
             progressColor='#1976d2'
-            minPxPerSec={zoom}
             dragToSeek
             normalize
             // @ts-expect-error - no types for
             splitChannels
             sampleRate={audioSampleRate}
-            frequencyMax={frequencyMax}
+            frequencyMax={frequencyMaxDebounced}
             onDecode={(wavesurfer) => {
               wavesurfer.registerPlugin(TimelinePlugin.create({
                 secondaryLabelOpacity: 1,
@@ -270,10 +291,13 @@ const AudioVisualizers: FC = () => {
 
               const wsRegions = wavesurfer.registerPlugin(RegionPlugin.create())
               setWsRegions(wsRegions)
+
+              setWs(wavesurfer)
+              setIsLoading(false)
             }}
             onInteraction={handleInteraction}
           />
-          <Box maxWidth='calc(100% - 32px)'>
+          <Box maxWidth='calc(100% - 32px)' mt={6}>
             <Stack direction='row' alignItems='center' gap={2}>
               <Typography variant='body2'>
                 Zoom
@@ -282,8 +306,9 @@ const AudioVisualizers: FC = () => {
                 value={zoom}
                 onChange={(_, value) => { setZoom(value as number) }}
                 min={1}
-                max={5000}
-                disabled={!selectedVideo}
+                max={1000}
+                disabled={!selectedVideo || isLoading}
+                valueLabelDisplay='auto'
               />
             </Stack>
             <Stack direction='row' alignItems='center' gap={2}>
@@ -299,7 +324,7 @@ const AudioVisualizers: FC = () => {
                 sx={{
                   flex: 1
                 }}
-                disabled={!selectedVideo}
+                disabled={!selectedVideo || isLoading}
               />
             </Stack>
           </Box>
