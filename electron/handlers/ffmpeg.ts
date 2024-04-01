@@ -4,7 +4,7 @@ import path from 'path'
 import { type AudioFileFormat, type AutoSpliceSettings, type SpliceRegion } from '../../shared/types'
 import fs from 'fs'
 
-import ffmpeg from 'fluent-ffmpeg'
+import ffmpeg, { type FfprobeStream } from 'fluent-ffmpeg'
 
 // Get the paths to the packaged versions of the binaries we want to use
 import ffmpegPath from 'ffmpeg-static'
@@ -315,10 +315,17 @@ export const handleSelectExtractAudioFiles = async (win: BrowserWindow, event: I
  * @returns {Promise<void>} - a promise that resolves when the audio has been extracted
  */
 export const handleSelectSpliceVideoFile = async (win: BrowserWindow, event: IpcMainEvent): Promise<void> => {
+  // use mime type package to get all extensions that have type of video/*
+
+  // find all keys containing 'video' in the mime database and return their value; then flatten
+  const extensions = Object.keys(mime.extensions).filter((key) => key.includes('video')).map((key) => mime.extensions[key]).flat()
+
+  extensions.push('dv')
+
   const result = await dialog.showOpenDialog(win, {
     properties: ['openFile'],
     filters: [
-      { name: 'Video Files', extensions: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm'] }
+      { name: 'Video Files', extensions }
     ]
   })
 
@@ -469,10 +476,42 @@ export const handleConvertVideo = async (event: IpcMainEvent, arg: { videoPath: 
   const videoBasename = path.basename(arg.videoPath).replace(/\.[^/.]+$/, '')
 
   // use system temp directory to store the converted video
-  const tempPath = path.join(app.getPath('temp'), `${videoBasename}.mp4`)
+  const tempPath = path.join(app.getPath('temp'), `${videoBasename}.mov`)
 
-  // do not touch the audio track, just convert the video track to h264
-  ffmpeg(arg.videoPath)
+  const audioStream = await new Promise<FfprobeStream | undefined>((resolve, reject) => {
+    ffmpeg.ffprobe(arg.videoPath, (err, metadata) => {
+      if (err) {
+        reject(err)
+        return
+      }
+
+      // @ts-expect-error - we are using the ffmpeg metadata
+      const audioStream = metadata.streams.find((stream: { codec_type: string }) => stream.codec_type === 'audio')
+      resolve(audioStream)
+    })
+  })
+
+  const video = ffmpeg().input(arg.videoPath)
+
+  if (audioStream) {
+    const bitsPerSample = audioStream.bits_per_sample ?? 16
+
+    if (bitsPerSample <= 8) {
+      video.audioCodec('pcm_u8')
+    } else if (bitsPerSample <= 16) {
+      video.audioCodec('pcm_s16le')
+    } else if (bitsPerSample <= 24) {
+      video.audioCodec('pcm_s24le')
+    } else if (bitsPerSample <= 32) {
+      video.audioCodec('pcm_s32le')
+    }
+
+    video
+      .audioChannels(audioStream.channels ?? 2)
+      .audioFrequency(audioStream.sample_rate ?? 44100)
+  }
+
+  video
     .videoCodec('libx264')
     .on('progress', (progress) => {
       event.reply('convert-video-progress', progress.percent)
