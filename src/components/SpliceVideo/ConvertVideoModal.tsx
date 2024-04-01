@@ -11,17 +11,9 @@ const ConvertVideoModal: FC = () => {
   const [progress, setProgress] = useState(0)
   const [isConverting, setIsConverting] = useState(false)
 
-  useEffect(() => {
-    if (!videoRef) {
-      return
-    }
-
-    videoRef.addEventListener('loadedmetadata', handleLoadedMetadata)
-
-    return () => {
-      videoRef.removeEventListener('loadedmetadata', handleLoadedMetadata)
-    }
-  }, [videoRef])
+  const handleError = (): void => {
+    setIsModalOpen(true)
+  }
 
   const handleLoadedMetadata = (): void => {
     if (!videoRef) {
@@ -42,6 +34,20 @@ const ConvertVideoModal: FC = () => {
     ipcRenderer.send('convert-video', { videoPath: selectedVideo })
     setIsConverting(true)
   }
+
+  useEffect(() => {
+    if (!videoRef) {
+      return
+    }
+
+    videoRef.addEventListener('loadedmetadata', handleLoadedMetadata)
+    videoRef.addEventListener('error', handleError)
+
+    return () => {
+      videoRef.removeEventListener('loadedmetadata', handleLoadedMetadata)
+      videoRef.removeEventListener('error', handleError)
+    }
+  }, [videoRef])
 
   useEffect(() => {
     ipcRenderer.on('converted-video', (_, videoPath: string) => {
