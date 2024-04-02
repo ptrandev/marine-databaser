@@ -1,5 +1,5 @@
 import { Search, Refresh } from '@mui/icons-material'
-import { InputAdornment, Button, Autocomplete, TextField, Box, Stack } from '@mui/material'
+import { InputAdornment, Button, Autocomplete, TextField, Box, Stack, Grid } from '@mui/material'
 import { type FC } from 'react'
 import useFiles from '@/hooks/useFiles'
 import { FileTypes } from '../../../shared/types'
@@ -49,75 +49,83 @@ const FileSearch: FC = () => {
           </Button>
         </Box>
       </Stack>
-      <Stack direction='row' gap={2}>
-        <Autocomplete
-          multiple
-          filterSelectedOptions
-          defaultValue={selectedDirectories}
-          options={directories}
-          value={selectedDirectories}
-          onChange={(_, value) => { updateSelectedDirectories(value) }}
-          getOptionLabel={(option) => option.name}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Directories"
-            />
-          )}
-          isOptionEqualToValue={(option, value) => option.id === value.id}
-          fullWidth
-        />
-        <Autocomplete
-          multiple
-          filterSelectedOptions
-          defaultValue={selectedTags}
-          options={tags}
-          value={selectedTags}
-          onChange={(_, value) => { updateSelectedTags(value) }}
-          getOptionLabel={(option) => option.name}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Tags"
-            />
-          )}
-          isOptionEqualToValue={(option, value) => option.id === value.id}
-          fullWidth
-        />
-        <Autocomplete
-          multiple
-          filterSelectedOptions
-          defaultValue={selectedFileTypes}
-          options={FileTypes}
-          value={selectedFileTypes}
-          onChange={(_, value) => { updateSelectedFileTypes(value) }}
-          getOptionLabel={(option) => option}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="File types"
-            />
-          )}
-          isOptionEqualToValue={(option, value) => option === value}
-          fullWidth
-        />
-        <Autocomplete
-          multiple
-          filterSelectedOptions
-          options={fileParentFiles}
-          value={selectedFileParents}
-          getOptionLabel={(option) => option.name}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label='File parents'
-            />
-          )}
-          isOptionEqualToValue={(option, value) => option.id === value.id}
-          fullWidth
-          onChange={(_, value) => { updateSelectedFileParents(value) }}
-        />
-      </Stack>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6} lg={3}>
+          <Autocomplete
+            multiple
+            filterSelectedOptions
+            defaultValue={selectedDirectories}
+            options={directories}
+            value={selectedDirectories}
+            onChange={(_, value) => { updateSelectedDirectories(value) }}
+            getOptionLabel={(option) => option.name}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Directories"
+              />
+            )}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} md={6} lg={3}>
+          <Autocomplete
+            multiple
+            filterSelectedOptions
+            defaultValue={selectedTags}
+            options={tags}
+            value={selectedTags}
+            onChange={(_, value) => { updateSelectedTags(value) }}
+            getOptionLabel={(option) => option.name}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Tags"
+              />
+            )}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} md={6} lg={3}>
+          <Autocomplete
+            multiple
+            filterSelectedOptions
+            defaultValue={selectedFileTypes}
+            options={FileTypes}
+            value={selectedFileTypes}
+            onChange={(_, value) => { updateSelectedFileTypes(value) }}
+            getOptionLabel={(option) => option}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="File types"
+              />
+            )}
+            isOptionEqualToValue={(option, value) => option === value}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} md={6} lg={3}>
+          <Autocomplete
+            multiple
+            filterSelectedOptions
+            options={fileParentFiles}
+            value={selectedFileParents}
+            getOptionLabel={(option) => option.name}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label='File parents'
+              />
+            )}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            fullWidth
+            onChange={(_, value) => { updateSelectedFileParents(value) }}
+          />
+        </Grid>
+      </Grid>
     </Stack>
   )
 }
