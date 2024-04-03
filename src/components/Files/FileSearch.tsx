@@ -1,5 +1,5 @@
 import { Search, Refresh } from '@mui/icons-material'
-import { InputAdornment, Button, Autocomplete, TextField, Box, Stack, Grid } from '@mui/material'
+import { InputAdornment, Button, Autocomplete, TextField, Box, Stack, Grid, Chip, ListItem, ListItemText, createFilterOptions } from '@mui/material'
 import { type FC } from 'react'
 import useFiles from '@/hooks/useFiles'
 import { FileTypes } from '../../../shared/types'
@@ -13,6 +13,10 @@ const FileSearch: FC = () => {
   const { tags } = useTags()
   const { directories } = useDirectories()
   const { fileParentFiles } = useFileParent()
+
+  const filterOptions = createFilterOptions({
+    stringify: (option) => option.path
+  })
 
   const handleClearFilters = (): void => {
     updateSelectedDirectories([])
@@ -110,10 +114,28 @@ const FileSearch: FC = () => {
         <Grid item xs={12} md={6} lg={3}>
           <Autocomplete
             multiple
-            filterSelectedOptions
+            filterOptions={filterOptions}
+            // filterSelectedOptions
             options={fileParentFiles}
             value={selectedFileParents}
             getOptionLabel={(option) => option.name}
+            renderOption={(props, option) => (
+              <ListItem {...props}>
+                <ListItemText primary={option.name} secondary={option.path} />
+              </ListItem>
+            )}
+            // renderTags={(value, getTagProps) =>
+            //   value.map((option) => (
+            //     <Chip
+            //       label={option.name}
+            //       key={option.id}
+            //       onDelete={() => {
+            //         updateSelectedFileParents(selectedFileParents.filter((file) => file.id !== option.id))
+            //       }}
+            //     >
+            //     </Chip>
+            //   ))
+            // }
             renderInput={(params) => (
               <TextField
                 {...params}
