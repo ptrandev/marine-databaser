@@ -3,7 +3,7 @@ import { type File } from '../../electron/database/schemas'
 import useFiles from '@/hooks/useFiles'
 import { ipcRenderer } from 'electron'
 
-interface FileParentFile extends File {
+export interface FileParentFile extends File {
   fileChildrenCount: number
 }
 

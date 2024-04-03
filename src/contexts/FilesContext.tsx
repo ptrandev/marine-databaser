@@ -4,6 +4,7 @@ import { type FileTypes, type FileWithMetadata } from '../../shared/types'
 import { ipcRenderer } from 'electron'
 import { useEffectDebounced } from '@/hooks/useEffectDebounced'
 import useDirectories from '@/hooks/useDirectories'
+import { type FileParentFile } from './FileParentContext'
 
 export interface FilesContextValue {
   files: FileWithMetadata[]
@@ -19,7 +20,7 @@ export interface FilesContextValue {
   updateSelectedTags: (tags: Tag[]) => void
   selectedFileTypes: FileTypes[]
   updateSelectedFileTypes: (fileTypes: FileTypes[]) => void
-  selectedFileParents: File[]
+  selectedFileParents: FileParentFile[]
   updateSelectedFileParents: (fileParents: File[]) => void
 }
 

@@ -1,11 +1,12 @@
 import { Search, Refresh } from '@mui/icons-material'
-import { InputAdornment, Button, Autocomplete, TextField, Box, Stack, Grid, Chip, ListItem, ListItemText, createFilterOptions } from '@mui/material'
+import { InputAdornment, Button, Autocomplete, TextField, Box, Stack, Grid, ListItem, ListItemText, createFilterOptions } from '@mui/material'
 import { type FC } from 'react'
 import useFiles from '@/hooks/useFiles'
 import { FileTypes } from '../../../shared/types'
 import useTags from '@/hooks/useTags'
 import useDirectories from '@/hooks/useDirectories'
 import useFileParent from '@/hooks/useFileParent'
+import { type FileParentFile } from '@/contexts/FileParentContext'
 
 const FileSearch: FC = () => {
   const { searchTerm, updateSearchTerm } = useFiles()
@@ -15,7 +16,7 @@ const FileSearch: FC = () => {
   const { fileParentFiles } = useFileParent()
 
   const filterOptions = createFilterOptions({
-    stringify: (option) => option.path
+    stringify: (option: FileParentFile) => option.path
   })
 
   const handleClearFilters = (): void => {
@@ -115,7 +116,6 @@ const FileSearch: FC = () => {
           <Autocomplete
             multiple
             filterOptions={filterOptions}
-            // filterSelectedOptions
             options={fileParentFiles}
             value={selectedFileParents}
             getOptionLabel={(option) => option.name}
@@ -124,18 +124,6 @@ const FileSearch: FC = () => {
                 <ListItemText primary={option.name} secondary={option.path} />
               </ListItem>
             )}
-            // renderTags={(value, getTagProps) =>
-            //   value.map((option) => (
-            //     <Chip
-            //       label={option.name}
-            //       key={option.id}
-            //       onDelete={() => {
-            //         updateSelectedFileParents(selectedFileParents.filter((file) => file.id !== option.id))
-            //       }}
-            //     >
-            //     </Chip>
-            //   ))
-            // }
             renderInput={(params) => (
               <TextField
                 {...params}
