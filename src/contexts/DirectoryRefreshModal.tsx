@@ -1,6 +1,6 @@
 import { type FC, useEffect, useMemo, useState } from 'react'
 import { Modal, type ModalProps } from '../components/Modal'
-import { Typography, LinearProgress, Box, Grid, CircularProgress, Divider, Stack } from '@mui/material'
+import { Typography, LinearProgress, Box, Grid, CircularProgress, Divider, Stack, Button } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import useDirectories from '@/hooks/useDirectories'
 import { type RefreshedDirectories } from 'shared/types'
@@ -10,14 +10,23 @@ interface DirectoryRefreshModalProps extends Omit<ModalProps, 'children'> {
 }
 
 const DirectoryRefreshModal: FC<DirectoryRefreshModalProps> = ({ open, onClose, directoryIds }) => {
-  const { directories } = useDirectories()
+  const { directories, directoriesFileCount, updateIsRefreshingDirectories } = useDirectories()
 
   const [refreshedDirectories, setRefreshedDirectories] = useState<RefreshedDirectories[]>([])
   const [skippedDirectories, setSkippedDirectories] = useState<number[]>([])
+  const [refreshInitialized, setRefreshInitialized] = useState<boolean>(false)
+
+  const [refreshDisabled, setRefreshDisabled] = useState<boolean>(true)
 
   const allDirectoriesRefreshed = useMemo(() => {
     return refreshedDirectories.length + skippedDirectories.length === directoryIds.length
   }, [refreshedDirectories, skippedDirectories, directoryIds])
+
+  const totalFiles = useMemo(() => {
+    return Object.entries(directoriesFileCount).reduce((acc, [directoryId, fileCount]) => {
+      return directoryIds.includes(Number(directoryId)) ? acc + fileCount : acc
+    }, 0)
+  }, [directoriesFileCount, directoryIds])
 
   const handleRefreshedDirectory = (_: unknown, refreshedDirectory: RefreshedDirectories): void => {
     setRefreshedDirectories(prev => [...prev, refreshedDirectory])
@@ -33,30 +42,82 @@ const DirectoryRefreshModal: FC<DirectoryRefreshModalProps> = ({ open, onClose, 
     onClose()
   }
 
+  const onCloseConfirmModal = (): void => {
+    onCloseModal()
+    updateIsRefreshingDirectories(false)
+  }
+
   useEffect(() => {
     ipcRenderer.on('refreshed-directory', handleRefreshedDirectory)
     ipcRenderer.on('refresh-directory-error', handleRefreshDirectoryError)
 
+    // Disable refresh button for 3 seconds to prevent accidental refreshes
+    const timeout = setTimeout(() => {
+      setRefreshDisabled(false)
+    }, 3000)
+
     return () => {
       ipcRenderer.removeListener('refreshed-directory', handleRefreshedDirectory)
       ipcRenderer.removeListener('refresh-directory-error', handleRefreshDirectoryError)
+      clearTimeout(timeout)
     }
   }, [])
 
+  if (!refreshInitialized) {
+    return (
+      <Modal open={open} onClose={onCloseConfirmModal}>
+        <Typography variant='h5' mb={2}>
+          Confirm Refresh Directories
+        </Typography>
+        <Typography mb={2}>
+          Would you like to refresh <span style={{ fontWeight: 'bold' }}>{directoryIds.length} director{directoryIds.length > 1 ? 'ies' : 'y'}</span> containing <span style={{ fontWeight: 'bold' }}>{totalFiles} file{
+            totalFiles === 1 ? '' : 's'}</span>?
+        </Typography>
+        <Typography mb={2}>
+          This will update the files tracked by the database. If any files have been removed from the directory, they will be removed from the database as well.
+        </Typography>
+        <Typography mb={2}>
+          This operation cannot be undone and cannot be stopped once started. It will take some time to complete. Are you sure you want to continue?
+        </Typography>
+        <Typography mb={2}>
+          To prevent accidental refreshes, the refresh button will be disabled for 3 seconds.
+        </Typography>
+        <Grid container justifyContent='flex-end' mt={2}>
+          <Grid item>
+            <Box display='flex' gap={2}>
+              <Button onClick={onCloseConfirmModal}>
+                Cancel
+              </Button>
+              <Button
+                variant='contained'
+                onClick={() => {
+                  setRefreshInitialized(true)
+                  ipcRenderer.send('refresh-directories', { directoryIds })
+                }}
+                disabled={allDirectoriesRefreshed || refreshDisabled}
+              >
+                Refresh
+              </Button>
+            </Box>
+          </Grid>
+        </Grid>
+      </Modal>
+    )
+  }
+
   return (
     <Modal open={open} onClose={onCloseModal} disableClose={!allDirectoriesRefreshed}>
-      {
-        !allDirectoriesRefreshed && (
-          <Typography mb={2}>
-            Refreshing...
-          </Typography>
-        )
-      }
+      <Typography mb={2} variant='h5'>
+        Refreshed Directories
+      </Typography>
       {
         refreshedDirectories?.map((refreshedDirectory, i) => (
           <Box key={i} mb={2}>
             <Typography variant='h6'>
               {directories.find(directory => directory.id === refreshedDirectory.directoryId)?.name}
+            </Typography>
+            <Typography variant='body2' color='text.secondary' mb={2}>
+              {directories.find(directory => directory.id === refreshedDirectory.directoryId)?.path}
             </Typography>
             <Typography>
               Number of Existing Files: {refreshedDirectory.numExistingFiles}
@@ -80,7 +141,7 @@ const DirectoryRefreshModal: FC<DirectoryRefreshModalProps> = ({ open, onClose, 
         skippedDirectories?.length > 0 && (
           <>
             <Box my={2}>
-              <Typography variant='h6'>
+              <Typography variant='h5'>
                 Skipped Directories
               </Typography>
               <Typography mb={2}>
@@ -90,7 +151,7 @@ const DirectoryRefreshModal: FC<DirectoryRefreshModalProps> = ({ open, onClose, 
                 {
                   skippedDirectories.map((directoryId) => (
                     <Stack key={directoryId}>
-                      <Typography>
+                      <Typography variant='h6'>
                         {directories.find(directory => directory.id === directoryId)?.name}
                       </Typography>
                       <Typography variant='body2' color='text.secondary'>

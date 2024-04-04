@@ -11,6 +11,7 @@ export interface DirectoriesContextValue {
   isInitializingDirectory: boolean
   isDeletingDirectory: boolean
   isRefreshingDirectories: boolean
+  updateIsRefreshingDirectories: (isRefreshingDirectories: boolean) => void
   handleIsInitializingDirectory: (initializingDirectory: boolean) => void
   handleDeleteDirectory: (directoryId: number) => Promise<void>
   handleRefreshDirectories: (directoryIds: number[]) => void
@@ -85,13 +86,15 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
     setIsRefreshModalOpen(true)
 
     setRefreshDirectories(directoryIds)
-
-    ipcRenderer.send('refresh-directories', { directoryIds })
   }
 
   const handleRefreshedDirectories = (): void => {
     void loadDirectories()
     setIsRefreshingDirectories(false)
+  }
+
+  const updateIsRefreshingDirectories = (isRefreshingDirectories: boolean): void => {
+    setIsRefreshingDirectories(isRefreshingDirectories)
   }
 
   useEffect(() => {
@@ -117,18 +120,23 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
       isDeletingDirectory,
       handleDeleteDirectory,
       isRefreshingDirectories,
-      handleRefreshDirectories
+      handleRefreshDirectories,
+      updateIsRefreshingDirectories
     }
-  }, [directories, isLoadingDirectories, isInitializingDirectory, directoriesFileCount, loadDirectories, handleIsInitializingDirectory, isDeletingDirectory, handleDeleteDirectory, isRefreshingDirectories, handleRefreshDirectories])
+  }, [directories, isLoadingDirectories, isInitializingDirectory, directoriesFileCount, loadDirectories, handleIsInitializingDirectory, isDeletingDirectory, handleDeleteDirectory, isRefreshingDirectories, handleRefreshDirectories, updateIsRefreshingDirectories])
 
   return (
     <DirectoriesContext.Provider value={contextValue}>
       {children}
-      <DirectoryRefreshModal
-        open={isRefreshModalOpen}
-        onClose={() => { setIsRefreshModalOpen(false) }}
-        directoryIds={refreshDirectories}
-      />
+      {
+        isRefreshModalOpen && (
+          <DirectoryRefreshModal
+            open={isRefreshModalOpen}
+            onClose={() => { setIsRefreshModalOpen(false) }}
+            directoryIds={refreshDirectories}
+          />
+        )
+      }
     </DirectoriesContext.Provider>
   )
 }
