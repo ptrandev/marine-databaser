@@ -195,9 +195,9 @@ const FileList: FC = () => {
                     <Sell />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title='Splice video'>
+                <Tooltip title='Open in splice video'>
                   <IconButton
-                    aria-label='splice video'
+                    aria-label='open in splice video'
                     color='secondary'
                     disabled={!MimeTypes.video.some(type => file.mimeType?.includes(type))}
                     onClick={() => { handleSpliceVideo(file) }}
