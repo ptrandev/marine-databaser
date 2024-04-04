@@ -7,6 +7,11 @@ import fs from 'fs/promises'
 import { type RefreshedDirectories } from 'shared/types'
 import path from 'path'
 
+/**
+ * Given a directory, returns a list of all files in it
+ * @param {string} directory - the directory to search
+ * @returns {Promise<string[]>} - a promise that resolves with a list of all files in the directory
+ */
 const getFileList = async (directory: string): Promise<string[]> => {
   let files: string[] = []
 
@@ -25,6 +30,12 @@ const getFileList = async (directory: string): Promise<string[]> => {
   return files
 }
 
+/**
+ * Adds files to the database
+ * @param files - the files to add
+ * @param directoryId - the directory to add the files to
+ * @returns a promise that resolves with the files that were added
+ */
 export const addFilesToDatabase = async ({ files, directoryId }: {
   files: string[]
   directoryId: number
@@ -42,6 +53,8 @@ export const addFilesToDatabase = async ({ files, directoryId }: {
 
 /**
  * Give a path, finds the directory that matches it
+ * @param path - the path to search for
+ * @returns a promise that resolves with the directory that matches the path
  */
 export const findDirectoryByPath = async (path: string): Promise<Directory | null> => {
   return await Directory.findAll({
@@ -55,6 +68,12 @@ export const findDirectoryByPath = async (path: string): Promise<Directory | nul
   })
 }
 
+/**
+ * Adds a file to the database
+ * @param file - the file to add
+ * @param directoryId - the directory to add the file to
+ * @returns a promise that resolves with the file that was added
+ */
 const addFileToDatabase = async ({ file, directoryId }: {
   file: string
   directoryId: number
@@ -81,6 +100,11 @@ const addFileToDatabase = async ({ file, directoryId }: {
   }
 }
 
+/**
+ * Refreshes a directory
+ * @param {number} directoryId - the id of the directory to refresh
+ * @returns {Promise<RefreshedDirectories>} - a promise that resolves with the number of files that were updated
+ */
 const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectories> => {
   const directory = await Directory.findOne({
     where: {
@@ -240,6 +264,12 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
   }
 }
 
+/**
+ * Adds a directory to the database
+ * @param {BrowserWindow} win - the window to show the dialog in
+ * @param {IpcMainEvent} event - the event to reply to
+ * @returns {Promise<void>} - a promise that resolves when the directory has been added
+ */
 export const handleAddDirectory = async (win: BrowserWindow, event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog(win, {
     properties: ['openDirectory']
@@ -292,6 +322,11 @@ export const handleSelectDirectory = async (win: BrowserWindow, event: IpcMainEv
   event.reply('selected-directory', result.filePaths)
 }
 
+/**
+ * Lists all directories in the database
+ * @param event - the event to reply to
+ * @returns {Promise<void>} - a promise that resolves when all directories have been listed
+ */
 export const handleListDirectories = async (event: IpcMainEvent): Promise<void> => {
   const directories: Directory[] = await Directory.findAll().then(
     (dictionaries) => dictionaries.map((dictionary) => dictionary.toJSON())
@@ -300,6 +335,11 @@ export const handleListDirectories = async (event: IpcMainEvent): Promise<void> 
   event.reply('listed-directories', directories)
 }
 
+/**
+ * Given a directory, returns the number of files in it
+ * @param event - the event to reply to
+ * @returns {Promise<void>} - a promise that resolves when the number of files in each directory has been calculated
+ */
 export const handleDirectoriesFileCount = async (event: IpcMainEvent): Promise<void> => {
   // get number of files for each directory
   const directories = await Directory.findAll({
@@ -327,6 +367,11 @@ export const handleDirectoriesFileCount = async (event: IpcMainEvent): Promise<v
   event.reply('listed-directories-file-count', directories)
 }
 
+/**
+ * Opens a directory in the file explorer
+ * @param {string} arg.path - the path of the directory to open
+ * @returns {Promise<void>} - a promise that resolves when the directory has been opened
+ */
 export const handleOpenDirectory = async (arg: { path: string }): Promise<void> => {
   const { path } = arg
 
@@ -338,6 +383,12 @@ export const handleOpenDirectory = async (arg: { path: string }): Promise<void> 
   await shell.openPath(path)
 }
 
+/**
+ * Deletes a directory and all files associated with it
+ * @param event - the event to reply to
+ * @param arg.directoryId - the directory to delete
+ * @returns {Promise<void>} - a promise that resolves when the directory has been deleted
+ */
 export const handleDeleteDirectory = async (event: IpcMainEvent, arg: { directoryId: number }): Promise<void> => {
   const { directoryId } = arg
 
@@ -359,8 +410,8 @@ export const handleDeleteDirectory = async (event: IpcMainEvent, arg: { director
 
 /**
  * Refreshes the files in every directory
- * @param event
- * @returns
+ * @param event - the event to reply to
+ * @returns {Promise<void>} - a promise that resolves when all directories have been refreshed
  */
 export const handleRefreshDirectories = async (event: IpcMainEvent, arg: { directoryIds: number[] }): Promise<void> => {
   // get all directories to refresh
