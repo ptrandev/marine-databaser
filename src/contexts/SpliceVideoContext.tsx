@@ -76,7 +76,7 @@ interface SpliceVideoProviderProps {
   children?: React.ReactNode
 }
 
-const MAXIMUM_EVENT_HISTORY_LENGTH = 100
+const MAXIMUM_EVENT_HISTORY_LENGTH = 256
 
 export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) => {
   const [spliceRegions, setSpliceRegions] = useState<SpliceRegion[]>([])
