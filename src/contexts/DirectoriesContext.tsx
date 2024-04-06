@@ -2,6 +2,7 @@ import { type FC, createContext, useState, useEffect, useMemo } from 'react'
 import { ipcRenderer } from 'electron'
 import { type Directory } from '../../electron/database/schemas'
 import DirectoryRefreshModal from '@/contexts/DirectoryRefreshModal'
+import DirectoryLocationModal from '@/contexts/DirectoryLocationModal'
 
 export interface DirectoriesContextValue {
   directories: Directory[]
@@ -15,6 +16,8 @@ export interface DirectoriesContextValue {
   handleIsInitializingDirectory: (initializingDirectory: boolean) => void
   handleDeleteDirectory: (directoryId: number) => Promise<void>
   handleRefreshDirectories: (directoryIds: number[]) => void
+  handleSetDirectoryLocation: (directoryId: number | null) => void
+  isSettingDirectoryLocation: boolean
 }
 
 const DirectoriesContext = createContext<DirectoriesContextValue | null>(null)
@@ -35,6 +38,8 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
   const [isRefreshingDirectories, setIsRefreshingDirectories] = useState<boolean>(false)
   const [refreshDirectories, setRefreshDirectories] = useState<number[]>([])
   const [isRefreshModalOpen, setIsRefreshModalOpen] = useState<boolean>(false)
+
+  const [settingDirectoryLocationDirectory, setSettingDirectoryLocationDirectory] = useState<number | null>(null)
 
   const loadDirectories = async (): Promise<void> => {
     setIsLoadingDirectories(true)
@@ -93,6 +98,10 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
     setIsRefreshingDirectories(false)
   }
 
+  const handleSetDirectoryLocation = (directoryId: number | null): void => {
+    setSettingDirectoryLocationDirectory(directoryId)
+  }
+
   const updateIsRefreshingDirectories = (isRefreshingDirectories: boolean): void => {
     setIsRefreshingDirectories(isRefreshingDirectories)
   }
@@ -121,9 +130,10 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
       handleDeleteDirectory,
       isRefreshingDirectories,
       handleRefreshDirectories,
-      updateIsRefreshingDirectories
+      updateIsRefreshingDirectories,
+      handleSetDirectoryLocation
     }
-  }, [directories, isLoadingDirectories, isInitializingDirectory, directoriesFileCount, loadDirectories, handleIsInitializingDirectory, isDeletingDirectory, handleDeleteDirectory, isRefreshingDirectories, handleRefreshDirectories, updateIsRefreshingDirectories])
+  }, [directories, isLoadingDirectories, isInitializingDirectory, directoriesFileCount, loadDirectories, handleIsInitializingDirectory, isDeletingDirectory, handleDeleteDirectory, isRefreshingDirectories, handleRefreshDirectories, updateIsRefreshingDirectories, handleSetDirectoryLocation])
 
   return (
     <DirectoriesContext.Provider value={contextValue}>
@@ -134,6 +144,15 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
             open={isRefreshModalOpen}
             onClose={() => { setIsRefreshModalOpen(false) }}
             directoryIds={refreshDirectories}
+          />
+        )
+      }
+      {
+        settingDirectoryLocationDirectory !== null && (
+          <DirectoryLocationModal
+            open={settingDirectoryLocationDirectory !== null}
+            onClose={() => { handleSetDirectoryLocation(null) }}
+            directoryId={settingDirectoryLocationDirectory}
           />
         )
       }

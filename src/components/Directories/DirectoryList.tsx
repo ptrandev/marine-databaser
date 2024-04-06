@@ -1,4 +1,4 @@
-import { Delete, Folder, Refresh } from '@mui/icons-material'
+import { Delete, Folder, Refresh, DriveFileMove } from '@mui/icons-material'
 import { IconButton, List, ListItemText, ListItem, Typography, Box, LinearProgress, Tooltip, CircularProgress } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import { type FC, useState } from 'react'
@@ -19,11 +19,11 @@ const DirectoryList: FC = () => {
   if (isLoadingDirectories) {
     return (
       <Box display='flex' flexDirection='column' mt={4} alignItems='center' justifyContent='center' width='100%' gap={2}>
-      <CircularProgress />
-      <Typography>
-        Loading directories...
-      </Typography>
-    </Box>
+        <CircularProgress />
+        <Typography>
+          Loading directories...
+        </Typography>
+      </Box>
     )
   }
 
@@ -71,7 +71,7 @@ interface DirectoryListItemProps {
 }
 
 const DirectoryListItem: FC<DirectoryListItemProps> = ({ directory, updateDirectoryIdToDelete, isDeletingDirectory, handleRefresh, isRefreshingDirectory }) => {
-  const { directoriesFileCount } = useDirectories()
+  const { directoriesFileCount, handleSetDirectoryLocation } = useDirectories()
 
   const handleOpenDirectory = (path: string): void => {
     ipcRenderer.send('open-directory', { path })
@@ -121,6 +121,17 @@ const DirectoryListItem: FC<DirectoryListItemProps> = ({ directory, updateDirect
           disabled={isRefreshingDirectory}
         >
           <Refresh />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title='Set directory location'>
+        <IconButton
+          aria-label='set directory location'
+          onClick={(e) => {
+            e.stopPropagation()
+            handleSetDirectoryLocation(directory.id)
+          }}
+        >
+          <DriveFileMove />
         </IconButton>
       </Tooltip>
       <Tooltip title='Delete directory'>

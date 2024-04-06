@@ -6,6 +6,7 @@ import { handleKillOrphanedTags } from './tag'
 import fs from 'fs/promises'
 import { type RefreshedDirectories } from 'shared/types'
 import path from 'path'
+import sequelize from '../database/initialize'
 
 /**
  * Given a directory, returns a list of all files in it
@@ -405,6 +406,8 @@ export const handleDeleteDirectory = async (event: IpcMainEvent, arg: { director
     }
   })
 
+  await handleKillOrphanedTags(event)
+
   event.reply('deleted-directory', arg)
 }
 
@@ -444,4 +447,100 @@ export const handleRefreshDirectories = async (event: IpcMainEvent, arg: { direc
   await handleKillOrphanedTags(event)
 
   event.reply('refreshed-directories')
+}
+
+/**
+ * Given a current directory, sets a new directory location
+ * @param event
+ * @param arg.directoryId - the directory to change
+ * @param arg.newPath - the new path to set
+ * @returns
+ */
+export const handleSetDirectoryLocation = async (win: BrowserWindow, event: IpcMainEvent, arg: { directoryId: number }): Promise<void> => {
+  const { directoryId } = arg
+
+  const result = await dialog.showOpenDialog(win, {
+    properties: ['openDirectory']
+  })
+
+  if (result.filePaths.length === 0) return
+
+  const newPath = result.filePaths[0]
+
+  // ensure that directory is not already in database
+  const existingDirectory = await Directory.findOne({
+    where: {
+      path: newPath
+    }
+  })
+
+  if (existingDirectory !== null) {
+    event.reply('set-directory-location-error', 'The directory is already in the database.')
+    return
+  }
+
+  const t = await sequelize.transaction()
+
+  try {
+    // find the directory that we want to change
+    const directory = await Directory.findOne({
+      where: {
+        id: directoryId
+      },
+      transaction: t
+    })
+
+    if (directory === null) {
+      throw new Error('Directory does not exist.')
+    }
+
+    // get all files in the directory
+    const files = await File.findAll({
+      where: {
+        directoryId
+      },
+      transaction: t
+    })
+
+    // for each file, update the path
+    await Promise.all(
+      files.map(async (file) => {
+        await File.update(
+          {
+            path: file.path.replace(directory.path, newPath)
+          },
+          {
+            where: {
+              id: file.id
+            },
+            transaction: t
+          }
+        )
+      })
+    )
+
+    // update the directory path
+    await Directory.update(
+      {
+        path: newPath,
+        name: path.basename(newPath)
+      },
+      {
+        where: {
+          id: directoryId
+        },
+        transaction: t
+      }
+    )
+
+    await t.commit()
+  } catch (err) {
+    await t.rollback()
+    event.reply('set-directory-location-error', (err as Error).message)
+    return
+  }
+
+  await refreshDirectory(directoryId)
+
+  event.reply('set-directory-location-success', newPath)
 }
