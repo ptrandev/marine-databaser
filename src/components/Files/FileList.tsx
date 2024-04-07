@@ -227,7 +227,8 @@ const FileListItem: FC<FileListItemProps> = ({
     }
   }, [file.mimeType])
 
-  const matchingNote = useMemo(() => searchTerm ? file?.FileNotes?.find(note => note.note.includes(searchTerm))?.note : null, [searchTerm])
+  // there is a matching note if there a note contains the search term, convert note and search term to lowercase
+  const matchingNote = useMemo(() => searchTerm ? file?.FileNotes?.find(note => note.note.toLowerCase().includes(searchTerm.toLowerCase()))?.note : false, [file.FileNotes, searchTerm])
 
   const fileChildren = useMemo(() => fileParentFiles?.find(parent => parent.id === file.id)?.fileChildrenCount, [fileParentFiles])
 
