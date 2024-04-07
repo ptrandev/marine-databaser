@@ -1,21 +1,45 @@
-import { Delete, Folder, Refresh, DriveFileMove } from '@mui/icons-material'
-import { IconButton, List, ListItemText, ListItem, Typography, Box, LinearProgress, Tooltip, CircularProgress } from '@mui/material'
+import { Delete, Folder, Refresh, DriveFileMove, Search, Close } from '@mui/icons-material'
+import { IconButton, List, ListItemText, ListItem, Typography, Box, LinearProgress, Tooltip, CircularProgress, TextField, InputAdornment } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import { type FC, useState, useEffect } from 'react'
+import { enqueueSnackbar } from 'notistack'
 
 import useDirectories from '@/hooks/useDirectories'
 import DirectoryDeleteModal from './DirectoryDeleteModal'
 import { type Directory } from 'electron/database/schemas'
-import { enqueueSnackbar } from 'notistack'
+import { useEffectDebounced } from '@/hooks/useEffectDebounced'
 
 const DirectoryList: FC = () => {
   const { directories, isDeletingDirectory, isRefreshingDirectories, handleRefreshDirectories, isLoadingDirectories } = useDirectories()
 
   const [directoryIdToDelete, setDirectoryIdToDelete] = useState<number>()
 
+  const [searchTerm, setSearchTerm] = useState<string>('')
+  const [searchResults, setSearchResults] = useState<Directory[]>(directories)
+
   const handleRefresh = (directoryId: number): void => {
     handleRefreshDirectories([directoryId])
   }
+
+  const handleOpenDirectoryError = (_: unknown, errMessage: string): void => {
+    enqueueSnackbar(errMessage, { variant: 'error' })
+  }
+
+  useEffectDebounced(() => {
+    if (searchTerm === '') {
+      setSearchResults(directories)
+    } else {
+      setSearchResults(directories?.filter((directory) => directory.path.toLowerCase().includes(searchTerm.toLowerCase())))
+    }
+  }, [searchTerm, directories], 250)
+
+  useEffect(() => {
+    ipcRenderer.on('open-directory-error', handleOpenDirectoryError)
+
+    return () => {
+      ipcRenderer.removeListener('open-directory-error', handleOpenDirectoryError)
+    }
+  }, [])
 
   if (isLoadingDirectories) {
     return (
@@ -27,18 +51,6 @@ const DirectoryList: FC = () => {
       </Box>
     )
   }
-
-  const handleOpenDirectoryError = (_: unknown, errMessage: string): void => {
-    enqueueSnackbar(errMessage, { variant: 'error' })
-  }
-
-  useEffect(() => {
-    ipcRenderer.on('open-directory-error', handleOpenDirectoryError)
-
-    return () => {
-      ipcRenderer.removeListener('open-directory-error', handleOpenDirectoryError)
-    }
-  }, [])
 
   return (
     <>
@@ -52,9 +64,37 @@ const DirectoryList: FC = () => {
           </Box>
         )
       }
+      <TextField
+        placeholder='Search directory name or path'
+        variant='outlined'
+        fullWidth
+        value={searchTerm}
+        onChange={(e) => { setSearchTerm(e.target.value) }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position='start'>
+              <Search />
+            </InputAdornment>
+          ),
+          endAdornment: (
+            searchTerm !== '' && (
+              <InputAdornment position='end'>
+                <Tooltip title='Clear search'>
+                  <IconButton
+                    aria-label='clear search'
+                    onClick={() => { setSearchTerm('') }}
+                  >
+                    <Close />
+                  </IconButton>
+                </Tooltip>
+              </InputAdornment>
+            )
+          )
+        }}
+      />
       <List>
         {
-          directories?.map((directory) => (
+          searchResults?.map((directory) => (
             <DirectoryListItem
               key={directory.id}
               directory={directory}
