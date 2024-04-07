@@ -98,9 +98,11 @@ export const handleTagFiles = async (event: IpcMainEvent, arg: {
  * Lists all tags
  */
 export const handleListTags = async (event: IpcMainEvent): Promise<void> => {
-  const tags: Tag[] = await Tag.findAll().then((tags) =>
-    tags.map((tag) => tag.toJSON())
-  )
+  // get all tags, sorted in alphabetical order
+  const tags: Tag[] = await Tag.findAll({
+    order: [['name', 'ASC']]
+  }).then((tags) => tags.map((tag) => tag.toJSON()))
+
   event.reply('listed-tags', tags)
 }
 
@@ -144,8 +146,8 @@ export const handleUntagFiles = async (event: IpcMainEvent, arg: {
           tagId
         }
       })
-    }
-    ))
+    })
+  )
 
   await handleKillOrphanedTags(event)
 
