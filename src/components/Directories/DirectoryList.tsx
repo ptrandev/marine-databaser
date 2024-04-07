@@ -1,11 +1,12 @@
 import { Delete, Folder, Refresh, DriveFileMove } from '@mui/icons-material'
 import { IconButton, List, ListItemText, ListItem, Typography, Box, LinearProgress, Tooltip, CircularProgress } from '@mui/material'
 import { ipcRenderer } from 'electron'
-import { type FC, useState } from 'react'
+import { type FC, useState, useEffect } from 'react'
 
 import useDirectories from '@/hooks/useDirectories'
 import DirectoryDeleteModal from './DirectoryDeleteModal'
 import { type Directory } from 'electron/database/schemas'
+import { enqueueSnackbar } from 'notistack'
 
 const DirectoryList: FC = () => {
   const { directories, isDeletingDirectory, isRefreshingDirectories, handleRefreshDirectories, isLoadingDirectories } = useDirectories()
@@ -26,6 +27,18 @@ const DirectoryList: FC = () => {
       </Box>
     )
   }
+
+  const handleOpenDirectoryError = (_: unknown, errMessage: string): void => {
+    enqueueSnackbar(errMessage, { variant: 'error' })
+  }
+
+  useEffect(() => {
+    ipcRenderer.on('open-directory-error', handleOpenDirectoryError)
+
+    return () => {
+      ipcRenderer.removeListener('open-directory-error', handleOpenDirectoryError)
+    }
+  }, [])
 
   return (
     <>

@@ -160,8 +160,8 @@ ipcMain.on('list-directories', (event) => {
   void handleListDirectories(event)
 })
 
-ipcMain.on('open-directory', (_, arg: { path: string }) => {
-  void handleOpenDirectory(arg)
+ipcMain.on('open-directory', (event, arg: { path: string }) => {
+  void handleOpenDirectory(event, arg)
 })
 
 ipcMain.on('delete-directory', (event, arg: { directoryId: number }) => {

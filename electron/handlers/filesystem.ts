@@ -6,7 +6,7 @@ export const handleOpenFile = async (event: IpcMainEvent, arg: string): Promise<
   const res = await shell.openPath(arg)
 
   if (res !== '') {
-    event.reply('open-file-error', res)
+    event.reply('open-file-error', 'File cannot be found. It may have moved, been deleted, or is on an external drive that is not connected.')
   }
 }
 
@@ -19,6 +19,6 @@ export const handleOpenFileFolder = async (event: IpcMainEvent, arg: string): Pr
     await fs.access(folder)
     shell.showItemInFolder(arg)
   } catch (err) {
-    event.reply('open-file-folder-error', (err as Error).message)
+    event.reply('open-file-folder-error', 'Folder cannot be found. It may have moved, been deleted, or is on an external drive that is not connected.')
   }
 }

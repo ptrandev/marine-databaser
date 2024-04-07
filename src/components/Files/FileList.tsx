@@ -53,11 +53,11 @@ const FileList: FC = () => {
   }
 
   const handleOpenFileError = (_: unknown, errMessage: string): void => {
-    enqueueSnackbar(`Error opening file: ${errMessage}`, { variant: 'error' })
+    enqueueSnackbar(errMessage, { variant: 'error' })
   }
 
   const handleOpenFileFolderError = (_: unknown, errMessage: string): void => {
-    enqueueSnackbar(`Error opening file folder: ${errMessage}`, { variant: 'error' })
+    enqueueSnackbar(errMessage, { variant: 'error' })
   }
 
   const handleSpliceVideo = (file: FileWithMetadata): void => {

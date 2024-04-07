@@ -79,15 +79,15 @@ const addFileToDatabase = async ({ file, directoryId }: {
   file: string
   directoryId: number
 }): Promise<
-{
-  name: string
-  path: string
-  directoryId: number
-  mimeType: string
-  lastModified: Date
-  birthTime: Date
-  fileSize: number
-}> => {
+  {
+    name: string
+    path: string
+    directoryId: number
+    mimeType: string
+    lastModified: Date
+    birthTime: Date
+    fileSize: number
+  }> => {
   const { mtime, birthtime, size } = await fs.stat(file)
 
   return {
@@ -378,15 +378,15 @@ export const handleDirectoriesFileCount = async (event: IpcMainEvent): Promise<v
  * @param {string} arg.path - the path of the directory to open
  * @returns {Promise<void>} - a promise that resolves when the directory has been opened
  */
-export const handleOpenDirectory = async (arg: { path: string }): Promise<void> => {
+export const handleOpenDirectory = async (event: IpcMainEvent, arg: { path: string }): Promise<void> => {
   const { path } = arg
 
   // make sure the directory exists before opening it
-  await fs.stat(path).catch(() => {
-    throw new Error('Directory does not exist')
+  await fs.stat(path).then(async () => {
+    await shell.openPath(path)
+  }).catch(() => {
+    event.reply('open-directory-error', 'Directory cannot be found. It may have moved, been deleted, or is on an external drive that is not connected.')
   })
-
-  await shell.openPath(path)
 }
 
 /**
