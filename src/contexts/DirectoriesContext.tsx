@@ -17,7 +17,6 @@ export interface DirectoriesContextValue {
   handleDeleteDirectory: (directoryId: number) => Promise<void>
   handleRefreshDirectories: (directoryIds: number[]) => void
   handleSetDirectoryLocation: (directoryId: number | null) => void
-  isSettingDirectoryLocation: boolean
 }
 
 const DirectoriesContext = createContext<DirectoriesContextValue | null>(null)
