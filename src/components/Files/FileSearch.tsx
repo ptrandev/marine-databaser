@@ -1,5 +1,5 @@
-import { Search, Refresh } from '@mui/icons-material'
-import { InputAdornment, Button, Autocomplete, TextField, Box, Stack, Grid, ListItem, ListItemText, createFilterOptions } from '@mui/material'
+import { Search, Refresh, Close } from '@mui/icons-material'
+import { InputAdornment, Button, Autocomplete, TextField, Box, Stack, Grid, ListItem, ListItemText, createFilterOptions, Tooltip, IconButton } from '@mui/material'
 import { type FC } from 'react'
 import useFiles from '@/hooks/useFiles'
 import { FileTypes } from '../../../shared/types'
@@ -36,6 +36,20 @@ const FileSearch: FC = () => {
               <InputAdornment position='start'>
                 <Search />
               </InputAdornment>
+            ),
+            endAdornment: (
+              searchTerm !== '' && (
+                <InputAdornment position='end'>
+                  <Tooltip title='Clear search'>
+                    <IconButton
+                      aria-label='clear search'
+                      onClick={() => { updateSearchTerm('') }}
+                    >
+                      <Close />
+                    </IconButton>
+                  </Tooltip>
+                </InputAdornment>
+              )
             )
           }}
           fullWidth
