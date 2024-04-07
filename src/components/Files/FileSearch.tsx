@@ -70,6 +70,11 @@ const FileSearch: FC = () => {
                 label="Directories"
               />
             )}
+            renderOption={(props, option) => (
+              <ListItem {...props}>
+                <ListItemText primary={option.name} secondary={option.path} />
+              </ListItem>
+            )}
             isOptionEqualToValue={(option, value) => option.id === value.id}
             fullWidth
           />
