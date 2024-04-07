@@ -44,6 +44,16 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
       {
         model: FileParent
       }
+    ],
+    order: [
+      [
+        {
+          model: Tag,
+          as: 'Tags'
+        },
+        'name',
+        'ASC'
+      ]
     ]
   }
 
@@ -121,9 +131,10 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
 
   options.limit = 10000
 
-  const files: File[] = await File.findAll(options).then((files) =>
-    files.map((file) => file.toJSON())
-  )
+  // get all files, sort Tags by name
+  const files: File[] = await File.findAll(options).then((files) => {
+    return files.map((file) => file.toJSON())
+  })
 
   event.reply('listed-files', files)
 }
