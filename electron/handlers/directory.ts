@@ -329,7 +329,12 @@ export const handleSelectDirectory = async (win: BrowserWindow, event: IpcMainEv
  * @returns {Promise<void>} - a promise that resolves when all directories have been listed
  */
 export const handleListDirectories = async (event: IpcMainEvent): Promise<void> => {
-  const directories: Directory[] = await Directory.findAll().then(
+  // get all directories, sort by name
+  const directories: Directory[] = await Directory.findAll({
+    order: [
+      ['name', 'ASC']
+    ]
+  }).then(
     (dictionaries) => dictionaries.map((dictionary) => dictionary.toJSON())
   )
 
