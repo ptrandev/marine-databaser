@@ -557,7 +557,7 @@ export const handleListDirectoriesAccess = async (event: IpcMainEvent, arg: { di
         [Op.in]: arg.directoryIds
       }
     }
-  })
+  }).then(directories => directories.map(directory => directory.toJSON()))
 
   const directoriesAccess: Record<number, boolean> = {}
 
