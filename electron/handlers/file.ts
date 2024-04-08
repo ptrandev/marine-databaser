@@ -1,8 +1,9 @@
 import { type BrowserWindow, type IpcMainEvent, dialog } from 'electron'
-import { Tag, File, FileNote } from '../database/schemas'
+import { Tag, File, FileNote, FileParent } from '../database/schemas'
 import { type FindOptions, Op } from 'sequelize'
 import { type FileTypes } from '../../shared/types'
-import fs from 'fs'
+import fs from 'fs/promises'
+import path from 'path'
 
 export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent): Promise<void> => {
   const result = await dialog.showOpenDialog(win, {
@@ -13,7 +14,7 @@ export const handleSelectFile = async (win: BrowserWindow, event: IpcMainEvent):
     // @ts-expect-error - result.filePaths is an array of strings
     // TODO - this is a hacky way to get the file name and path
     {
-      name: result.filePaths[0].split('/').pop() ?? '',
+      name: path.basename(result.filePaths[0]),
       path: result.filePaths[0]
     },
     { raw: true }
@@ -27,8 +28,9 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
   tags?: number[]
   fileTypes?: FileTypes[]
   searchTerm?: string
+  fileParents?: number[]
 }): Promise<void> => {
-  const { directories, tags, fileTypes, searchTerm } = arg
+  const { directories, tags, fileTypes, searchTerm, fileParents } = arg
 
   const options: FindOptions = {
     where: {},
@@ -38,7 +40,20 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
       },
       {
         model: FileNote
+      },
+      {
+        model: FileParent
       }
+    ],
+    order: [
+      [
+        {
+          model: Tag,
+          as: 'Tags'
+        },
+        'name',
+        'ASC'
+      ]
     ]
   }
 
@@ -95,11 +110,31 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
     }
   }
 
+  if (fileParents && fileParents.length > 0) {
+    const parents = await FileParent.findAll({
+      where: {
+        fileParentId: fileParents
+      }
+    })
+
+    const fileIds = parents.map((fileParent) => fileParent.fileChildId)
+
+    options.where = {
+      ...options.where,
+      [Op.or]: [
+        {
+          id: fileIds
+        }
+      ]
+    }
+  }
+
   options.limit = 10000
 
-  const files: File[] = await File.findAll(options).then((files) =>
-    files.map((file) => file.toJSON())
-  )
+  // get all files, sort Tags by name
+  const files: File[] = await File.findAll(options).then((files) => {
+    return files.map((file) => file.toJSON())
+  })
 
   event.reply('listed-files', files)
 }
@@ -163,6 +198,17 @@ const matchMimeTypes = (FileTypes: FileTypes[]): string[] => {
   }).flat()
 }
 
+/**
+ * Given a path, find the File that matches the path and return the File
+ */
+export const findFileByPath = async (path: string): Promise<File | null> => {
+  return await File.findOne({
+    where: {
+      path
+    }
+  })
+}
+
 export const handleFileRename = async (event: IpcMainEvent, arg: {
   file: File
   name: string
@@ -172,7 +218,7 @@ export const handleFileRename = async (event: IpcMainEvent, arg: {
   const path: string = file.path.replace(file.name, name)
 
   // first change filename on disk
-  fs.renameSync(file.path, path)
+  await fs.rename(file.path, path)
 
   // then update database ... remember to update name and path
   await File.update(

@@ -5,23 +5,15 @@ import { Typography, Stack, Box, Button, CircularProgress, LinearProgress } from
 import { ipcRenderer } from 'electron'
 
 const ConvertVideoModal: FC = () => {
-  const { videoRef, selectedVideo, updateVideoUrl } = useSpliceVideo()
+  const { videoRef, selectedVideo, updateVideoUrl, updateSelectedVideo } = useSpliceVideo()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [progress, setProgress] = useState(0)
   const [isConverting, setIsConverting] = useState(false)
 
-  useEffect(() => {
-    if (!videoRef) {
-      return
-    }
-
-    videoRef.addEventListener('loadedmetadata', handleLoadedMetadata)
-
-    return () => {
-      videoRef.removeEventListener('loadedmetadata', handleLoadedMetadata)
-    }
-  }, [videoRef])
+  const handleError = (): void => {
+    setIsModalOpen(true)
+  }
 
   const handleLoadedMetadata = (): void => {
     if (!videoRef) {
@@ -35,6 +27,7 @@ const ConvertVideoModal: FC = () => {
 
   const onClose = (): void => {
     setIsModalOpen(false)
+    updateSelectedVideo('')
   }
 
   const handleConvertVideo = (): void => {
@@ -43,10 +36,24 @@ const ConvertVideoModal: FC = () => {
   }
 
   useEffect(() => {
+    if (!videoRef) {
+      return
+    }
+
+    videoRef.addEventListener('loadedmetadata', handleLoadedMetadata)
+    videoRef.addEventListener('error', handleError)
+
+    return () => {
+      videoRef.removeEventListener('loadedmetadata', handleLoadedMetadata)
+      videoRef.removeEventListener('error', handleError)
+    }
+  }, [videoRef])
+
+  useEffect(() => {
     ipcRenderer.on('converted-video', (_, videoPath: string) => {
       setIsModalOpen(false)
       setIsConverting(false)
-      updateVideoUrl(videoPath)
+      void updateVideoUrl(videoPath)
     })
 
     ipcRenderer.on('convert-video-error', (_, errorMessage: string) => {

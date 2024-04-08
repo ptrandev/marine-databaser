@@ -1,20 +1,37 @@
-import { type FC } from 'react'
+import { type FC, useRef, useEffect, useState } from 'react'
 import { Box, CircularProgress, Typography } from '@mui/material'
 
 import useFiles from '@/hooks/useFiles'
 import FileList from '@/components/Files/FileList'
 import FileSearch from '@/components/Files/FileSearch'
-import FileFilters from '@/components/Files/FileFilters'
 import FileActions from '@/components/Files/FileActions'
 
 const Files: FC = () => {
+  const fileSearchRef = useRef<HTMLInputElement | null>(null)
   const { files, isLoadingFiles } = useFiles()
+
+  const [fileSearchHeight, setFileSearchHeight] = useState<number>(0)
+
+  useEffect(() => {
+    if (!fileSearchRef.current) return
+
+    const handleResize = (): void => {
+      setFileSearchHeight(fileSearchRef.current?.clientHeight ?? 0)
+    }
+
+    handleResize()
+
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [fileSearchRef.current])
 
   return (
     <Box>
-      <Box mb={2}>
+      <Box mb={2} ref={fileSearchRef}>
         <FileSearch />
-        <FileFilters />
       </Box>
       {
         !isLoadingFiles && files && (
@@ -29,7 +46,13 @@ const Files: FC = () => {
         <FileActions />
         {
           !isLoadingFiles && files && (
-            <FileList />
+            <Box
+              sx={{
+                height: `calc(100vh - 196px - ${fileSearchHeight}px)`
+              }}
+            >
+              <FileList />
+            </Box>
           )
         }
       </Box>

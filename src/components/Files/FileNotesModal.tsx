@@ -1,7 +1,7 @@
 import { Modal, type ModalProps } from '@/components/Modal'
 import { type FC, useEffect, useState } from 'react'
 import { ipcRenderer } from 'electron'
-import { Button, Stack, TextField, ListItem, ListItemText, IconButton, Box, List } from '@mui/material'
+import { Button, Stack, TextField, ListItem, ListItemText, IconButton, Box, List, Tooltip } from '@mui/material'
 import { type FileWithMetadata } from 'shared/types'
 import { type FileNote } from 'electron/database/schemas'
 import { Delete, Edit } from '@mui/icons-material'
@@ -125,23 +125,30 @@ const Note: FC<NoteProps> = ({ note, handleDeleteNote, handleUpdateNote }) => {
               onBlur={() => { void handleOnBlur() }}
             />
           </>
-          : <ListItemText primary={note.note} />
+          : <Box sx={{ width: '100%' }}>
+            <ListItemText primary={note.note} secondary={'Created at: ' + note.createdAt.toLocaleString()} />
+            <ListItemText secondary={'Updated at: ' + note.updatedAt.toLocaleString()} />
+          </Box>
       }
-      <IconButton
-        aria-label='edit'
-        onClick={() => {
-          setEdited(true)
-        }}
-      >
-        <Edit />
-      </IconButton>
-      <IconButton
-        aria-label='delete'
-        color='error'
-        onClick={() => { handleDeleteNote(note.id) }}
-      >
-        <Delete />
-      </IconButton>
+      <Tooltip title='Edit note'>
+        <IconButton
+          aria-label='edit'
+          onClick={() => {
+            setEdited(true)
+          }}
+        >
+          <Edit />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title='Delete note'>
+        <IconButton
+          aria-label='delete'
+          color='error'
+          onClick={() => { handleDeleteNote(note.id) }}
+        >
+          <Delete />
+        </IconButton>
+      </Tooltip>
     </ListItem>
   )
 }

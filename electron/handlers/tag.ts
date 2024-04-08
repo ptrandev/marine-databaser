@@ -40,7 +40,6 @@ export const handleTagFile = async (event: IpcMainEvent, arg: {
   // check if file already has tag
   const hasTag: FileTag | null = await FileTag.findOne({
     where: {
-      // @ts-expect-error - we are using the sequelize operator
       fileId,
       tagId: _tag.id
     }
@@ -55,7 +54,7 @@ export const handleTagFile = async (event: IpcMainEvent, arg: {
   const fileTag: FileTag = await FileTag.create({
     fileId,
     tagId: _tag.id
-  }).then((fileTag) => fileTag.toJSON())
+  }).then((fileTag) => fileTag.toJSON()) as FileTag
 
   event.reply('tagged-file', fileTag)
 }
@@ -76,7 +75,6 @@ export const handleTagFiles = async (event: IpcMainEvent, arg: {
     fileIds.map(async (fileId) => {
       const hasTag: FileTag | null = await FileTag.findOne({
         where: {
-          // @ts-expect-error - we are using the sequelize operator
           fileId,
           tagId: _tag.id
         }
@@ -87,7 +85,7 @@ export const handleTagFiles = async (event: IpcMainEvent, arg: {
       const fileTag: FileTag = await FileTag.create({
         fileId,
         tagId: _tag.id
-      }).then((fileTag) => fileTag.toJSON())
+      }).then((fileTag) => fileTag.toJSON()) as FileTag
 
       return fileTag
     })
@@ -100,9 +98,11 @@ export const handleTagFiles = async (event: IpcMainEvent, arg: {
  * Lists all tags
  */
 export const handleListTags = async (event: IpcMainEvent): Promise<void> => {
-  const tags: Tag[] = await Tag.findAll().then((tags) =>
-    tags.map((tag) => tag.toJSON())
-  )
+  // get all tags, sorted in alphabetical order
+  const tags: Tag[] = await Tag.findAll({
+    order: [['name', 'ASC']]
+  }).then((tags) => tags.map((tag) => tag.toJSON()))
+
   event.reply('listed-tags', tags)
 }
 
@@ -117,7 +117,6 @@ export const handleUntagFile = async (event: IpcMainEvent, arg: {
 
   await FileTag.destroy({
     where: {
-      // @ts-expect-error - we are using the sequelize operator
       fileId,
       tagId
     }
@@ -143,13 +142,12 @@ export const handleUntagFiles = async (event: IpcMainEvent, arg: {
     fileIds.map(async (fileId) => {
       await FileTag.destroy({
         where: {
-          // @ts-expect-error - we are using the sequelize operator
           fileId,
           tagId
         }
       })
-    }
-    ))
+    })
+  )
 
   await handleKillOrphanedTags(event)
 
@@ -167,7 +165,6 @@ export const handleKillOrphanedTags = async (event: IpcMainEvent): Promise<void>
 
   // get orphaned tags
   const orphanedTags: Tag[] = tags.filter((tag) => {
-    // @ts-expect-error - we are using the sequelize operator
     const hasTag: boolean = fileTags.some((fileTag) => fileTag.tagId === tag.id)
     return !hasTag
   })

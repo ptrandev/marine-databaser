@@ -39,7 +39,7 @@ File.init({
   lastModified: DataTypes.DATE, // last time the FILE was modified
   birthTime: DataTypes.DATE, // the time the file was CREATED
   updatedAt: DataTypes.DATE, // the time at which our PROGRAM updated the file
-  fileSize: DataTypes.INTEGER // the size of the file in bytes
+  fileSize: DataTypes.INTEGER, // the size of the file in bytes
 }, {
   sequelize
 })

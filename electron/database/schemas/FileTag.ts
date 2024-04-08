@@ -4,7 +4,10 @@ import { Model, type InferAttributes, type InferCreationAttributes, DataTypes } 
 import File from './File'
 import Tag from './Tag'
 
-class FileTag extends Model<InferAttributes<FileTag>, InferCreationAttributes<FileTag>> { }
+class FileTag extends Model<InferAttributes<FileTag>, InferCreationAttributes<FileTag>> {
+  public fileId!: number
+  public tagId!: number
+}
 
 FileTag.init({
   fileId: {
@@ -19,7 +22,7 @@ FileTag.init({
   }
 }, { sequelize })
 
-File.belongsToMany(Tag, { through: FileTag, foreignKey: 'fileId', constraints: false })
-Tag.belongsToMany(File, { through: FileTag, foreignKey: 'tagId', constraints: false })
+File.belongsToMany(Tag, { through: FileTag, foreignKey: 'fileId', constraints: true })
+Tag.belongsToMany(File, { through: FileTag, foreignKey: 'tagId', constraints: true })
 
 export default FileTag

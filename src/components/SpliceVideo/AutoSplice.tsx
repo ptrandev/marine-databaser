@@ -34,22 +34,21 @@ const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSe
       videoPath: selectedVideo,
       autoSpliceSettings
     })
+  }
 
-    ipcRenderer.once('auto-spliced', (_, spliceRegions: SpliceRegion[]) => {
-      loadSpliceRegions(spliceRegions)
-      setIsSplicing(false)
-      onClose()
-    })
+  const handleAutoSpliced = (_: unknown, spliceRegions: SpliceRegion[]): void => {
+    loadSpliceRegions(spliceRegions)
+    setIsSplicing(false)
+    onClose()
+  }
 
-    ipcRenderer.on('auto-spliced-progress', (_, progress) => {
-      // turn from fraction to percentage out of 100
-      setSplicingProgress(progress * 100)
-    })
+  const handleAutoSplicedProgress = (_: unknown, progress: number): void => {
+    setSplicingProgress(progress * 100)
+  }
 
-    ipcRenderer.once('auto-splice-error', () => {
-      setIsSplicing(false)
-      onClose()
-    })
+  const handleAutoSpliceError = (): void => {
+    setIsSplicing(false)
+    onClose()
   }
 
   useEffect(() => {
@@ -58,8 +57,15 @@ const AutoSpliceModal: FC<AutoSpliceModalProps> = ({ open, onClose, autoSpliceSe
       setIsDisabled(false)
     }, 2000)
 
+    ipcRenderer.on('auto-spliced', handleAutoSpliced)
+    ipcRenderer.on('auto-spliced-progress', handleAutoSplicedProgress)
+    ipcRenderer.on('auto-splice-error', handleAutoSpliceError)
+
     return () => {
       clearTimeout(timeout)
+      ipcRenderer.removeAllListeners('auto-spliced')
+      ipcRenderer.removeAllListeners('auto-spliced-progress')
+      ipcRenderer.removeAllListeners('auto-splice-error')
     }
   }, [])
 

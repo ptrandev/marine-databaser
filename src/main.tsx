@@ -17,6 +17,7 @@ import { TagsProvider } from './contexts/TagsContext'
 import { SnackbarProvider, closeSnackbar } from 'notistack'
 import { IconButton } from '@mui/material'
 import { Close } from '@mui/icons-material'
+import { FileParentProvider } from './contexts/FileParentContext'
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -38,13 +39,15 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <CssBaseline />
       <DirectoriesProvider>
         <FilesProvider>
-          <TagsProvider>
-            <ExtractAudioProvider>
-              <SpliceVideoProvider>
-                <RouterProvider router={router} />
-              </SpliceVideoProvider>
-            </ExtractAudioProvider>
-          </TagsProvider>
+          <FileParentProvider>
+            <TagsProvider>
+              <ExtractAudioProvider>
+                <SpliceVideoProvider>
+                  <RouterProvider router={router} />
+                </SpliceVideoProvider>
+              </ExtractAudioProvider>
+            </TagsProvider>
+          </FileParentProvider>
         </FilesProvider>
       </DirectoriesProvider>
     </SnackbarProvider>

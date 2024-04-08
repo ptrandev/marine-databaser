@@ -1,13 +1,15 @@
-import { type FC, useState } from 'react'
+import { type FC, useState, useEffect } from 'react'
 import { Modal, type ModalProps } from '../Modal'
 import { Typography, TextField, Stack, Checkbox, Grid, Button } from '@mui/material'
 import { ipcRenderer } from 'electron'
 import useSpliceVideo from '@/hooks/useSpliceVideo'
 import path from 'path'
 import { enqueueSnackbar } from 'notistack'
+import useDirectories from '@/hooks/useDirectories'
 
 const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
   const { selectedVideo, spliceRegions, videoBasename, updateVideoBasename } = useSpliceVideo()
+  const { loadDirectories } = useDirectories()
 
   const [outputDirectory, setOutputDirectory] = useState('')
   const [useSameDirectory, setUseSameDirectory] = useState(true)
@@ -16,10 +18,6 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
 
   const handleSelectOutputDirectory = (): void => {
     ipcRenderer.send('select-directory')
-
-    ipcRenderer.once('selected-directory', (_, directory: string) => {
-      setOutputDirectory(directory)
-    })
   }
 
   const handleSplice = (): void => {
@@ -27,12 +25,27 @@ const OptionsModal: FC<Omit<ModalProps, 'children'>> = ({ open, onClose }) => {
       outputDirectory: useSameDirectory ? undefined : outputDirectory
     })
 
-    ipcRenderer.once('spliced-video', () => {
-      enqueueSnackbar('Video spliced successfully.', { variant: 'success' })
-    })
-
     onClose()
   }
+
+  const handleSelectedDirectory = (_: unknown, directory: string): void => {
+    setOutputDirectory(directory)
+  }
+
+  const handleSplicedVideo = (): void => {
+    enqueueSnackbar('Video spliced successfully.', { variant: 'success' })
+    void loadDirectories()
+  }
+
+  useEffect(() => {
+    ipcRenderer.on('selected-directory', handleSelectedDirectory)
+    ipcRenderer.on('spliced-video', handleSplicedVideo)
+
+    return () => {
+      ipcRenderer.removeListener('selected-directory', handleSelectedDirectory)
+      ipcRenderer.removeListener('spliced-video', handleSplicedVideo)
+    }
+  }, [])
 
   return (
     <Modal open={open} onClose={onClose}>

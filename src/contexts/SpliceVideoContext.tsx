@@ -3,7 +3,6 @@ import { type FC, createContext, useMemo, useState, useEffect } from 'react'
 import { type SpliceRegion } from '../../shared/types'
 import path from 'path'
 import { enqueueSnackbar } from 'notistack'
-import fs from 'fs'
 
 interface AddEvent {
   type: 'add'
@@ -44,7 +43,7 @@ export interface SpliceVideoContextValue {
   videoBasename: string
   updateVideoBasename: (basename: string) => void
   videoUrl: string | null
-  updateVideoUrl: (url: string) => void
+  updateVideoUrl: (url: string) => Promise<void>
   spliceRegions: SpliceRegion[]
   initSpliceRegion: (currentTime: number) => void
   deleteSpliceRegion: (spliceRegion: SpliceRegion, options?: HistoryOptions) => void
@@ -66,6 +65,9 @@ export interface SpliceVideoContextValue {
   redo: () => void
   canUndo: boolean
   canRedo: boolean
+  zoom: number
+  updateZoom: (zoom: number) => void
+  updateWavesurferWidth: (width: number) => void
 }
 
 const SpliceVideoContext = createContext<SpliceVideoContextValue | null>(null)
@@ -74,7 +76,7 @@ interface SpliceVideoProviderProps {
   children?: React.ReactNode
 }
 
-const MAXIMUM_EVENT_HISTORY_LENGTH = 100
+const MAXIMUM_EVENT_HISTORY_LENGTH = 256
 
 export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) => {
   const [spliceRegions, setSpliceRegions] = useState<SpliceRegion[]>([])
@@ -94,6 +96,9 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const [videoFramerate, setVideoFramerate] = useState<number | null>(null)
   const [videoDuration, setVideoDuration] = useState<number | null>(null)
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null)
+
+  const [zoom, setZoom] = useState<number>(1)
+  const [waveSurferWidth, setWaveSurferWidth] = useState<number>(0)
 
   const canUndo = useMemo(() => {
     return eventHistory.length > 0
@@ -143,19 +148,13 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     setSpliceRegions([])
   }
 
-  const updateVideoUrl = (url: string): void => {
+  const updateVideoUrl = async (url: string): Promise<void> => {
     if (!url) {
       return
     }
 
-    if (videoUrl) {
-      URL.revokeObjectURL(videoUrl)
-    }
-
-    const blob = fs.readFileSync(url)
-    const _url = URL.createObjectURL(new Blob([blob]))
-
-    setVideoUrl(_url)
+    // necessary for loading the video in the video element
+    setVideoUrl(`file://${url}`)
   }
 
   const addEventToEventHistory = (event: Event, {
@@ -295,7 +294,13 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   const initSpliceRegion = (currentTime: number): void => {
     if (!videoDuration) return
 
-    const regionTime = [currentTime, currentTime + 0.5 > videoDuration ? currentTime - 0.5 : currentTime + 0.5]
+    // zoom represents the minimum number of pixels per second displayed
+    // wavesurferWidth is the number of pixels we can see on the screen at once
+    // videoDuration is the total number of seconds in the video
+    // use all 3 to create an offset value in seconds representing 10% of the viewable area
+    const offset = Math.min(videoDuration / 10, waveSurferWidth / zoom / 10)
+
+    const regionTime = [currentTime, currentTime + offset > videoDuration ? currentTime - offset : currentTime + offset]
     regionTime.sort((a, b) => a - b)
 
     addSpliceRegion({
@@ -399,6 +404,14 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
     updateSpliceRegions([])
   }
 
+  const updateZoom = (zoom: number): void => {
+    setZoom(zoom)
+  }
+
+  const updateWavesurferWidth = (width: number): void => {
+    setWaveSurferWidth(width)
+  }
+
   // use electron to get the framerate of the video once it is selected
   useEffect(() => {
     setVideoFramerate(null)
@@ -467,7 +480,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
 
   useEffect(() => {
     setVideoBasename(path.basename(selectedVideo).replace(/\.[^/.]+$/, ''))
-    updateVideoUrl(selectedVideo)
+    void updateVideoUrl(selectedVideo)
   }, [selectedVideo])
 
   const contextValue = useMemo<SpliceVideoContextValue>(() => {
@@ -495,9 +508,12 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
       undo,
       redo,
       canUndo,
-      canRedo
+      canRedo,
+      zoom,
+      updateZoom,
+      updateWavesurferWidth
     }
-  }, [selectedVideo, numSpliceRegionsCompleted, updateSelectedVideo, videoBasename, updateVideoBasename, videoUrl, updateVideoUrl, spliceRegions, isSplicingVideo, handleSpliceVideo, deleteSpliceRegion, deleteAllSpliceRegions, loadSpliceRegions, initSpliceRegion, modifySpliceRegion, videoFramerate, videoRef, updateVideoRef, videoDuration, history, undo, redo, canUndo, canRedo])
+  }, [selectedVideo, numSpliceRegionsCompleted, updateSelectedVideo, videoBasename, updateVideoBasename, videoUrl, updateVideoUrl, spliceRegions, isSplicingVideo, handleSpliceVideo, deleteSpliceRegion, deleteAllSpliceRegions, loadSpliceRegions, initSpliceRegion, modifySpliceRegion, videoFramerate, videoRef, updateVideoRef, videoDuration, history, undo, redo, canUndo, canRedo, zoom, updateZoom, updateWavesurferWidth])
 
   return (
     <SpliceVideoContext.Provider value={contextValue}>

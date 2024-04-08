@@ -1,6 +1,6 @@
 import { type FC, useState } from 'react'
 import { Virtuoso } from 'react-virtuoso'
-import { List, ListItem, ListItemText, Typography, IconButton, Stack, Button, Box } from '@mui/material'
+import { List, ListItem, ListItemText, Typography, IconButton, Stack, Button, Box, Tooltip } from '@mui/material'
 import { Delete } from '@mui/icons-material'
 import useExtractAudio from '@/hooks/useExtractAudio'
 import Modal from '../Modal'
@@ -23,13 +23,15 @@ const FileList: FC = () => {
             mb: 2
           }}
           secondaryAction={
-            <IconButton
-              color='error'
-              onClick={() => { setShowDeleteModal(true) }}
-              disabled={isExtractingAudio || selectedFiles.length === 0}
-            >
-              <Delete />
-            </IconButton>
+            <Tooltip title='Clear all selected files'>
+              <IconButton
+                color='error'
+                onClick={() => { setShowDeleteModal(true) }}
+                disabled={isExtractingAudio || selectedFiles.length === 0}
+              >
+                <Delete />
+              </IconButton>
+            </Tooltip>
           }
         />
         <Virtuoso
@@ -39,9 +41,11 @@ const FileList: FC = () => {
             <ListItem
               key={file}
               secondaryAction={
-                <IconButton color='error' onClick={() => { deleteSelectedFiles([file]) }} disabled={isExtractingAudio}>
-                  <Delete />
-                </IconButton>
+                <Tooltip title='Clear selected file'>
+                  <IconButton color='error' onClick={() => { deleteSelectedFiles([file]) }} disabled={isExtractingAudio}>
+                    <Delete />
+                  </IconButton>
+                </Tooltip>
               }
             >
               <ListItemText

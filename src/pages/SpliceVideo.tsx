@@ -10,22 +10,40 @@ import SaveProject from '@/components/SpliceVideo/SaveProject'
 import LoadProject from '@/components/SpliceVideo/LoadProject'
 import AudioVisualizers from '@/components/SpliceVideo/AudioVisualizers'
 import ConvertVideoModal from '@/components/SpliceVideo/ConvertVideoModal'
+import { enqueueSnackbar } from 'notistack'
 
 const SpliceVideo: FC = () => {
   const { updateSelectedVideo, selectedVideo } = useSpliceVideo()
 
   const handleSelectVideo = (): void => {
     ipcRenderer.send('select-splice-video-file')
-    ipcRenderer.once('selected-splice-video-file', (_, path: string) => {
-      if (!path) return
+  }
 
-      updateSelectedVideo(path)
-    })
+  const handleSelectedVideoFileError = (_: unknown, error: string): void => {
+    enqueueSnackbar(error, { variant: 'error' })
+  }
+
+  const handleSelectedVideoFileWarning = (_: unknown, warning: string): void => {
+    enqueueSnackbar(warning, { variant: 'warning' })
+  }
+
+  const handleSelectedSpliceVideoFile = (_: unknown, path: string): void => {
+    if (!path) return
+
+    updateSelectedVideo(path)
   }
 
   useEffect(() => {
+    ipcRenderer.on('selected-splice-video-file', handleSelectedSpliceVideoFile)
+
+    ipcRenderer.on('selected-splice-video-file-error', handleSelectedVideoFileError)
+
+    ipcRenderer.on('selected-splice-video-file-warning', handleSelectedVideoFileWarning)
+
     return () => {
-      ipcRenderer.removeAllListeners('selected-splice-video-file')
+      ipcRenderer.removeListener('selected-splice-video-file', handleSelectedSpliceVideoFile)
+      ipcRenderer.removeListener('selected-splice-video-file-error', handleSelectedVideoFileError)
+      ipcRenderer.removeListener('selected-splice-video-file-warning', handleSelectedVideoFileWarning)
     }
   }, [])
 

@@ -1,20 +1,21 @@
-import { app, BrowserWindow, shell, ipcMain, protocol } from 'electron'
+import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import { release } from 'node:os'
 import { join } from 'node:path'
 
 import sequelize from '../database/initialize'
 import '../database/associations'
 
-import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleAddDirectory, handleRefreshDirectories, handleSelectDirectory } from '../handlers/directory'
+import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleAddDirectory, handleRefreshDirectories, handleSelectDirectory, handleSetDirectoryLocation, handleListDirectoriesAccess } from '../handlers/directory'
 import { handleFileRename, handleListFiles, handleSelectFile } from '../handlers/file'
 import { handleListTags, handleTagFile, handleUntagFile, handleTagFiles, handleUntagFiles } from '../handlers/tag'
 import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo, handleGetVideoFramerate, handleAutoSplice, handleGetAudioSampleRate, handleGetVideoDuration, handleConvertVideo } from '../handlers/ffmpeg'
 import { handleListNotes, handleAddNote, handleUpdateNote, handleDeleteNote } from '../handlers/note'
-import { handleDatabaseExport } from '../handlers/export'
-import { handleDatabaseImport } from '../handlers/import'
+import { handleDatabaseExport, handleDatabaseImport, handleDatabaseReset } from '../handlers/database'
 import { handleSaveToJSON, handleLoadFromJSON } from '../handlers/json'
 import { type AutoSpliceSettings, type AudioFileFormat, type SpliceRegion, type FileTypes } from '../../shared/types'
 import { type File } from '../database/schemas'
+import { handleListFileParents } from '../handlers/fileParent'
+import { handleOpenFile, handleOpenFileFolder } from '../handlers/filesystem'
 
 // The built directory structure
 //
@@ -64,7 +65,8 @@ async function createWindow (): Promise<void> {
       // Consider using contextBridge.exposeInMainWorld
       // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      webSecurity: false
     }
   })
 
@@ -90,16 +92,6 @@ async function createWindow (): Promise<void> {
 }
 
 void app.whenReady().then(() => {
-  protocol.registerFileProtocol('media-loader', (request, callback) => {
-    const url = request.url.replace('media-loader://', '')
-    try {
-      callback(url)
-    } catch (error) {
-      console.error(error)
-      callback(join(__dirname, '../index.html'))
-    }
-  })
-
   void createWindow()
 })
 
@@ -168,8 +160,8 @@ ipcMain.on('list-directories', (event) => {
   void handleListDirectories(event)
 })
 
-ipcMain.on('open-directory', (_, arg: { path: string }) => {
-  void handleOpenDirectory(arg)
+ipcMain.on('open-directory', (event, arg: { path: string }) => {
+  void handleOpenDirectory(event, arg)
 })
 
 ipcMain.on('delete-directory', (event, arg: { directoryId: number }) => {
@@ -180,14 +172,24 @@ ipcMain.on('list-directories-file-count', (event) => {
   void handleDirectoriesFileCount(event)
 })
 
-ipcMain.on('refresh-directories', (event) => {
-  void handleRefreshDirectories(event)
+ipcMain.on('refresh-directories', (event, arg: { directoryIds: number[] }) => {
+  void handleRefreshDirectories(event, arg)
 })
 
 ipcMain.on('select-directory', (event) => {
   if (win) {
     void handleSelectDirectory(win, event)
   }
+})
+
+ipcMain.on('set-directory-location', (event, arg: { directoryId: number }) => {
+  if (win) {
+    void handleSetDirectoryLocation(win, event, arg)
+  }
+})
+
+ipcMain.on('list-directories-access', (event, arg: { directoryIds: string[] }) => {
+  void handleListDirectoriesAccess(event, arg)
 })
 
 //
@@ -244,12 +246,8 @@ ipcMain.on('select-file', (event) => {
   }
 })
 
-ipcMain.on('list-files', (event, arg: { directories?: number[], tags?: number[], fileTypes?: FileTypes[], searchTerm?: string }) => {
+ipcMain.on('list-files', (event, arg: { directories?: number[], tags?: number[], fileTypes?: FileTypes[], searchTerm?: string, fileParents?: number[] }) => {
   void handleListFiles(event, arg)
-})
-
-ipcMain.on('open-file', (_, arg: string) => {
-  void shell.openPath(arg)
 })
 
 ipcMain.on('rename-file', (event, arg: { file: File, name: string }) => {
@@ -301,25 +299,43 @@ ipcMain.on('delete-note', (event, arg: { id: number }) => {
 })
 
 //
-// EXPORT
+// DATABASE
 //
 
 ipcMain.on('database-export', (event) => {
   void handleDatabaseExport(event)
 })
 
-// IMPORT
-
 ipcMain.on('database-import', (event) => {
   void handleDatabaseImport(event)
 })
 
+ipcMain.on('database-reset', (event) => {
+  void handleDatabaseReset(event)
+})
+
 // JSON
 
-ipcMain.on('save-to-json', (event, arg) => {
+ipcMain.on('save-to-json', (event, arg: { data: any, filename?: string }) => {
   void handleSaveToJSON(event, arg)
 })
 
 ipcMain.on('load-from-json', (event) => {
   void handleLoadFromJSON(event)
+})
+
+// FILE PARENT
+
+ipcMain.on('list-file-parents', (event) => {
+  void handleListFileParents(event)
+})
+
+// FILESYSTEM
+
+ipcMain.on('open-file', (event, arg: string) => {
+  void handleOpenFile(event, arg)
+})
+
+ipcMain.on('open-file-folder', (event, arg: string) => {
+  void handleOpenFileFolder(event, arg)
 })

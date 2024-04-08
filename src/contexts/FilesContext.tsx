@@ -4,12 +4,13 @@ import { type FileTypes, type FileWithMetadata } from '../../shared/types'
 import { ipcRenderer } from 'electron'
 import { useEffectDebounced } from '@/hooks/useEffectDebounced'
 import useDirectories from '@/hooks/useDirectories'
+import { type FileParentFile } from './FileParentContext'
 
 export interface FilesContextValue {
   files: FileWithMetadata[]
   selectedFiles: number[]
   updateSelectedFiles: (selectedFiles: number[]) => void
-  loadFiles: () => void
+  loadFiles: () => Promise<void>
   isLoadingFiles: boolean
   searchTerm: string
   updateSearchTerm: (searchTerm: string) => void
@@ -19,6 +20,8 @@ export interface FilesContextValue {
   updateSelectedTags: (tags: Tag[]) => void
   selectedFileTypes: FileTypes[]
   updateSelectedFileTypes: (fileTypes: FileTypes[]) => void
+  selectedFileParents: FileParentFile[]
+  updateSelectedFileParents: (fileParents: FileParentFile[]) => void
 }
 
 const FilesContext = createContext<FilesContextValue | null>(null)
@@ -37,18 +40,23 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
   const [selectedDirectories, setSelectedDirectories] = useState<Directory[]>([])
   const [selectedTags, setSelectedTags] = useState<Tag[]>([])
   const [selectedFileTypes, setSelectedFileTypes] = useState<FileTypes[]>([])
+  const [selectedFileParents, setSelectedFileParents] = useState<FileParentFile[]>([])
 
-  const loadFiles = (): void => {
+  const loadFiles = async (): Promise<void> => {
     setIsLoadingFiles(true)
 
     const directories: number[] = selectedDirectories?.map(directory => directory.id)
     const tags: number[] = selectedTags?.map(tag => tag.id)
+    const fileParents: number[] = selectedFileParents?.map(fileParent => fileParent.id)
 
-    ipcRenderer.send('list-files', { directories, tags, searchTerm, fileTypes: selectedFileTypes })
+    ipcRenderer.send('list-files', { directories, tags, searchTerm, fileTypes: selectedFileTypes, fileParents })
 
-    ipcRenderer.once('listed-files', (_, files: FileWithMetadata[]) => {
-      setFiles(files)
-      setIsLoadingFiles(false)
+    await new Promise<void>((resolve) => {
+      ipcRenderer.once('listed-files', (_, files: FileWithMetadata[]) => {
+        setFiles(files)
+        setIsLoadingFiles(false)
+        resolve()
+      })
     })
   }
 
@@ -72,14 +80,18 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
     setSelectedFileTypes(fileTypes)
   }
 
+  const updateSelectedFileParents = (fileParents: FileParentFile[]): void => {
+    setSelectedFileParents(fileParents)
+  }
+
   useEffectDebounced(() => {
-    loadFiles()
+    void loadFiles()
     setSelectedFiles([])
   }, [searchTerm], 500)
 
   useEffect(() => {
-    loadFiles()
-  }, [directories, selectedDirectories, selectedTags, selectedFileTypes])
+    void loadFiles()
+  }, [directories, selectedDirectories, selectedTags, selectedFileTypes, selectedFileParents])
 
   useEffect(() => {
     return () => {
@@ -101,9 +113,11 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
       selectedTags,
       updateSelectedTags,
       selectedFileTypes,
-      updateSelectedFileTypes
+      updateSelectedFileTypes,
+      selectedFileParents,
+      updateSelectedFileParents
     }
-  }, [files, isLoadingFiles, searchTerm, selectedDirectories, selectedTags, selectedFileTypes, selectedFiles, updateSelectedFiles, updateSearchTerm, updateSelectedDirectories, updateSelectedTags, updateSelectedFileTypes])
+  }, [files, isLoadingFiles, searchTerm, selectedDirectories, selectedTags, selectedFileTypes, selectedFiles, updateSelectedFiles, updateSearchTerm, updateSelectedDirectories, updateSelectedTags, updateSelectedFileTypes, selectedFileParents, updateSelectedFileParents])
 
   return (
     <FilesContext.Provider value={contextValue}>

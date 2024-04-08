@@ -83,7 +83,7 @@ const VideoControls: FC = () => {
           <video
             id='splice-video'
             controls
-            key={selectedVideo}
+            key={videoUrl}
             style={{ width: '100%', height: 'auto', maxHeight: '100%' }}
             ref={updateVideoRef}
             src={videoUrl}

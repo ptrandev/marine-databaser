@@ -1,36 +1,46 @@
 import { Add } from '@mui/icons-material'
-import { Typography, Button, Box, LinearProgress, Stack, CircularProgress } from '@mui/material'
+import { Typography, Button, Box, LinearProgress, Stack } from '@mui/material'
 
 import DirectoryList from '@/components/Directories/DirectoryList'
 import useDirectories from '@/hooks/useDirectories'
 import { ipcRenderer } from 'electron'
 import { type FC, useEffect } from 'react'
-import RefreshButton from '@/components/Directories/RefreshButton'
+import DirectoryRefreshButton from '@/components/Directories/DirectoryRefreshButton'
+import { enqueueSnackbar } from 'notistack'
 
 const Directories: FC = () => {
-  const { isLoadingDirectories, isInitializingDirectory, handleIsInitializingDirectory, loadDirectories } = useDirectories()
+  const { isInitializingDirectory, handleIsInitializingDirectory, loadDirectories } = useDirectories()
 
   const handleAddDirectory = (): void => {
     ipcRenderer.send('add-directory')
+  }
 
-    ipcRenderer.once('added-directory', () => {
-      handleIsInitializingDirectory(true)
+  const handleAddedDirectory = (): void => {
+    handleIsInitializingDirectory(true)
+  }
+
+  const handleInitializedDirectory = (): void => {
+    loadDirectories().then(() => {
+      handleIsInitializingDirectory(false)
+    }).catch(() => {
+      handleIsInitializingDirectory(false)
     })
   }
 
+  const handleAddDirectoryError = (_: unknown, errMessage: string): void => {
+    enqueueSnackbar(errMessage, { variant: 'error' })
+    handleIsInitializingDirectory(false)
+  }
+
   useEffect(() => {
-    ipcRenderer.on('initialized-directory', () => {
-      loadDirectories().then(() => {
-        handleIsInitializingDirectory(false)
-      }).catch(() => {
-        handleIsInitializingDirectory(false)
-      })
-    })
+    ipcRenderer.on('initialized-directory', handleInitializedDirectory)
+    ipcRenderer.on('added-directory', handleAddedDirectory)
+    ipcRenderer.on('add-directory-error', handleAddDirectoryError)
 
     return () => {
-      ipcRenderer.removeAllListeners('added-directory')
-      ipcRenderer.removeAllListeners('initialized-directory')
-      ipcRenderer.removeAllListeners('refreshed-directories')
+      ipcRenderer.removeListener('added-directory', handleAddedDirectory)
+      ipcRenderer.removeListener('initialized-directory', handleInitializedDirectory)
+      ipcRenderer.removeListener('add-directory-error', handleAddDirectoryError)
     }
   }, [])
 
@@ -42,7 +52,7 @@ const Directories: FC = () => {
         </Typography>
         <Stack direction='row' alignItems='center' gap={2}>
           <Box>
-            <RefreshButton />
+            <DirectoryRefreshButton />
           </Box>
           <Box>
             <Button variant='contained' startIcon={<Add />}
@@ -63,20 +73,7 @@ const Directories: FC = () => {
           </Box>
         )
       }
-      {
-        isLoadingDirectories
-          ? (
-            <Box display='flex' flexDirection='column' mt={4} alignItems='center' justifyContent='center' width='100%' gap={2}>
-              <CircularProgress />
-              <Typography>
-                Loading directories...
-              </Typography>
-            </Box>
-            )
-          : (
-            <DirectoryList />
-            )
-      }
+      <DirectoryList />
     </Box>
   )
 }

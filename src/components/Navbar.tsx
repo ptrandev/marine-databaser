@@ -21,8 +21,8 @@ const LINKS = [
     to: '/splice-video'
   },
   {
-    label: 'Import / Export',
-    to: '/import-export'
+    label: 'Database Settings',
+    to: '/database-settings'
   }
 ]
 
