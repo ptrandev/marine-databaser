@@ -125,7 +125,10 @@ const Note: FC<NoteProps> = ({ note, handleDeleteNote, handleUpdateNote }) => {
               onBlur={() => { void handleOnBlur() }}
             />
           </>
-          : <ListItemText primary={note.note} />
+          : <Box sx={{ width: '100%' }}>
+            <ListItemText primary={note.note} secondary={'Created at: ' + note.createdAt.toLocaleString()} />
+            <ListItemText secondary={'Updated at: ' + note.updatedAt.toLocaleString()} />
+          </Box>
       }
       <Tooltip title='Edit note'>
         <IconButton
