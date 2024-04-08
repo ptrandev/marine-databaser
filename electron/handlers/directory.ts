@@ -22,9 +22,9 @@ const getFileList = async (directory: string): Promise<string[]> => {
 
   for (const item of items) {
     if (item.isDirectory()) {
-      files = files.concat(await getFileList(`${directory}/${item.name}`))
+      files = files.concat(await getFileList(path.join(directory, item.name)))
     } else {
-      files.push(`${directory}/${item.name}`)
+      files.push(path.join(directory, item.name))
     }
   }
 
