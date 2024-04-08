@@ -119,14 +119,14 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
 
   // use fs to see if we have access to the directory
   try {
-    await fs.access(directory.path)
+    await fs.access(path.resolve(directory.path))
   } catch {
     throw new Error('Directory cannot be found. It may be deleted or exists on an external drive that is not connected.')
   }
 
   const currentTime = new Date()
 
-  const files = await getFileList(directory.path)
+  const files = await getFileList(path.resolve(directory.path))
 
   // get files that already exist in the database
   // to exist in the database, it must have the same path and birthTime
@@ -565,7 +565,7 @@ export const handleListDirectoriesAccess = async (event: IpcMainEvent, arg: { di
   await Promise.all(
     directories.map(async (directory) => {
       try {
-        await fs.access(directory.path)
+        await fs.access(path.resolve(directory.path))
         directoriesAccess[directory.id] = true
       } catch {
         directoriesAccess[directory.id] = false
