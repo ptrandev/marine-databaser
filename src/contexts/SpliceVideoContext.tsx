@@ -479,7 +479,7 @@ export const SpliceVideoProvider: FC<SpliceVideoProviderProps> = ({ children }) 
   }, [eventHistory.length])
 
   useEffect(() => {
-    setVideoBasename(path.basename(selectedVideo).replace(/\.[^/.]+$/, ''))
+    setVideoBasename(path.basename(selectedVideo, path.extname(selectedVideo)))
     void updateVideoUrl(selectedVideo)
   }, [selectedVideo])
 
