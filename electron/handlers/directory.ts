@@ -135,7 +135,8 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
       path: {
         [Op.in]: files
       }
-    }
+    },
+    raw: true
   })
 
   // filter out files that don't have the same birthTime as the file on disk
@@ -143,6 +144,7 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
   const existingFiles: File[] = await Promise.all(
     _existingFiles.map(async (file) => {
       const { birthtime } = await fs.stat(file.path)
+      file.birthTime = new Date(file.birthTime)
       if (birthtime.getTime() === file.birthTime.getTime()) {
         return file
       }
@@ -155,7 +157,7 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
     existingFiles.map(async (file) => {
       const { mtime, size } = await fs.stat(file.path)
       return {
-        ...file.toJSON(),
+        ...file,
         lastModified: mtime,
         fileSize: size,
         updatedAt: currentTime
@@ -191,10 +193,10 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
             lastModified: mtime,
             mimeType
           }
-        })
+        }).then((file) => file?.toJSON())
 
         // if the file was renamed, update the database
-        if (renamedFile !== null) {
+        if (!!renamedFile) {
           await File.update(
             {
               name: file.split('/').pop(),
@@ -440,7 +442,7 @@ export const handleRefreshDirectories = async (event: IpcMainEvent, arg: { direc
       const refreshedDirectory = await refreshDirectory(directory.id)
       event.reply('refreshed-directory', refreshedDirectory)
     } catch (err) {
-      console.log("ERR: ", err)
+      console.log('ERR: ', err)
 
       event.reply('refresh-directory-error', {
         errMessage: (err as Error).message,
