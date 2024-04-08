@@ -1,7 +1,7 @@
-import { Delete, Folder, Refresh, DriveFileMove, Search, Close } from '@mui/icons-material'
+import { Delete, Folder, Refresh, DriveFileMove, Search, Close, Warning } from '@mui/icons-material'
 import { IconButton, List, ListItemText, ListItem, Typography, Box, LinearProgress, Tooltip, CircularProgress, TextField, InputAdornment } from '@mui/material'
 import { ipcRenderer } from 'electron'
-import { type FC, useState, useEffect } from 'react'
+import { type FC, useState, useEffect, useMemo } from 'react'
 import { enqueueSnackbar } from 'notistack'
 
 import useDirectories from '@/hooks/useDirectories'
@@ -124,17 +124,24 @@ interface DirectoryListItemProps {
 }
 
 const DirectoryListItem: FC<DirectoryListItemProps> = ({ directory, updateDirectoryIdToDelete, isDeletingDirectory, handleRefresh, isRefreshingDirectory }) => {
-  const { directoriesFileCount, handleSetDirectoryLocation } = useDirectories()
+  const { directoriesFileCount, handleSetDirectoryLocation, directoriesAccess } = useDirectories()
 
   const handleOpenDirectory = (path: string): void => {
     ipcRenderer.send('open-directory', { path })
+    ipcRenderer.send('list-directories-access', { directoryIds: [directory.id] })
   }
+
+  const directoryAccess: boolean = useMemo(() => directoriesAccess[directory.id], [directoriesAccess, directory.id])
 
   return (
     <ListItem
       key={directory.id}
     >
-      <Tooltip title='Open directory' sx={{ mr: 1, ml: -2 }}>
+      <Tooltip title={
+        directoryAccess
+          ? 'Open directory'
+          : 'This directory may not be accessible. Click to re-check directory access status.'
+      } sx={{ mr: 1, ml: -2 }}>
         <IconButton
           aria-label='open directory'
           onClick={(e) => {
@@ -142,7 +149,7 @@ const DirectoryListItem: FC<DirectoryListItemProps> = ({ directory, updateDirect
             handleOpenDirectory(directory.path)
           }}
         >
-          <Folder />
+          {directoryAccess ? <Folder /> : <Warning />}
         </IconButton>
       </Tooltip>
       <ListItemText

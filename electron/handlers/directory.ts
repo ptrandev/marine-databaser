@@ -78,16 +78,15 @@ export const findDirectoryByPath = async (path: string): Promise<Directory | nul
 const addFileToDatabase = async ({ file, directoryId }: {
   file: string
   directoryId: number
-}): Promise<
-  {
-    name: string
-    path: string
-    directoryId: number
-    mimeType: string
-    lastModified: Date
-    birthTime: Date
-    fileSize: number
-  }> => {
+}): Promise<{
+  name: string
+  path: string
+  directoryId: number
+  mimeType: string
+  lastModified: Date
+  birthTime: Date
+  fileSize: number
+}> => {
   const { mtime, birthtime, size } = await fs.stat(file)
 
   return {
@@ -548,4 +547,31 @@ export const handleSetDirectoryLocation = async (win: BrowserWindow, event: IpcM
   await refreshDirectory(directoryId)
 
   event.reply('set-directory-location-success', newPath)
+}
+
+export const handleListDirectoriesAccess = async (event: IpcMainEvent, arg: { directoryIds: string[] }): Promise<void> => {
+  // get all directories to check access
+  const directories = await Directory.findAll({
+    where: {
+      id: {
+        [Op.in]: arg.directoryIds
+      }
+    }
+  })
+
+  const directoriesAccess: Record<number, boolean> = {}
+
+  // check access for each directory using fs
+  await Promise.all(
+    directories.map(async (directory) => {
+      try {
+        await fs.access(directory.path)
+        directoriesAccess[directory.id] = true
+      } catch {
+        directoriesAccess[directory.id] = false
+      }
+    })
+  )
+
+  event.reply('listed-directories-access', directoriesAccess)
 }

@@ -7,6 +7,7 @@ import DirectoryLocationModal from '@/contexts/DirectoryLocationModal'
 export interface DirectoriesContextValue {
   directories: Directory[]
   directoriesFileCount: Record<number, number>
+  directoriesAccess: Record<number, boolean>
   loadDirectories: () => Promise<void>
   isLoadingDirectories: boolean
   isInitializingDirectory: boolean
@@ -29,6 +30,7 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
   const [directories, setDirectories] = useState<Directory[]>([])
 
   const [directoriesFileCount, setDirectoriesFileCount] = useState<Record<number, number>>({})
+  const [directoriesAccess, setDirectoriesAccess] = useState<Record<number, boolean>>({})
 
   const [isLoadingDirectories, setIsLoadingDirectories] = useState<boolean>(true)
   const [isInitializingDirectory, setIsInitializingDirectory] = useState<boolean>(false)
@@ -105,15 +107,32 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
     setIsRefreshingDirectories(isRefreshingDirectories)
   }
 
+  const handleListDirectoriesAccess = (directoryIds: number[]): void => {
+    ipcRenderer.send('list-directories-access', { directoryIds })
+  }
+
+  const handleListedDirectoriesAccess = (_: unknown, directoriesAccess: Record<number, boolean>): void => {
+    setDirectoriesAccess(prev => ({ ...prev, ...directoriesAccess }))
+  }
+
+  useEffect(() => {
+    // when there are new directories, call list-directories-access to get the access status of each directory
+    if (directories.length > 0) {
+      handleListDirectoriesAccess(directories.map((directory) => directory.id))
+    }
+  }, [directories])
+
   useEffect(() => {
     void loadDirectories()
 
     ipcRenderer.on('deleted-directory', handleDeletedDirectory)
     ipcRenderer.on('refreshed-directories', handleRefreshedDirectories)
+    ipcRenderer.on('listed-directories-access', handleListedDirectoriesAccess)
 
     return () => {
       ipcRenderer.removeListener('deleted-directory', handleDeletedDirectory)
       ipcRenderer.removeListener('refreshed-directories', handleRefreshedDirectories)
+      ipcRenderer.removeListener('listed-directories-access', handleListedDirectoriesAccess)
     }
   }, [])
 
@@ -122,6 +141,7 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
       directories,
       isLoadingDirectories,
       directoriesFileCount,
+      directoriesAccess,
       isInitializingDirectory,
       loadDirectories,
       handleIsInitializingDirectory,
@@ -132,7 +152,7 @@ export const DirectoriesProvider: FC<DirectoriesProviderProps> = ({ children }) 
       updateIsRefreshingDirectories,
       handleSetDirectoryLocation
     }
-  }, [directories, isLoadingDirectories, isInitializingDirectory, directoriesFileCount, loadDirectories, handleIsInitializingDirectory, isDeletingDirectory, handleDeleteDirectory, isRefreshingDirectories, handleRefreshDirectories, updateIsRefreshingDirectories, handleSetDirectoryLocation])
+  }, [directories, isLoadingDirectories, isInitializingDirectory, directoriesFileCount, loadDirectories, handleIsInitializingDirectory, isDeletingDirectory, handleDeleteDirectory, isRefreshingDirectories, handleRefreshDirectories, updateIsRefreshingDirectories, handleSetDirectoryLocation, directoriesAccess])
 
   return (
     <DirectoriesContext.Provider value={contextValue}>

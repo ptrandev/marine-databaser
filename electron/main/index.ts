@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import sequelize from '../database/initialize'
 import '../database/associations'
 
-import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleAddDirectory, handleRefreshDirectories, handleSelectDirectory, handleSetDirectoryLocation } from '../handlers/directory'
+import { handleDeleteDirectory, handleDirectoriesFileCount, handleListDirectories, handleOpenDirectory, handleAddDirectory, handleRefreshDirectories, handleSelectDirectory, handleSetDirectoryLocation, handleListDirectoriesAccess } from '../handlers/directory'
 import { handleFileRename, handleListFiles, handleSelectFile } from '../handlers/file'
 import { handleListTags, handleTagFile, handleUntagFile, handleTagFiles, handleUntagFiles } from '../handlers/tag'
 import { handleBulkExtractAudio, handleSelectExtractAudioFiles, handleSelectSpliceVideoFile, handleSpliceVideo, handleGetVideoFramerate, handleAutoSplice, handleGetAudioSampleRate, handleGetVideoDuration, handleConvertVideo } from '../handlers/ffmpeg'
@@ -186,6 +186,10 @@ ipcMain.on('set-directory-location', (event, arg: { directoryId: number }) => {
   if (win) {
     void handleSetDirectoryLocation(win, event, arg)
   }
+})
+
+ipcMain.on('list-directories-access', (event, arg: { directoryIds: string[] }) => {
+  void handleListDirectoriesAccess(event, arg)
 })
 
 //
