@@ -215,16 +215,16 @@ export const handleFileRename = async (event: IpcMainEvent, arg: {
 }): Promise<void> => {
   const { file, name } = arg
 
-  const path: string = file.path.replace(file.name, name)
+  const _path: string = path.join(path.dirname(file.path), name)
 
   // first change filename on disk
-  await fs.rename(file.path, path)
+  await fs.rename(file.path, _path)
 
   // then update database ... remember to update name and path
   await File.update(
     {
       name,
-      path
+      path: _path
     },
     {
       where: {
