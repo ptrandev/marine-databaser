@@ -110,10 +110,10 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
     where: {
       id: directoryId
     }
-  })
+  }).then((directory) => directory?.toJSON())
 
   // if the directory doesn't exist, return an error
-  if (directory === null) {
+  if (!directory) {
     throw new Error('Directory does not exist.')
   }
 
