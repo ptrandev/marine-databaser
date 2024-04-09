@@ -130,14 +130,13 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
 
   // get files that already exist in the database
   // to exist in the database, it must have the same path and birthTime
-  const _existingFiles = await File.findAll({
+  const _existingFiles: File[] = await File.findAll({
     where: {
       path: {
         [Op.in]: files
       }
     },
-    raw: true
-  })
+  }).then((files) => files.map((file) => file.toJSON())) as File[]
 
   // filter out files that don't have the same birthTime as the file on disk
   // use await fs.stat(file.path) to get the birthTime of the file on disk
@@ -199,7 +198,7 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
         if (!!renamedFile) {
           await File.update(
             {
-              name: file.split('/').pop(),
+              name: path.basename(file),
               path: file,
               updatedAt: currentTime
             },
@@ -214,7 +213,7 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
             where: {
               id: renamedFile.id
             }
-          })
+          }).then(file => file?.toJSON())
         }
 
         return null
