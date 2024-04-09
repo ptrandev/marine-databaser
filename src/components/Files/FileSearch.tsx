@@ -72,6 +72,7 @@ const FileSearch: FC = () => {
         <Grid item xs={12} md={6} lg={3}>
           <Autocomplete
             multiple
+            limitTags={4}
             filterSelectedOptions
             defaultValue={selectedDirectories}
             options={directories}
@@ -96,6 +97,7 @@ const FileSearch: FC = () => {
         <Grid item xs={12} md={6} lg={3}>
           <Autocomplete
             multiple
+            limitTags={4}
             filterSelectedOptions
             defaultValue={selectedTags}
             options={tags}
@@ -115,6 +117,7 @@ const FileSearch: FC = () => {
         <Grid item xs={12} md={6} lg={3}>
           <Autocomplete
             multiple
+            limitTags={4}
             filterSelectedOptions
             defaultValue={selectedFileTypes}
             options={FileTypes}
@@ -134,6 +137,7 @@ const FileSearch: FC = () => {
         <Grid item xs={12} md={6} lg={3}>
           <Autocomplete
             multiple
+            limitTags={4}
             filterOptions={filterOptions}
             options={fileParentFiles}
             value={selectedFileParents}
