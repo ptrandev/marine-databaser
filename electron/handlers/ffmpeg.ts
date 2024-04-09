@@ -38,7 +38,10 @@ const extractAudio = async ({
   return await new Promise<string>((resolve, reject) => {
     const date = new Date()
 
-    const audioPath = `${outputDirectory}/${path.basename(inputPath).replace(/\.[^/.]+$/, '')}-audio-${date.getTime()}.wav`
+    const audioPath = path.join(
+      outputDirectory,
+      `${path.basename(inputPath, path.extname(inputPath))}-audio-${date.getTime()}.wav`
+    )
 
     ffmpeg(inputPath)
       .outputOptions('-acodec', fileFormat)
@@ -85,7 +88,7 @@ const spliceVideo = async ({
       .setStartTime(startTime)
       .setDuration(endTime - startTime)
       .outputOptions('-c', 'copy')
-      .save(`${outputDirectory}/${videoBasename}${name}${path.extname(inputPath)}`)
+      .save(path.join(outputDirectory, `${videoBasename}${name}${path.extname(inputPath)}`))
       .on('end', () => {
         resolve()
       })
@@ -272,7 +275,7 @@ export const handleSpliceVideo = async (event: IpcMainEvent, arg: { videoPath: s
 
       // track created file in database
       const files = await addFilesToDatabase({
-        files: [`${outputDirectory}/${videoBasename}${spliceRegion.name}${path.extname(videoPath)}`],
+        files: [path.join(outputDirectory, `${videoBasename}${spliceRegion.name}${path.extname(videoPath)}`)],
         directoryId: childDirectory.id
       })
 
@@ -478,7 +481,7 @@ export const handleConvertVideo = async (event: IpcMainEvent, arg: { videoPath: 
   }
 
   // get video file name without extension
-  const videoBasename = path.basename(arg.videoPath).replace(/\.[^/.]+$/, '')
+  const videoBasename = path.basename(arg.videoPath, path.extname(arg.videoPath))
 
   // use system temp directory to store the converted video
   const tempPath = path.join(app.getPath('temp'), `${videoBasename}.mov`)

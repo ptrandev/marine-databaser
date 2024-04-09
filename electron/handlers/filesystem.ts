@@ -16,7 +16,7 @@ export const handleOpenFileFolder = async (event: IpcMainEvent, arg: string): Pr
 
   // check if the folder exists using fs; if so, shell.showItemInFolder
   try {
-    await fs.access(folder)
+    await fs.access(path.resolve(folder))
     shell.showItemInFolder(arg)
   } catch (err) {
     event.reply('open-file-folder-error', 'Folder cannot be found. It may have moved, been deleted, or is on an external drive that is not connected.')

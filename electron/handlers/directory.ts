@@ -22,9 +22,9 @@ const getFileList = async (directory: string): Promise<string[]> => {
 
   for (const item of items) {
     if (item.isDirectory()) {
-      files = files.concat(await getFileList(`${directory}/${item.name}`))
+      files = files.concat(await getFileList(path.join(directory, item.name)))
     } else {
-      files.push(`${directory}/${item.name}`)
+      files.push(path.join(directory, item.name))
     }
   }
 
@@ -49,7 +49,7 @@ export const addFilesToDatabase = async ({ files, directoryId }: {
       }
       )
     )
-  )
+  ).then((files) => files.map((file) => file.toJSON())) as File[]
 }
 
 /**
@@ -66,7 +66,7 @@ export const findDirectoryByPath = async (path: string): Promise<Directory | nul
     }
   }).then((directories) => {
     return directories.sort((a, b) => b.path.length - a.path.length)[0]
-  })
+  }).then((directory) => directory?.toJSON()) as Directory | null
 }
 
 /**
@@ -110,39 +110,40 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
     where: {
       id: directoryId
     }
-  })
+  }).then((directory) => directory?.toJSON())
 
   // if the directory doesn't exist, return an error
-  if (directory === null) {
+  if (!directory) {
     throw new Error('Directory does not exist.')
   }
 
   // use fs to see if we have access to the directory
   try {
-    await fs.access(directory.path)
+    await fs.access(path.resolve(directory.path))
   } catch {
     throw new Error('Directory cannot be found. It may be deleted or exists on an external drive that is not connected.')
   }
 
   const currentTime = new Date()
 
-  const files = await getFileList(directory.path)
+  const files = await getFileList(path.resolve(directory.path))
 
   // get files that already exist in the database
   // to exist in the database, it must have the same path and birthTime
-  const _existingFiles = await File.findAll({
+  const _existingFiles: File[] = await File.findAll({
     where: {
       path: {
         [Op.in]: files
       }
-    }
-  })
+    },
+  }).then((files) => files.map((file) => file.toJSON())) as File[]
 
   // filter out files that don't have the same birthTime as the file on disk
   // use await fs.stat(file.path) to get the birthTime of the file on disk
   const existingFiles: File[] = await Promise.all(
     _existingFiles.map(async (file) => {
       const { birthtime } = await fs.stat(file.path)
+      file.birthTime = new Date(file.birthTime)
       if (birthtime.getTime() === file.birthTime.getTime()) {
         return file
       }
@@ -155,7 +156,7 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
     existingFiles.map(async (file) => {
       const { mtime, size } = await fs.stat(file.path)
       return {
-        ...file.toJSON(),
+        ...file,
         lastModified: mtime,
         fileSize: size,
         updatedAt: currentTime
@@ -191,13 +192,13 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
             lastModified: mtime,
             mimeType
           }
-        })
+        }).then((file) => file?.toJSON())
 
         // if the file was renamed, update the database
-        if (renamedFile !== null) {
+        if (!!renamedFile) {
           await File.update(
             {
-              name: file.split('/').pop(),
+              name: path.basename(file),
               path: file,
               updatedAt: currentTime
             },
@@ -212,7 +213,7 @@ const refreshDirectory = async (directoryId: number): Promise<RefreshedDirectori
             where: {
               id: renamedFile.id
             }
-          })
+          }).then(file => file?.toJSON())
         }
 
         return null
@@ -440,6 +441,8 @@ export const handleRefreshDirectories = async (event: IpcMainEvent, arg: { direc
       const refreshedDirectory = await refreshDirectory(directory.id)
       event.reply('refreshed-directory', refreshedDirectory)
     } catch (err) {
+      console.log('ERR: ', err)
+
       event.reply('refresh-directory-error', {
         errMessage: (err as Error).message,
         directoryId: directory.id
@@ -557,7 +560,7 @@ export const handleListDirectoriesAccess = async (event: IpcMainEvent, arg: { di
         [Op.in]: arg.directoryIds
       }
     }
-  })
+  }).then(directories => directories.map(directory => directory.toJSON()))
 
   const directoriesAccess: Record<number, boolean> = {}
 
@@ -565,7 +568,7 @@ export const handleListDirectoriesAccess = async (event: IpcMainEvent, arg: { di
   await Promise.all(
     directories.map(async (directory) => {
       try {
-        await fs.access(directory.path)
+        await fs.access(path.resolve(directory.path))
         directoriesAccess[directory.id] = true
       } catch {
         directoriesAccess[directory.id] = false

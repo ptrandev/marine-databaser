@@ -1,5 +1,6 @@
 import { dialog, type IpcMainEvent } from 'electron'
 import fs from 'fs/promises'
+import path from 'path'
 
 /**
  * Saves a JSON file to the user's computer. Prompt the user where to save the file.
@@ -78,7 +79,7 @@ export const handleLoadFromJSON = async (event: IpcMainEvent): Promise<void> => 
     // check if selectedVideo exists using fs
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      await fs.access(data.selectedVideo)
+      await fs.access(path.resolve(data.selectedVideo))
     } catch {
       throw new Error('Selected video cannot be found.')
     }

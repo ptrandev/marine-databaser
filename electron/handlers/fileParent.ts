@@ -16,7 +16,9 @@ export const addFileParent = async ({ fileParentId, fileChildrenIds }: {
     fileChildrenIds.map((fileChildId) => {
       return { fileParentId, fileChildId }
     })
-  )
+  ).then((fileParents) => {
+    return fileParents.map((fileParent) => fileParent.toJSON())
+  })
 }
 
 /**
