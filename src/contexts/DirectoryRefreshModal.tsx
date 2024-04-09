@@ -54,7 +54,7 @@ const DirectoryRefreshModal: FC<DirectoryRefreshModalProps> = ({ open, onClose, 
     // Disable refresh button for 3 seconds to prevent accidental refreshes
     const timeout = setTimeout(() => {
       setRefreshDisabled(false)
-    }, 1)
+    }, 3000)
 
     return () => {
       ipcRenderer.removeListener('refreshed-directory', handleRefreshedDirectory)
