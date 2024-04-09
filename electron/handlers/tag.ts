@@ -159,9 +159,9 @@ export const handleUntagFiles = async (event: IpcMainEvent, arg: {
  * If so, delete the tag
  */
 export const handleKillOrphanedTags = async (event: IpcMainEvent): Promise<void> => {
-  const tags: Tag[] = await Tag.findAll()
+  const tags: Tag[] = await Tag.findAll().then((tags) => tags.map((tag) => tag.toJSON())) as Tag[]
 
-  const fileTags: FileTag[] = await FileTag.findAll()
+  const fileTags: FileTag[] = await FileTag.findAll().then((fileTags) => fileTags.map((fileTag) => fileTag.toJSON())) as FileTag[]
 
   // get orphaned tags
   const orphanedTags: Tag[] = tags.filter((tag) => {
