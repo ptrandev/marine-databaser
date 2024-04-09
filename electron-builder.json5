@@ -9,7 +9,8 @@
   },
   "files": [
     "dist-electron",
-    "dist"
+    "dist",
+    "!**/node_modules/sqlite3/build-tmp-napi-v3/*"
   ],
   "mac": {
     "artifactName": "${productName}_${version}.${ext}",
