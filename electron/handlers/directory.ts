@@ -320,7 +320,7 @@ export const handleSelectDirectory = async (win: BrowserWindow, event: IpcMainEv
 
   if (result.filePaths.length === 0) return
 
-  event.reply('selected-directory', result.filePaths)
+  event.reply('selected-directory', result.filePaths[0])
 }
 
 /**
