@@ -507,14 +507,14 @@ export const handleSetDirectoryLocation = async (win: BrowserWindow, event: IpcM
         directoryId
       },
       transaction: t
-    })
+    }).then((files) => files.map((file) => file.toJSON()))
 
     // for each file, update the path
     await Promise.all(
       files.map(async (file) => {
         await File.update(
           {
-            path: file.path.replace(directory.path, newPath)
+            path: path.resolve(newPath, file.name)
           },
           {
             where: {
