@@ -119,13 +119,14 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
       return fileParents.map((fileParent) => fileParent.toJSON())
     })
 
-    const fileIds = parents.map((fileParent) => fileParent.fileChildId)
+    const fileChildrenIds = parents.map((fileParent) => fileParent.fileChildId)
+    const fileParentIds = parents.map((fileParent) => fileParent.fileParentId)
 
     options.where = {
       ...options.where,
       [Op.or]: [
         {
-          id: fileIds
+          id: [...fileChildrenIds, ...fileParentIds]
         }
       ]
     }
