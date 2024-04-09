@@ -49,7 +49,7 @@ export const addFilesToDatabase = async ({ files, directoryId }: {
       }
       )
     )
-  )
+  ).then((files) => files.map((file) => file.toJSON())) as File[]
 }
 
 /**
@@ -66,7 +66,7 @@ export const findDirectoryByPath = async (path: string): Promise<Directory | nul
     }
   }).then((directories) => {
     return directories.sort((a, b) => b.path.length - a.path.length)[0]
-  })
+  }).then((directory) => directory?.toJSON()) as Directory | null
 }
 
 /**

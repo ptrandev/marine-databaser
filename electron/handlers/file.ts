@@ -115,6 +115,8 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
       where: {
         fileParentId: fileParents
       }
+    }).then((fileParents) => {
+      return fileParents.map((fileParent) => fileParent.toJSON())
     })
 
     const fileIds = parents.map((fileParent) => fileParent.fileChildId)
@@ -206,7 +208,7 @@ export const findFileByPath = async (path: string): Promise<File | null> => {
     where: {
       path
     }
-  })
+  }).then((file) => file?.toJSON()) as File | null
 }
 
 export const handleFileRename = async (event: IpcMainEvent, arg: {
