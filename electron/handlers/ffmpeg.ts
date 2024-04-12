@@ -485,16 +485,15 @@ export const handleConvertVideo = async (event: IpcMainEvent, arg: { videoPath: 
   const videoBasename = path.basename(arg.videoPath, path.extname(arg.videoPath))
 
   // make a folder in the temp directory to store the converted video
-  const tempPath = path.join(app.getPath('temp'), 'marine-databaser')
-  fs.mkdirSync(tempPath, { recursive: true })
+  fs.mkdirSync(TEMP_PATH, { recursive: true })
 
   // clear all files from the temp directory
-  fs.readdirSync(tempPath).forEach((file) => {
-    fs.unlinkSync(path.join(tempPath, file))
+  fs.readdirSync(TEMP_PATH).forEach((file) => {
+    fs.unlinkSync(path.join(TEMP_PATH, file))
   })
 
   // where the converted video will be saved
-  const videoPath = path.join(tempPath, `${videoBasename}-${new Date().getTime()}.mov`)
+  const videoPath = path.join(TEMP_PATH, `${videoBasename}-${new Date().getTime()}.mov`)
 
   const audioStream = await new Promise<FfprobeStream | undefined>((resolve, reject) => {
     ffmpeg.ffprobe(arg.videoPath, (err, metadata) => {
