@@ -19,7 +19,7 @@ const DirectoryRefreshButton: FC = () => {
         startIcon={<Refresh />}
         size='small'
         onClick={handleRefresh}
-        disabled={isRefreshingDirectories}
+        disabled={isRefreshingDirectories || directories.length === 0}
       >
         Refresh All Directories
       </Button>
