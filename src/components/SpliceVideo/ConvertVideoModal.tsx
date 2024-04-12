@@ -63,6 +63,8 @@ const ConvertVideoModal: FC = () => {
     })
 
     ipcRenderer.on('convert-video-progress', (_, progress: number) => {
+      // if progress is NaN, set to 0
+      progress = progress ?? 0
       setProgress(Math.min(progress, 100))
     })
 

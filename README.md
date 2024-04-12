@@ -14,13 +14,14 @@ libraries and programs for handling multimedia data.
 
 ## 📝 Features
 
-Here is a list of features that are currently implemented:
+Here is a (mostly exhaustive) list of features that are currently implemented:
 - Database for storing and categorizing files
 - File tagging and notes system
 - File renaming
-- Searching and filtering files by name, tags, directories, file types, and notes
+- Searching and filtering files by name, tags, directories, file types, notes, and file parent
 - Support for adding multiple directories, including external drives, to the database
 - Support for refreshing the database to reflect changes in the file system
+- Support for setting a new location of a directory in case it is moved
 - Video splicing operations facilitated by FFMPEG; this allows 1 hour videos to be spliced
   into an arbitrary number of smaller clips in a matter of seconds
   - users can free seek to a specific time in the video
@@ -30,19 +31,19 @@ Here is a list of features that are currently implemented:
   - splices points are intelligently inserted by default so that one splice region starts as the
     previous one ends
   - videos are spliced in the same format as the original video, without re-encoding
-  - users can undo/redo up to 100 steps in video splicing tool
+  - users can undo/redo up to 256 steps in video splicing tool
   - users can save/load video splicing projects
   - incompatible formats can be detected and converted to a compatible format on the fly
+  - automatically tracking files created by video splicing operations in the database if they're output
+    to a directory tracked by the database (file parents and file children)
 - Audio extraction from videos facilitated by FFMPEG
   - users can choose different export formats and destinations
+  - automatically tracking files created by audio extraction operations in the database if they're output
+    to a directory tracked by the database (file parents and file children)
 - Import/Export the entire database to a sqlite file for easy backup and transfer to new devices
+- Reset database to clear all data and start fresh
 - Experimental: Automated video splicing using basic audio analysis including amplitude and frequency
   analysis
-
-Here is a list of features that are currently being worked on:
-- "Collections" system for grouping files together and giving them to other researchers
-- support for bulk rename file operations
-- automatically tracking files created by video splicing operations in the database
 
 
 ## 📷 Screenshots
