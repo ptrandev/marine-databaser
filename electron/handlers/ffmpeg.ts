@@ -12,6 +12,7 @@ import ffprobePath from 'ffprobe-static'
 import { addFilesToDatabase, findDirectoryByPath } from './directory'
 import { addFileParent } from './fileParent'
 import { findFileByPath } from './file'
+import { TEMP_PATH } from '../constants'
 
 // tell the ffmpeg package where it can find the needed binaries.
 if (ffmpegPath) {
