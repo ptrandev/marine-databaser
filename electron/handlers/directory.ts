@@ -441,8 +441,6 @@ export const handleRefreshDirectories = async (event: IpcMainEvent, arg: { direc
       const refreshedDirectory = await refreshDirectory(directory.id)
       event.reply('refreshed-directory', refreshedDirectory)
     } catch (err) {
-      console.log('ERR: ', err)
-
       event.reply('refresh-directory-error', {
         errMessage: (err as Error).message,
         directoryId: directory.id

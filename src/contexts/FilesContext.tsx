@@ -87,11 +87,7 @@ export const FilesProvider: FC<FilesProviderProps> = ({ children }) => {
   useEffectDebounced(() => {
     void loadFiles()
     setSelectedFiles([])
-  }, [searchTerm], 500)
-
-  useEffect(() => {
-    void loadFiles()
-  }, [directories, selectedDirectories, selectedTags, selectedFileTypes, selectedFileParents])
+  }, [searchTerm, directories, selectedDirectories, selectedTags, selectedFileTypes, selectedFileParents], 500)
 
   useEffect(() => {
     return () => {

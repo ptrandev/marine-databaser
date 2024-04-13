@@ -32,7 +32,10 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
 }): Promise<void> => {
   const { directories, tags, fileTypes, searchTerm, fileParents } = arg
 
-  const options: FindOptions = {}
+  const options: FindOptions = {
+    where: {},
+    include: []
+  }
 
   if (directories && directories.length > 0) {
     // @ts-expect-error - we are using the sequelize operator
