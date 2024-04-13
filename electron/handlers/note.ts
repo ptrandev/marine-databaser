@@ -38,13 +38,14 @@ export const handleUpdateNote = async (event: IpcMainEvent, arg: {
 
   const fileNote: FileNote | null = await FileNote.findByPk(id)
 
-  if (fileNote) {
-    fileNote.note = note
+  await fileNote?.update({
+    note,
+    updatedAt: new Date()
+  })
 
-    await fileNote.save()
-  }
+  const _fileNote: FileNote | null = await FileNote.findByPk(id).then((fileNote) => fileNote?.toJSON()) as FileNote | null
 
-  event.reply('updated-note', fileNote)
+  event.reply('updated-note', _fileNote)
 }
 
 export const handleDeleteNote = async (event: IpcMainEvent, arg: {

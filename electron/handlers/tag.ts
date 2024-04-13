@@ -12,13 +12,19 @@ const createTag = async (name: string): Promise<Tag> => {
     where: {
       name
     }
-  })
+  }).then((tag) => tag?.toJSON()) as Tag | null
 
   // tag already exists, so just return it
   if (existingTag) return existingTag
 
   // @ts-expect-error - we are creating a new tag
-  const tag: Tag = await Tag.create({ name })
+  await Tag.create({ name })
+
+  const tag: Tag = await Tag.findOne({
+    where: {
+      name
+    }
+  }).then((tag) => tag?.toJSON()) as Tag
 
   return tag
 }
@@ -43,7 +49,7 @@ export const handleTagFile = async (event: IpcMainEvent, arg: {
       fileId,
       tagId: _tag.id
     }
-  })
+  }).then((fileTag) => fileTag?.toJSON()) as FileTag | null
 
   if (hasTag) {
     event.reply('tagged-file')
@@ -78,7 +84,7 @@ export const handleTagFiles = async (event: IpcMainEvent, arg: {
           fileId,
           tagId: _tag.id
         }
-      })
+      }).then((fileTag) => fileTag?.toJSON()) as FileTag | null
 
       if (hasTag) return null
 

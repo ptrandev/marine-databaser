@@ -1,6 +1,6 @@
 import { type BrowserWindow, type IpcMainEvent, dialog } from 'electron'
-import { Tag, File, FileNote, FileParent } from '../database/schemas'
-import { type FindOptions, Op } from 'sequelize'
+import { Tag, File, FileNote, FileParent, FileTag } from '../database/schemas'
+import { type FindOptions, Op, Sequelize } from 'sequelize'
 import { type FileTypes } from '../../shared/types'
 import fs from 'fs/promises'
 import path from 'path'
@@ -34,6 +34,100 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
 
   const options: FindOptions = {
     where: {},
+    include: []
+  }
+
+  if (directories && directories.length > 0) {
+    // @ts-expect-error - we are using the sequelize operator
+    options.where.directoryId = directories
+  }
+
+  if (fileTypes && fileTypes.length > 0) {
+    // @ts-expect-error - we are using the sequelize operator
+    options.where.mimeType = {
+      [Op.or]: matchMimeTypes(fileTypes).map((mimeType) => { return { [Op.like]: mimeType } })
+    }
+  }
+
+  if (fileParents && fileParents.length > 0) {
+    const parents = await FileParent.findAll({
+      where: {
+        fileParentId: fileParents
+      }
+    }).then((fileParents) => {
+      return fileParents.map((fileParent) => fileParent.toJSON())
+    })
+
+    const fileChildrenIds = parents.map((fileParent) => fileParent.fileChildId)
+    const fileParentIds = parents.map((fileParent) => fileParent.fileParentId)
+
+    // the files MUST have a parent that matches the fileParentId
+    options.where = {
+      ...options.where,
+      id: [...fileChildrenIds, ...fileParentIds]
+    }
+
+    options.include = [
+      {
+        model: FileParent
+      }
+    ]
+  }
+
+  if (searchTerm && searchTerm?.length > 0) {
+    const fileNotes = await FileNote.findAll({
+      where: {
+        note: {
+          [Op.like]: `%${searchTerm.toLowerCase()}%`
+        }
+      }
+    }).then((fileNotes) => {
+      return fileNotes.map((fileNote) => fileNote.toJSON())
+    })
+
+    const fileNotesIds = fileNotes.map((fileNote) => fileNote.fileId)
+
+    // the files MUST have a note or path that matches the search term
+    options.where = {
+      ...options.where,
+      [Op.or]: [
+        {
+          id: fileNotesIds
+        },
+        {
+          name: {
+            [Op.like]: `%${searchTerm.toLowerCase()}%`
+          }
+        }
+      ]
+    }
+
+    options.include = [
+      {
+        model: FileNote
+      }
+    ]
+  }
+
+  if (tags && tags.length > 0) {
+    options.include = [
+      {
+        model: Tag,
+        where: {
+          id: tags
+        }
+      }
+    ]
+  }
+
+  options.limit = 10000
+
+  const fileIds: number[] = await File.findAll(options).then((files) => files.map((file) => file.toJSON().id))
+
+  const files: File[] = await File.findAll({
+    where: {
+      id: fileIds
+    },
     include: [
       {
         model: Tag
@@ -55,89 +149,7 @@ export const handleListFiles = async (event: IpcMainEvent, arg: {
         'ASC'
       ]
     ]
-  }
-
-  if (directories && directories.length > 0) {
-    // @ts-expect-error - we are using the sequelize operator
-    options.where.directoryId = directories
-  }
-
-  if (tags && tags.length > 0) {
-    options.include = [
-      {
-        model: Tag,
-        where: {
-          id: tags
-        }
-      },
-      {
-        model: FileNote
-      }
-    ]
-  }
-
-  if (fileTypes && fileTypes.length > 0) {
-    // @ts-expect-error - we are using the sequelize operator
-    options.where.mimeType = {
-      [Op.or]: matchMimeTypes(fileTypes).map((mimeType) => { return { [Op.like]: mimeType } })
-    }
-  }
-
-  if (searchTerm && searchTerm?.length > 0) {
-    const fileNotes = await FileNote.findAll({
-      where: {
-        note: {
-          [Op.like]: `%${searchTerm.toLowerCase()}%`
-        }
-      }
-    })
-
-    const fileIds = fileNotes.map((fileNote) => fileNote.fileId)
-
-    // make an or statement for the file ids and path
-    options.where = {
-      ...options.where,
-      [Op.or]: [
-        {
-          id: fileIds
-        },
-        {
-          path: {
-            [Op.like]: `%${searchTerm.toLowerCase()}%`
-          }
-        }
-      ]
-    }
-  }
-
-  if (fileParents && fileParents.length > 0) {
-    const parents = await FileParent.findAll({
-      where: {
-        fileParentId: fileParents
-      }
-    }).then((fileParents) => {
-      return fileParents.map((fileParent) => fileParent.toJSON())
-    })
-
-    const fileChildrenIds = parents.map((fileParent) => fileParent.fileChildId)
-    const fileParentIds = parents.map((fileParent) => fileParent.fileParentId)
-
-    options.where = {
-      ...options.where,
-      [Op.or]: [
-        {
-          id: [...fileChildrenIds, ...fileParentIds]
-        }
-      ]
-    }
-  }
-
-  options.limit = 10000
-
-  // get all files, sort Tags by name
-  const files: File[] = await File.findAll(options).then((files) => {
-    return files.map((file) => file.toJSON())
-  })
+  }).then((files) => files.map((file) => file.toJSON()))
 
   event.reply('listed-files', files)
 }
