@@ -67,13 +67,10 @@ export const handleLoadFromJSON = async (event: IpcMainEvent): Promise<void> => 
     }
 
     // throw error if spliceRegions does not match SpliceRegion[] type
-    if (data.spliceRegions.some((spliceRegion: any) => {
-      return (
-        !spliceRegion?.start || !spliceRegion?.end || !spliceRegion?.label ||
-        typeof spliceRegion?.start !== 'number' || typeof spliceRegion?.end !== 'number' || typeof spliceRegion?.label !== 'string'
-      )
+    if (data.spliceRegions.some((region: any) => {
+      return typeof region?.start !== 'number' || typeof region?.end !== 'number' || typeof region?.name !== 'string'
     })) {
-      throw new Error('Invalid spliceRegions data.')
+      throw new Error('Invalid JSON data.')
     }
 
     // check if selectedVideo exists using fs
